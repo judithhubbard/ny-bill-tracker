@@ -329,8 +329,16 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .twobar .track.wide { width: 220px; }
 .twobar .v { background: var(--veto); }
 .twobar b.plain { color: var(--ink); }
-table.st.months { max-width: 420px; }
-.govcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 420px)); gap: 24px; }
+table.st.months { width: auto; max-width: none; }
+table.st.months col.c-mo { width: 56px; }
+table.st.months col.c-mbar { width: 180px; }
+table.st.months col.c-mnum { width: 86px; }
+table.st.months td.bar { padding-left: 10px; }
+table.st.months .track { position: relative; display: block; width: 160px; height: 10px; background: var(--pip-off); border-radius: 2px; }
+table.st.months .track i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+table.st.months .track .l { left: 0; background: var(--signed); }
+table.st.months .track .v { background: var(--veto); }
+.govcols { display: flex; flex-wrap: wrap; gap: 20px 40px; }
 .govcol h4 { margin: 0 0 4px; font: 600 13px var(--body); }
 .twobar .track.mid { width: 160px; }
 table.st tr.tot td { font-weight: 700; border-top: 1px solid var(--ink); }
@@ -1109,10 +1117,10 @@ function govTiming(I) {
     const maxN = Math.max(1, ...rows.map((r) => r.n));
     const tot = rows.reduce((a, r) => [a[0] + r.s, a[1] + r.v], [0, 0]);
     return `<div class="govcol"><h4>${label}</h4>
-      <table class="oc st months"><colgroup><col class="c-m"><col><col class="c-num"></colgroup>
-      <thead><tr><th>Month</th><th class="barh">Decisions</th><th>Vetoed</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr><td>${r.m}</td><td class="bar"><div class="twobar"><span class="track mid"><i class="l" style="width:${(r.s / maxN) * 100}%"></i><i class="v" style="left:${(r.s / maxN) * 100}%;width:${(r.v / maxN) * 100}%"></i></span><b class="plain">${num(r.n)}</b></div></td><td>${r.n ? pctOf(r.v, r.n) + "%" : "–"}</td></tr>`).join("")}
-      <tr class="tot"><td>All</td><td><b class="plain">${num(tot[0] + tot[1])}</b></td><td>${pctOf(tot[1], tot[0] + tot[1])}%</td></tr></tbody></table></div>`;
+      <table class="oc st months"><colgroup><col class="c-mo"><col class="c-mbar"><col class="c-mnum"><col class="c-mnum"></colgroup>
+      <thead><tr><th>Month</th><th></th><th>Decisions</th><th>Vetoed</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><td>${r.m}</td><td class="bar"><span class="track mid"><i class="l" style="width:${(r.s / maxN) * 100}%"></i><i class="v" style="left:${(r.s / maxN) * 100}%;width:${(r.v / maxN) * 100}%"></i></span></td><td>${num(r.n)}</td><td>${r.n ? pctOf(r.v, r.n) + "%" : "–"}</td></tr>`).join("")}
+      <tr class="tot"><td>All</td><td></td><td>${num(tot[0] + tot[1])}</td><td>${pctOf(tot[1], tot[0] + tot[1])}%</td></tr></tbody></table></div>`;
   };
   const years = (I.govYears || []).filter(([y]) => y >= "2017");
   return `<h3 class="sub">The governor's decisions by month</h3>
