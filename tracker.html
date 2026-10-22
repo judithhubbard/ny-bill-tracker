@@ -309,7 +309,7 @@ table.st td:first-child { font-family: var(--body); font-weight: 600; }
 /* Statistics tables: fixed columns, names left, numbers right, bars start under their label. */
 table.st { table-layout: fixed; width: 100%; }
 table.st.odds { max-width: 560px; }
-table.st.comm { max-width: 900px; min-width: 700px; }
+table.st.comm { max-width: 1000px; min-width: 760px; }
 table.st col.c-num { width: 104px; }
 table.st col.c-bar { width: 190px; }
 table.st.odds col.c-name { width: auto; }
@@ -1206,7 +1206,7 @@ function renderStats() {
   const past = I.committees.past[t] || {}, cur = I.committees.current[t] || {};
   const rows = Object.entries(past).map(([k, [n, out, law]]) => ({
     k, perSession: Math.round(n / nPast), out: pctOf(out, n), law: pctOf(law, n),
-    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null,
+    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null, nowLaw: cur[k] ? pctOf(cur[k][2], cur[k][0]) : null,
   })).sort((a, b) => a.out - b.out || b.perSession - a.perSession);
   const plainName = (k) => commLabel(k).replace(/^A · /, "Assembly ").replace(/^S · /, "Senate ");
   // Compare subject committees; the money committees are usually a bill's second stop.
@@ -1217,12 +1217,12 @@ function renderStats() {
     <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span></p>
     <p class="note">How often each committee approved ${topicName} referred to it, averaged over ${pastSpan()} (${nPast} sessions). “Approved” means sent on to the floor or to another committee. Committees with few bills are left out. S = Senate, A = Assembly.</p>
     <div class="tablewrap commwrap"><table class="oc st comm">
-      <colgroup><col class="c-name"><col class="c-num"><col class="c-two"><col class="c-num"><col class="c-num"></colgroup>
+      <colgroup><col class="c-name"><col class="c-num"><col class="c-two"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
       <thead>
-      <tr><th rowspan="2">Committee</th><th colspan="2" class="grp">Past sessions, ${pastSpan()}</th><th colspan="2" class="grp">This session so far</th></tr>
-      <tr><th>Bills a session</th><th class="barh">Approved by committee / became law</th><th>Bills</th><th>Approved</th></tr>
+      <tr><th rowspan="2">Committee</th><th colspan="2" class="grp">Past sessions, ${pastSpan()}</th><th colspan="3" class="grp">This session so far</th></tr>
+      <tr><th>Bills a session</th><th class="barh">Approved by committee / became law</th><th>Bills</th><th>Approved</th><th>Became law</th></tr>
     </thead><tbody>
-    ${rows.slice(0, commAll ? rows.length : 15).map((r) => `<tr><td>${esc(commLabel(r.k))}</td><td>${num(r.perSession)}</td><td class="bar">${twoBar(r.out, r.law)}</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
+    ${rows.slice(0, commAll ? rows.length : 15).map((r) => `<tr><td>${esc(commLabel(r.k))}</td><td>${num(r.perSession)}</td><td class="bar">${twoBar(r.out, r.law)}</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td><td>${r.nowLaw == null ? "–" : r.nowLaw + "%"}</td></tr>`).join("")}
     </tbody></table></div>
     ${rows.length > 15 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
 
@@ -1275,7 +1275,7 @@ function renderStats() {
   }
   $("statCosp").innerHTML = `<h2>Co-sponsors and party</h2>
     <p class="takeaway">${(() => {
-      const tot = cs.reduce((a, c) => [a[0] + c[0], a[2] + c[2]], [0, 0]); const top = cs[cs.length - 1] || [0, 0, 0];
+      const tot = cs.reduce((a, c) => [a[0] + c[0], a[1] + c[2]], [0, 0]); const top = cs[cs.length - 1] || [0, 0, 0];
       const lawAll = pctOf(tot[1], tot[0]), lawTop = pctOf(top[2], top[0]);
       const both = pctOf(mix.DR[1], mix.DR[0]), dOnly = pctOf(mix.D[1], mix.D[0]);
       return `Bills with 40 or more co-sponsors became law ${lawTop}% of the time, against ${lawAll}% for all bills.${DATA.current && dOnly ? ` This session, ${both}% of bills backed by both parties passed both houses, against ${dOnly}% of Democrat-only bills.` : ""} Both mostly reflect bills that were easy to agree on to begin with.`;
