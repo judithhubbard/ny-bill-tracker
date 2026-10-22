@@ -3,8 +3,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: one working column. Session header, then the stage pipeline as clickable counts,
-   filters, then a paged list of bills with a six-step progress track on each row. */
+/* Layout: masthead, then three views (Bills, Statistics, How it works). Bills puts the
+   filters in a sticky sidebar beside a paged list with a six-step progress track per row. */
 :root {
   --paper: #f6f8fb;
   --sheet: #ffffff;
@@ -56,25 +56,6 @@ h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--display); font-stretch: 80%; ma
 .sub b { color: var(--ink); font-weight: 600; }
 
 /* Pipeline */
-.pipeline { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 3fr); gap: 10px; }
-.pgroup { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
-.pgroup h2 { margin: 0; padding: 8px 12px 6px; font: 600 11px/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.pgroup h2 span { text-transform: none; letter-spacing: 0; font-weight: 400; }
-.pstages { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.stage { appearance: none; border: 0; border-right: 1px solid var(--rule); background: transparent; color: inherit; text-align: left; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; align-content: start; font: inherit; min-width: 0; }
-.stage:last-child { border-right: 0; }
-.stage-sub { font-size: 11.5px; color: var(--ink-2); line-height: 1.3; }
-.stage[aria-pressed="true"] .stage-sub { color: var(--sheet); opacity: .85; }
-.stage:hover { background: var(--chip); }
-.stage[aria-pressed="true"] { background: var(--navy); color: var(--sheet); }
-.stage[aria-pressed="true"] .stage-label { color: var(--sheet); }
-.stage-n { font: 700 24px/1.1 var(--display); font-stretch: 85%; font-variant-numeric: tabular-nums; }
-.stage-label { font-size: 12px; color: var(--ink-2); line-height: 1.25; }
-.stage[data-k="3"] .stage-n, .stage[data-k="4"] .stage-n { color: var(--gold); }
-.stage[data-k="5"] .stage-n { color: var(--signed); }
-.stage[data-k="6"] .stage-n { color: var(--veto); }
-.stage[aria-pressed="true"] .stage-n { color: var(--sheet); }
-
 /* Topics */
 .topics { display: flex; flex-wrap: wrap; gap: 6px; }
 .topic { appearance: none; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: 600 13px/1.2 var(--body); cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; }
@@ -84,16 +65,11 @@ h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--display); font-stretch: 80%; ma
 .topic[aria-pressed="true"] .c { color: var(--sheet); opacity: .8; }
 
 /* Filters */
-.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
-.filters .wide { grid-column: span 2; }
 .field { display: grid; gap: 4px; min-width: 0; }
 .field label { font: 600 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 input[type="search"], select { width: 100%; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 5px; padding: 8px 10px; }
 .toggles { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 13px; color: var(--ink-2); }
 .toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
-.toggles .spacer { flex: 1; }
-.reset { appearance: none; background: none; border: 0; color: var(--navy); font: 600 13px var(--body); cursor: pointer; padding: 0; text-decoration: underline; }
-
 .resultbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-2); border-bottom: 2px solid var(--ink); padding-bottom: 6px; }
 .resultbar b { color: var(--ink); font-variant-numeric: tabular-nums; }
 
@@ -143,7 +119,6 @@ footer { font-size: 12.5px; color: var(--ink-2); border-top: 1px solid var(--rul
 footer p { margin: 0; max-width: 90ch; }
 
 /* Header with stats panel */
-.top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 28px; align-items: start; }
 .chart { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); padding: 10px 12px 12px; display: grid; gap: 10px; min-width: 0; }
 .tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--rule); }
 .tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 5px 8px; font: 600 12.5px var(--body); color: var(--ink-2); cursor: pointer; }
@@ -173,12 +148,6 @@ footer p { margin: 0; max-width: 90ch; }
 
 /* Session notice and process explainer */
 .notice { background: var(--gold-soft); border-radius: 6px; padding: 10px 14px; font-size: 14px; max-width: none; margin: 0; }
-.howto { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
-.howto > summary { cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.howto > summary span { font: 400 13px var(--body); color: var(--ink-2); }
-.howto ol { margin: 0; padding: 0 14px 14px 36px; display: grid; gap: 8px; max-width: 80ch; font-size: 14px; }
-.howto li b { font-weight: 600; }
-
 /* Key dates under each bill */
 .keydates h4 { margin: 0 0 4px; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 .keydates ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
@@ -194,11 +163,6 @@ footer p { margin: 0; max-width: 90ch; }
 .sessions .off { opacity: .55; }
 
 /* Outcomes across sessions */
-.outcomes { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
-.outcomes > summary { cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.outcomes > summary span { font: 400 13px var(--body); color: var(--ink-2); }
-.outcomes-body { padding: 0 14px 14px; display: grid; gap: 10px; }
-.outcomes-body .field { max-width: 280px; }
 .tablewrap { overflow-x: auto; }
 table.oc { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
 table.oc th { text-align: right; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
@@ -234,36 +198,183 @@ table.oc th { vertical-align: bottom; }
 .lineage .oc3, .lineage .oc4 { color: var(--gold); font-weight: 600; }
 
 @media (max-width: 860px) {
-  .top { grid-template-columns: minmax(0, 1fr); }
-  .pipeline { grid-template-columns: minmax(0, 1fr); }
-  .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 @media (max-width: 620px) {
   .bill > summary { grid-template-columns: 86px minmax(0, 1fr); }
   .bill > summary .status { grid-column: 1 / -1; grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 10px; }
   .detail { padding-left: 4px; }
-  .filters { grid-template-columns: minmax(0, 1fr); }
-  .filters .wide { grid-column: auto; }
   .lineage li { grid-template-columns: 60px minmax(0, 1fr); }
   .lineage li .oc { grid-column: 2; }
-  .pstages { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stage { border-bottom: 1px solid var(--rule); }
-  .stage:nth-child(2n) { border-right: 0; }
   .keydates li { grid-template-columns: 96px minmax(0, 1fr); }
+}
+
+/* ---- Page structure: masthead, view tabs, sidebar + results ---- */
+.wrap { gap: 16px; }
+.mast { display: grid; gap: 10px; }
+.mast-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 10px 24px; }
+.mast .sessions { margin-top: 0; }
+.views { display: flex; gap: 4px; border-bottom: 2px solid var(--ink); }
+.view-tab { appearance: none; border: 0; background: none; padding: 8px 14px; font: 700 16px var(--display); font-stretch: 85%; color: var(--ink-2); cursor: pointer; border-radius: 5px 5px 0 0; }
+.view-tab:hover { color: var(--ink); background: var(--chip); }
+.view-tab[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding: 4px 4px 16px 0; }
+.side-toggle { display: none; }
+.side-body { display: grid; gap: 16px; }
+.group { display: grid; gap: 8px; }
+.group-h { font: 600 11px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+.side .field { gap: 4px; }
+.side .topics { gap: 5px; }
+.side .topic { font-size: 12.5px; padding: 4px 9px; }
+.side .toggles { display: grid; gap: 6px; }
+.results { min-width: 0; display: grid; gap: 10px; align-content: start; }
+.sortby { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.sortby select { width: auto; padding: 4px 8px; font-size: 13px; }
+.resultbar { align-items: center; }
+
+/* Stage list in the sidebar */
+.pg { display: grid; gap: 1px; }
+.pg + .pg { margin-top: 8px; }
+.pg-h { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.srow { appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; padding: 4px 8px; border-radius: 4px; }
+.srow:hover { background: var(--chip); }
+.srow[aria-pressed="true"] { background: var(--navy); color: var(--sheet); }
+.srow .sl { font-size: 13.5px; }
+.srow .sn { font: 700 14px var(--mono); font-variant-numeric: tabular-nums; }
+.srow .ss { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-2); }
+.srow[aria-pressed="true"] .ss { color: var(--sheet); opacity: .85; }
+.srow[data-k="3"] .sn, .srow[data-k="4"] .sn { color: var(--gold); }
+.srow[data-k="5"] .sn { color: var(--signed); }
+.srow[data-k="6"] .sn { color: var(--veto); }
+.srow[aria-pressed="true"] .sn { color: var(--sheet); }
+
+/* Active filters */
+.active { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chipx { appearance: none; border: 1px solid var(--navy); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 3px 6px 3px 10px; font: 600 12.5px var(--body); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.chipx b { font-weight: 400; color: var(--ink-2); }
+.chipx span[aria-hidden] { font-size: 14px; line-height: 1; color: var(--ink-2); }
+.chipx:hover { background: var(--sheet); }
+.clearall { appearance: none; background: none; border: 0; color: var(--navy); font: 600 12.5px var(--body); text-decoration: underline; cursor: pointer; padding: 3px 4px; }
+
+/* Statistics and How it works views */
+.statsview { display: grid; gap: 20px; }
+.statsview .chart { max-width: 760px; }
+.statsview .bl { white-space: normal; }
+.statsview .barrow { grid-template-columns: 170px minmax(0, 1fr) 56px; }
+.outcomes { border: 0; background: none; display: grid; gap: 10px; }
+.outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
+.outcomes .field { max-width: 280px; }
+.howview { display: grid; gap: 14px; }
+.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 75ch; }
+.steps b { font-weight: 600; }
+.notes { display: grid; gap: 8px; max-width: 80ch; color: var(--ink-2); font-size: 14px; }
+.notes p { margin: 0; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .side { position: static; max-height: none; overflow: visible; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); padding: 0; }
+  .side-toggle { display: flex; justify-content: space-between; cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; }
+  .side-toggle span { font: 600 12.5px var(--body); color: var(--navy); }
+  .side-body { padding: 4px 14px 14px; }
+  .statsview .barrow { grid-template-columns: 120px minmax(0, 1fr) 50px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
 
 <div class="wrap">
-  <div class="top">
-    <header>
-      <div class="eyebrow" id="sessionLabel">New York State Legislature</div>
-      <h1>Albany Bill Tracker</h1>
-      <p class="sub" id="subline">Loading bills…</p>
+  <header class="mast">
+    <div class="mast-top">
+      <div>
+        <div class="eyebrow" id="sessionLabel">New York State Legislature</div>
+        <h1>Albany Bill Tracker</h1>
+      </div>
       <nav class="sessions" id="sessions" aria-label="Legislative sessions"></nav>
-    </header>
-    <section class="chart" aria-label="Statistics">
+    </div>
+    <p class="notice" id="notice" hidden></p>
+  </header>
+
+  <nav class="views" role="tablist" aria-label="Page sections">
+    <button class="view-tab" role="tab" type="button" data-view="bills" aria-selected="true">Bills</button>
+    <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
+    <button class="view-tab" role="tab" type="button" data-view="how" aria-selected="false">How it works</button>
+  </nav>
+
+  <!-- Bills: filters in a sidebar, results beside them -->
+  <section class="layout" id="view-bills">
+    <details class="side" id="side" open>
+      <summary class="side-toggle">Filters <span id="filterCount"></span></summary>
+      <div class="side-body">
+        <div class="field">
+          <label for="q">Search</label>
+          <input type="search" id="q" placeholder="Bill number, words, sponsor" autocomplete="off">
+        </div>
+        <div class="group">
+          <div class="group-h">Where it is now</div>
+          <div id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
+        </div>
+        <div class="group">
+          <div class="group-h">Topic</div>
+          <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
+        </div>
+        <div class="toggles" id="sponsorBoxes">
+          <label id="senBox"><input type="checkbox" id="sen"> <span id="senLabel">Sponsored by our senator</span></label>
+          <label id="asmBox"><input type="checkbox" id="asm"> <span id="asmLabel">Sponsored by our Assembly member</span></label>
+        </div>
+        <div class="group">
+          <div class="group-h">More filters</div>
+          <div class="field">
+            <label for="progress">Furthest it has gotten this session</label>
+            <select id="progress"><option value="">Any</option></select>
+          </div>
+          <div class="field">
+            <label for="law">Law amended</label>
+            <input type="search" id="law" list="lawOptions" placeholder="Type to find a law" autocomplete="off">
+            <datalist id="lawOptions"></datalist>
+          </div>
+          <div class="field">
+            <label for="comm">Committee</label>
+            <select id="comm"><option value="">All committees</option></select>
+          </div>
+          <div class="field">
+            <label for="house">Has a version in</label>
+            <select id="house"><option value="">Either house</option></select>
+          </div>
+          <div class="field">
+            <label for="hist">History in other sessions</label>
+            <select id="hist"><option value="">Any history</option></select>
+          </div>
+          <div class="field">
+            <label for="intro">Year introduced</label>
+            <select id="intro"><option value="">Either year</option></select>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="results">
+      <div class="resultbar">
+        <span id="count"></span>
+        <label class="sortby" for="sort">Sort
+          <select id="sort">
+            <option value="recent">Latest action</option>
+            <option value="stage">Furthest along</option>
+            <option value="sessions">Most sessions introduced</option>
+            <option value="num">Bill number</option>
+            <option value="cosp">Most cosponsors</option>
+          </select>
+        </label>
+      </div>
+      <div class="active" id="active" hidden></div>
+      <div class="list" id="list"><div class="loading">Loading bills…</div></div>
+      <button class="more" id="more" type="button" hidden>Show 100 more</button>
+    </div>
+  </section>
+
+  <!-- Statistics -->
+  <section class="statsview" id="view-stats" hidden>
+    <div class="active" id="activeStats" hidden></div>
+    <section class="chart" aria-label="Charts">
       <div class="tabs" role="tablist" id="chartTabs">
         <button class="tab" role="tab" type="button" data-v="stage">Stage</button>
         <button class="tab" role="tab" type="button" data-v="topic">Topic</button>
@@ -273,15 +384,21 @@ table.oc th { vertical-align: bottom; }
       </div>
       <div id="chartBody"></div>
     </section>
-  </div>
+    <section class="outcomes" aria-labelledby="ocHead">
+      <h2 id="ocHead">Outcomes across sessions</h2>
+      <div class="field">
+        <label for="ocTopic">Topic</label>
+        <select id="ocTopic"><option value="all">All bills</option></select>
+      </div>
+      <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
+      <p class="note">“Passed both houses” counts every bill that got through both the Senate and the Assembly, including those later signed or vetoed. “Became law” divides bills signed by all bills introduced: for 2017–18, 1,027 of 13,223. “Governor signed” divides bills signed by bills signed plus bills vetoed, leaving out bills still waiting for her. The current session is still open, so its numbers will change until December 31.</p>
+    </section>
+  </section>
 
-  <p class="notice" id="notice" hidden></p>
-
-  <div class="pipeline" id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
-
-  <details class="howto" id="howto">
-    <summary>How a bill becomes law in New York <span>The steps behind the stages above</span></summary>
-    <ol>
+  <!-- How it works -->
+  <section class="howview" id="view-how" hidden>
+    <h2>How a bill becomes law in New York</h2>
+    <ol class="steps">
       <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee there. Most bills never get out of committee.</li>
       <li><b>Floor.</b> When a committee reports a bill, it goes on that house's calendar (“third reading”) to wait for a vote of the full house.</li>
       <li><b>The other house.</b> A bill that passes one house goes to the other. Most bills have a matching (“same as”) bill in the other house. When the passed bill arrives, the other house usually swaps it in for its own version and votes on it. Both houses have to pass identical text.</li>
@@ -289,82 +406,16 @@ table.oc th { vertical-align: bottom; }
       <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
       <li><b>The two-year session.</b> Bills carry over from the first year to the second. In January of the second year, bills that passed only one house are sent back to committee in their original house and have to pass again. Any bill that hasn't passed both houses by December 31 of the second year dies and has to be reintroduced with a new number.</li>
     </ol>
-  </details>
-
-  <details class="outcomes" id="outcomes">
-    <summary>Compare outcomes across sessions <span>Bills introduced, passed, signed and vetoed in each two-year session</span></summary>
-    <div class="outcomes-body">
-      <div class="field">
-        <label for="ocTopic">Topic</label>
-        <select id="ocTopic"><option value="all">All bills</option></select>
-      </div>
-      <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
-      <p class="note">“Passed both houses” counts every bill that got through both the Senate and the Assembly, including those later signed or vetoed. “Became law” divides bills signed by all bills introduced: for 2017–18, 1,027 of 13,223. “Governor signed” divides bills signed by bills signed plus bills vetoed, leaving out bills still waiting for her. The current session is still open, so its numbers will change until December 31.</p>
+    <h2>About this data</h2>
+    <div class="notes">
+      <p id="fetched"></p>
+      <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
+      <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
+      <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
+      <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays.</p>
+      <p>The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office.</p>
     </div>
-  </details>
-
-  <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
-
-  <div class="filters">
-    <div class="field wide">
-      <label for="q">Search</label>
-      <input type="search" id="q" placeholder="Bill number, words in title or summary, sponsor, law" autocomplete="off">
-    </div>
-    <div class="field">
-      <label for="law">Law amended</label>
-      <input type="search" id="law" list="lawOptions" placeholder="Type to find a law" autocomplete="off">
-      <datalist id="lawOptions"></datalist>
-    </div>
-    <div class="field">
-      <label for="comm">Committee</label>
-      <select id="comm"><option value="">All committees</option></select>
-    </div>
-    <div class="field wide">
-      <label for="progress">Furthest it has gotten this session</label>
-      <select id="progress"><option value="">Any</option></select>
-    </div>
-    <div class="field wide">
-      <label for="hist">History in other sessions</label>
-      <select id="hist">
-        <option value="">Any history</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="house">Has a version in</label>
-      <select id="house"><option value="">Either house</option></select>
-    </div>
-    <div class="field">
-      <label for="intro">Year introduced</label>
-      <select id="intro"><option value="">Either year</option></select>
-    </div>
-    <div class="field">
-      <label for="sort">Sort by</label>
-      <select id="sort">
-        <option value="recent">Latest action</option>
-        <option value="stage">Furthest along</option>
-        <option value="sessions">Most sessions introduced</option>
-        <option value="num">Bill number</option>
-        <option value="cosp">Most cosponsors</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="toggles">
-    <label id="senBox"><input type="checkbox" id="sen"> <span id="senLabel">Sponsored by our senator</span></label>
-    <label id="asmBox"><input type="checkbox" id="asm"> <span id="asmLabel">Sponsored by our Assembly member</span></label>
-    <span class="spacer"></span>
-    <button class="reset" id="reset" type="button">Clear filters</button>
-  </div>
-
-  <div class="resultbar"><span id="count"></span><span id="fetched"></span></div>
-  <div class="list" id="list"><div class="loading">Loading bills…</div></div>
-  <button class="more" id="more" type="button" hidden>Show 100 more</button>
-
-  <footer>
-    <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
-    <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
-    <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out. The stage boxes show where each bill is now; the “Furthest it has gotten” filter counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays. The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office. Bills not passed by both houses by December 31 of the second year of the session die and must be reintroduced.</p>
-  </footer>
+  </section>
 </div>
 
 <script type="application/json" id="bill-data"></script>
@@ -501,11 +552,11 @@ function renderPipeline() {
     3: DATA.current ? "Not yet sent to the governor" : "Never sent to the governor",
     4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No action recorded",
   };
-  const box = (k) => `<button class="stage" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
-       <span class="stage-n">${num(counts[k])}</span><span class="stage-label">${TEXT.pipe[k]}</span>${subs[k] ? `<span class="stage-sub">${subs[k]}</span>` : ""}</button>`;
+  const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
+       <span class="sl">${TEXT.pipe[k]}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
   $("pipeline").innerHTML = `
-    <div class="pgroup"><h2>In the Legislature</h2><div class="pstages">${[0, 1, 2, 3].map(box).join("")}</div></div>
-    <div class="pgroup"><h2>With the governor</h2><div class="pstages">${[4, 5, 6].map(box).join("")}</div></div>`;
+    <div class="pg"><div class="pg-h">In the Legislature</div>${[0, 1, 2, 3].map(row).join("")}</div>
+    <div class="pg"><div class="pg-h">With the governor</div>${[4, 5, 6].map(row).join("")}</div>`;
 }
 
 function renderTopics() {
@@ -618,7 +669,7 @@ function renderList() {
   $("count").innerHTML = `<b>${num(rows.length)}</b> of ${num(BILLS.length)} bills`;
   const slice = rows.slice(0, state.shown);
   if (!slice.length) {
-    $("list").innerHTML = `<div class="empty">No bills match these filters. Try removing a topic or clearing the search.</div>`;
+    $("list").innerHTML = `<div class="empty">No bills match all of these filters. Remove one of the filters listed above, or clear them all.</div>`;
   } else {
     $("list").innerHTML = slice.map((b, i) => {
       const [first, second] = b.nums;
@@ -752,10 +803,44 @@ function renderChart() {
   $("chartBody").innerHTML = { stage: chartStage, topic: chartTopic, comm: chartComm, time: chartTime, sessions: chartSessions }[chartView]();
 }
 
+// Every filter in effect, as removable chips above the results, so none is ever out of sight.
+function activeFilters() {
+  const out = [];
+  const opt = (id, v) => { const o = [...$(id).options].find((x) => x.value === v); return o ? o.textContent.replace(/ \([\d,]+\)$/, "") : v; };
+  if (state.q) out.push(["q", null, "Search", `“${state.q}”`]);
+  if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
+  for (const t of state.topics) out.push(["topics", t, "Topic", TOPICS[t]]);
+  if (state.sen) out.push(["sen", null, "Sponsor", $("senLabel").textContent.replace("Sponsored by ", "")]);
+  if (state.asm) out.push(["asm", null, "Sponsor", $("asmLabel").textContent.replace("Sponsored by ", "")]);
+  if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
+  if (state.law) out.push(["law", null, "Law", state.law]);
+  if (state.comm) out.push(["comm", null, "Committee", state.comm]);
+  if (state.house) out.push(["house", null, "Version in", opt("house", state.house)]);
+  if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
+  if (state.intro) out.push(["intro", null, "Introduced", state.intro]);
+  return out;
+}
+
+function renderActive() {
+  const list = activeFilters();
+  const html = list.length ? list.map(([k, v, label, val]) =>
+    `<button class="chipx" type="button" data-k="${k}" data-v="${esc(v ?? "")}" title="Remove this filter"><b>${esc(label)}:</b> ${esc(val)} <span aria-hidden="true">×</span></button>`).join("")
+    + `<button class="clearall" type="button" data-clear="all">Clear all</button>` : "";
+  for (const id of ["active", "activeStats"]) { $(id).innerHTML = html; $(id).hidden = !list.length; }
+  $("filterCount").textContent = list.length ? `${list.length} active` : "";
+}
+
+function clearFilter(k, v) {
+  if (k === "topics") state.topics.delete(v);
+  else state[k] = blank()[k];
+  state.shown = PAGE; syncControls(); render();
+}
+
 function render() {
   renderChart();
   renderPipeline();
   renderTopics();
+  renderActive();
   renderList();
   const saved = {};
   for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
@@ -775,6 +860,13 @@ function fillDetail(el) {
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
 
+function showView(v) {
+  if (!["bills", "stats", "how"].includes(v)) v = "bills";
+  for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
+  for (const id of ["bills", "stats", "how"]) $("view-" + id).hidden = id !== v;
+  try { localStorage.setItem("abt:view", v); } catch (err) {}
+}
+
 function syncControls() {
   $("q").value = state.q;
   for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort"]) $(id).value = state[id];
@@ -783,7 +875,7 @@ function syncControls() {
 
 function wire() {
   $("pipeline").addEventListener("click", (e) => {
-    const btn = e.target.closest(".stage"); if (!btn) return;
+    const btn = e.target.closest(".srow"); if (!btn) return;
     const k = +btn.dataset.k; state.stage = state.stage === k ? null : k; state.shown = PAGE; render();
   });
   $("topics").addEventListener("click", (e) => {
@@ -801,7 +893,14 @@ function wire() {
     if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
   });
   for (const id of ["sen", "asm"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
-  $("reset").addEventListener("click", () => { Object.assign(state, blank()); syncControls(); render(); });
+  for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
+    const chip = e.target.closest("button"); if (!chip) return;
+    if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }); syncControls(); render(); return; }
+    clearFilter(chip.dataset.k, chip.dataset.v);
+  });
+  $("view-bills").parentElement.querySelector(".views").addEventListener("click", (e) => {
+    const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
+  });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
   $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
   $("ocTopic").addEventListener("change", renderOutcomes);
@@ -868,10 +967,7 @@ function hydrate(raw) {
   });
 
   document.title = raw.current ? "Albany Bill Tracker" : `Albany Bill Tracker ${span(raw.session)}`;
-  $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? "" : " (final)"}`;
-  $("subline").innerHTML = raw.current
-    ? `Every Senate and Assembly bill in the session, with matching bills from the two houses paired. <b>Choose a stage or topic</b> to narrow the list, and open a bill to see its history in each house and in earlier sessions.`
-    : `How every bill in the ${span(raw.session)} session ended, with matching bills from the two houses paired. Open a bill to see whether it came back in a later session and what happened to it.`;
+  $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
   // After the last floor votes of the second year, only the governor's actions are still moving.
   const lv = raw.lastVote || "";
@@ -923,6 +1019,12 @@ function hydrate(raw) {
     syncControls();
   }
   try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "time", "sessions"].includes(v)) chartView = v; } catch (err) {}
+  // Phones start with the filter panel folded up; wider screens show it as a sidebar.
+  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
+  let view = "bills";
+  try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
+  if (["stats", "how"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  showView(view);
   renderOutcomes();
   render();
 }
@@ -932,6 +1034,5 @@ try {
   hydrate(decode(JSON.parse($("bill-data").textContent)));
 } catch (err) {
   $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;
-  $("subline").textContent = "Bill data unavailable.";
 }
 </script>
