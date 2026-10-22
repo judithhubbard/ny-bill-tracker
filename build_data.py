@@ -437,20 +437,39 @@ def assembly_resolver(session):
 
 def parties(session, recs):
     """Party ("D" or "R") for each legislator name as the bill data spells it, keyed by
-    (house, name). Names are tied to parties through the seat each sponsor holds."""
+    (house, name). Names are tied to parties through the seat each sponsor holds: sitting
+    members from the contacts file, earlier holders from the Open States archive."""
     path = os.path.join(HERE, "data", f"contacts_{session}.json")
-    if not os.path.exists(path):
-        return {}
-    seats = json.load(open(path)).get("people", {})
+    seats = json.load(open(path)).get("people", {}) if os.path.exists(path) else {}
+    hpath = os.path.join(HERE, "data", "seat_parties.json")
+    history = json.load(open(hpath)) if os.path.exists(hpath) else {}
+    by_last = defaultdict(set)
+    for seat, holders in history.items():
+        for h in holders:
+            if name_key(h["last"]).split():
+                by_last[(seat[0], name_key(h["last"]).split()[-1])].add(h["party"])
+
+    def held(h):
+        return (not h["start"] or h["start"] <= str(session + 1)) and (not h["end"] or h["end"] >= str(session))
+
     out = {}
     for r in recs:
         for v in r["vers"]:
-            seat = seats.get(f"{v['p'][0]}:{v.get('district')}")
-            if v["sponsor"] and seat and seat["key"].split()[-1] == name_key(v["sponsor"]).split()[-1]:
+            if not v["sponsor"]:
+                continue
+            house, last = v["p"][0], name_key(v["sponsor"]).split()[-1]
+            seat_id = f"{house}:{v.get('district')}"
+            seat, code = seats.get(seat_id), None
+            if seat and seat["key"].split()[-1] == last:
                 p = seat.get("party") or ""
                 code = "D" if "Democrat" in p else "R" if "Republican" in p else None
-                if code:
-                    out[(v["p"][0], v["sponsor"])] = code
+            if not code:
+                code = next((h["party"] for h in history.get(seat_id, [])
+                             if held(h) and name_key(h["last"]).split()[-1:] == [last]), None)
+            if not code and len(by_last.get((house, last), ())) == 1:
+                code = next(iter(by_last[(house, last)]))
+            if code:
+                out[(house, v["sponsor"])] = code
     return out
 
 
@@ -754,8 +773,26 @@ def insights(loaded, hist, current):
                     c[1] += r["stage"] >= 3
                     c[2] += r["stage"] == 5
 
+    # The same by party of sponsors and co-sponsors: both parties, Democrats only, Republicans only.
+    party = {}
+    for s in sorted(loaded):
+        party_of = parties(s, loaded[s][0])
+        key = "past" if s != current else "current"
+        for r in loaded[s][0]:
+            d, rep = bill_parties(r, party_of)
+            k = "DR" if d and rep else "D" if d else "R" if rep else None
+            if not k:
+                continue
+            for t in topics:
+                if has(r, t):
+                    c = party.setdefault(key, {}).setdefault(t, {}).setdefault(k, [0, 0, 0])
+                    c[0] += 1
+                    c[1] += r["stage"] >= 3
+                    c[2] += r["stage"] == 5
+
     return {
         "cosponsors": cosp,
+        "party": party,
         "fate": fate,
         "persistent": persistent,
         "pastSessions": past,
@@ -853,6 +890,8 @@ def main():
         r = loaded[s][0][i]
         return [s, " / ".join(r["nums"]), r["stage"], r["chapter"] or 0, r["veto"] or 0]
 
+    old_path = os.path.join(HERE, "data", "old_outcomes.json.gz")
+    old = json.load(gzip.open(old_path, "rt")) if os.path.exists(old_path) else {}
     hist = {s: defaultdict(dict) for s in SESSIONS}  # session -> rec index -> {(s, idx|printNo): entry}
     for s in SESSIONS:
         recs, index = loaded[s][0], loaded[s][1]
@@ -867,9 +906,19 @@ def main():
                     e = hist[s][i].setdefault((ps, "withdrawn"), [ps, "", -2, 0, 0])
                     e[1] = " / ".join(filter(None, e[1].split(" / ") + [pp]))
                 else:
-                    # Session not downloaded: list its bill numbers together, without an outcome.
+                    # Session not downloaded: list its bill numbers together, with the outcome
+                    # from the short list of older sessions when there is one.
                     e = hist[s][i].setdefault((ps, None), [ps, "", -1, 0, 0])
                     e[1] = " / ".join(sorted(filter(None, e[1].split(" / ") + [pp]), key=lambda n: n[0] != "S"))
+                    codes = [old.get(str(ps), {}).get(n[:1] + re.sub(r"[A-Z]+$", "", n[1:]))
+                             for n in e[1].split(" / ")]
+                    codes = [c for c in codes if c is not None]
+                    if codes:
+                        st = max((c // 4 for c in codes), key=rank)
+                        flags = 0
+                        for c in codes:
+                            flags |= c & 3
+                        e[2] = 3 if rank(st) < rank(3) and flags == 3 else st
 
     summary = {s: outcomes(loaded[s][0]) for s in SESSIONS}
     current = max(SESSIONS)
@@ -894,7 +943,7 @@ def main():
                 strings.append(x)
             return sidx[x]
 
-        party_of = parties(session, recs) if session == current else {}
+        party_of = parties(session, recs)
         resolve = assembly_resolver(session)
 
         def member_id(m):

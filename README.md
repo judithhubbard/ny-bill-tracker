@@ -14,6 +14,11 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `fetch_contacts.py SESSION` collects email, district phone and page for every legislator (Open States), committee chairs, members and meeting times (Senate from the API,
   Assembly from nyassembly.gov) and legislators' page links into `data/contacts_SESSION.json`, used for
   the "What's next and who to contact" box under each bill.
+- `fetch_party_history.py` (run by hand; rarely changes) records the party of every current and
+  former legislator by seat, from the Open States people archive, into `data/seat_parties.json`,
+  so party comparisons cover past sessions too.
+- `fetch_old_outcomes.py` (run once) saves how far each 2009–2015 bill got into
+  `data/old_outcomes.json.gz`, so bill histories show outcomes before the full downloads begin.
 - On GitHub Pages each current legislator also has a page filtered to their bills, at
   `/<last name>/` (or `/<first>-<last>/` when a last name is shared, with `/<last name>/` then
   offering a choice). The list comes from the nightly contacts refresh, so it follows elections.

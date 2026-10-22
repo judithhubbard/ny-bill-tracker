@@ -1,0 +1,4173 @@
+{
+"A:1": [
+{
+"end": "",
+"last": "Schiavoni",
+"name": "Tommy John Schiavoni",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2012",
+"last": "Losquadro",
+"name": "Dan Losquadro",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2025",
+"last": "Thiele",
+"name": "Fred Thiele",
+"party": "D",
+"start": "2023"
+}
+],
+"A:10": [
+{
+"end": "",
+"last": "Stern",
+"name": "Steve Stern",
+"party": "D",
+"start": "2018"
+},
+{
+"end": "2018",
+"last": "Lupinacci",
+"name": "Chad Lupinacci",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Conte",
+"name": "James Conte",
+"party": "R",
+"start": "2011"
+}
+],
+"A:100": [
+{
+"end": "",
+"last": "Kay",
+"name": "Paula Kay",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Gunther",
+"name": "Aileen Gunther",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Kirwan",
+"name": "Tom Kirwan",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2012",
+"last": "Skartados",
+"name": "Frank Skartados",
+"party": "D",
+"start": "2011"
+}
+],
+"A:101": [
+{
+"end": "",
+"last": "Maher",
+"name": "Brian Maher",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Miller",
+"name": "Brian Miller",
+"party": "R",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Tenney",
+"name": "Claudia Tenney",
+"party": "R",
+"start": "2013"
+}
+],
+"A:102": [
+{
+"end": "",
+"last": "Tague",
+"name": "Chris Tague",
+"party": "R",
+"start": "2018"
+},
+{
+"end": "2012",
+"last": "Miller",
+"name": "Joel Miller",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Lopez",
+"name": "Peter Lopez",
+"party": "R",
+"start": "2013"
+}
+],
+"A:103": [
+{
+"end": "",
+"last": "Shrestha",
+"name": "Sarahana Shrestha",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2012",
+"last": "Molinaro",
+"name": "Marcus Molinaro",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2023",
+"last": "Cahill",
+"name": "Kevin A. Cahill",
+"party": "D",
+"start": ""
+}
+],
+"A:104": [
+{
+"end": "",
+"last": "Jacobson",
+"name": "Jonathan Jacobson",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2012",
+"last": "McEneny",
+"name": "John McEneny",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2016",
+"last": "Skartados",
+"name": "Frank Skartados",
+"party": "D",
+"start": "2013"
+}
+],
+"A:105": [
+{
+"end": "",
+"last": "Beephan",
+"name": "Anil Beephan",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Lalor",
+"name": "Kieran Michael Lalor",
+"party": "R",
+"start": ""
+}
+],
+"A:106": [
+{
+"end": "",
+"last": "Barrett",
+"name": "Didi Barrett",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Canestrari",
+"name": "Ron Canestrari",
+"party": "D",
+"start": "2011"
+}
+],
+"A:107": [
+{
+"end": "2023",
+"last": "Ashby",
+"name": "Jake Ashby",
+"party": "R",
+"start": ""
+},
+{
+"end": "",
+"last": "Bendett",
+"name": "Scott Bendett",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "McLaughlin",
+"name": "Steven McLaughlin",
+"party": "R",
+"start": "2013"
+}
+],
+"A:108": [
+{
+"end": "",
+"last": "McDonald",
+"name": "John McDonald",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "McLaughlin",
+"name": "Steven McLaughlin",
+"party": "R",
+"start": "2011"
+}
+],
+"A:109": [
+{
+"end": "",
+"last": "Romero",
+"name": "Gabriella Romero",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Fahy",
+"name": "Pat Fahy",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Reilly",
+"name": "Bob Reilly",
+"party": "D",
+"start": "2011"
+}
+],
+"A:11": [
+{
+"end": "",
+"last": "O'Pharrow",
+"name": "Kwani O'Pharrow",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Jean-Pierre",
+"name": "Kimberly Jean-Pierre",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Sweeney",
+"name": "Robert Sweeney",
+"party": "D",
+"start": "2011"
+}
+],
+"A:110": [
+{
+"end": "",
+"last": "Steck",
+"name": "Phil Steck",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Tedisco",
+"name": "Jim Tedisco",
+"party": "R",
+"start": "2011"
+}
+],
+"A:111": [
+{
+"end": "",
+"last": "Santabarbara",
+"name": "Angelo Santabarbara",
+"party": "D",
+"start": "2013"
+}
+],
+"A:112": [
+{
+"end": "",
+"last": "Walsh",
+"name": "Mary Beth Walsh",
+"party": "R",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Tedisco",
+"name": "Jim Tedisco",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Jordan",
+"name": "Tony Jordan",
+"party": "R",
+"start": "2011"
+}
+],
+"A:113": [
+{
+"end": "",
+"last": "Woerner",
+"name": "Carrie Woerner",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Jordan",
+"name": "Tony Jordan",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Sayward",
+"name": "Teresa Sayward",
+"party": "R",
+"start": "2011"
+}
+],
+"A:114": [
+{
+"end": "",
+"last": "Simpson",
+"name": "Matt Simpson",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2012",
+"last": "Duprey",
+"name": "Janet Duprey",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2020",
+"last": "Stec",
+"name": "Dan Stec",
+"party": "R",
+"start": ""
+}
+],
+"A:115": [
+{
+"end": "",
+"last": "Cashman",
+"name": "Michael Cashman",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2026",
+"last": "Jones",
+"name": "Billy Jones",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Duprey",
+"name": "Janet Duprey",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Tenney",
+"name": "Claudia Tenney",
+"party": "R",
+"start": "2011"
+}
+],
+"A:116": [
+{
+"end": "2023",
+"last": "Walczyk",
+"name": "Mark Walczyk",
+"party": "R",
+"start": ""
+},
+{
+"end": "",
+"last": "Gray",
+"name": "Scott Gray",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Jenne",
+"name": "Addie Jenne",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Russell",
+"name": "Addie Russell",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Destito",
+"name": "RoAnn Destito",
+"party": "D",
+"start": "2011"
+}
+],
+"A:117": [
+{
+"end": "",
+"last": "Blankenbush",
+"name": "Ken Blankenbush",
+"party": "R",
+"start": "2013"
+}
+],
+"A:118": [
+{
+"end": "",
+"last": "Smullen",
+"name": "Robert Smullen",
+"party": "R",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Butler",
+"name": "Marc Butler",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Russell",
+"name": "Addie Russell",
+"party": "D",
+"start": "2011"
+}
+],
+"A:119": [
+{
+"end": "",
+"last": "Buttenschon",
+"name": "Marianne Buttenschon",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Brindisi",
+"name": "Anthony Brindisi",
+"party": "D",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Roberts",
+"name": "Samuel Roberts",
+"party": "D",
+"start": "2011"
+}
+],
+"A:12": [
+{
+"end": "",
+"last": "Brown",
+"name": "Keith Brown",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Raia",
+"name": "Andrew Raia",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Saladino",
+"name": "Joseph Saladino",
+"party": "R",
+"start": "2011"
+}
+],
+"A:120": [
+{
+"end": "",
+"last": "Barclay",
+"name": "Will Barclay",
+"party": "R",
+"start": "2013"
+}
+],
+"A:121": [
+{
+"end": "",
+"last": "Angelino",
+"name": "Joe Angelino",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2012",
+"last": "Miller",
+"name": "Donald Miller",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2022",
+"last": "Salka",
+"name": "John Salka",
+"party": "R",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Magee",
+"name": "William Magee",
+"party": "D",
+"start": ""
+}
+],
+"A:122": [
+{
+"end": "2023",
+"last": "Angelino",
+"name": "Joe Angelino",
+"party": "R",
+"start": ""
+},
+{
+"end": "",
+"last": "Miller",
+"name": "Brian Miller",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2020",
+"last": "Crouch",
+"name": "Clifford Crouch",
+"party": "R",
+"start": ""
+}
+],
+"A:123": [
+{
+"end": "",
+"last": "Lupardo",
+"name": "Donna Lupardo",
+"party": "D",
+"start": "2013"
+}
+],
+"A:124": [
+{
+"end": "",
+"last": "Friend",
+"name": "Chris Friend",
+"party": "R",
+"start": "2013"
+}
+],
+"A:125": [
+{
+"end": "",
+"last": "Kelles",
+"name": "Anna Kelles",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Lifton",
+"name": "Barbara Lifton",
+"party": "D",
+"start": ""
+}
+],
+"A:126": [
+{
+"end": "",
+"last": "Lemondes",
+"name": "John Lemondes",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Finch",
+"name": "Gary Finch",
+"party": "R",
+"start": ""
+}
+],
+"A:127": [
+{
+"end": "",
+"last": "Stirpe",
+"name": "Al Stirpe",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Lopez",
+"name": "Peter Lopez",
+"party": "R",
+"start": "2011"
+}
+],
+"A:128": [
+{
+"end": "",
+"last": "Hunter",
+"name": "Pamela Hunter",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2016",
+"last": "Roberts",
+"name": "Samuel Roberts",
+"party": "D",
+"start": "2013"
+}
+],
+"A:129": [
+{
+"end": "",
+"last": "Magnarelli",
+"name": "Bill Magnarelli",
+"party": "D",
+"start": "2013"
+}
+],
+"A:13": [
+{
+"end": "",
+"last": "Lavine",
+"name": "Charles Lavine",
+"party": "D",
+"start": "2005"
+}
+],
+"A:130": [
+{
+"end": "",
+"last": "Manktelow",
+"name": "Brian Manktelow",
+"party": "R",
+"start": "2019"
+},
+{
+"end": "2012",
+"last": "Hanna",
+"name": "Sean Hanna",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Oaks",
+"name": "Bob Oaks",
+"party": "R",
+"start": ""
+}
+],
+"A:131": [
+{
+"end": "",
+"last": "Gallahan",
+"name": "Jeff Gallahan",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Kolb",
+"name": "Brian M. Kolb",
+"party": "R",
+"start": ""
+}
+],
+"A:132": [
+{
+"end": "",
+"last": "Palmesano",
+"name": "Phil Palmesano",
+"party": "R",
+"start": "2013"
+}
+],
+"A:133": [
+{
+"end": "",
+"last": "Bailey",
+"name": "Andrea Bailey",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2018",
+"last": "Errigo",
+"name": "Joseph Errigo",
+"party": "R",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Nojay",
+"name": "Bill Nojay",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2025",
+"last": "Byrnes",
+"name": "Marjorie Byrnes",
+"party": "R",
+"start": "2019"
+}
+],
+"A:134": [
+{
+"end": "",
+"last": "Jensen",
+"name": "Josh Jensen",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Lawrence",
+"name": "Peter Lawrence",
+"party": "R",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Reilich",
+"name": "Bill Reilich",
+"party": "R",
+"start": "2011"
+}
+],
+"A:135": [
+{
+"end": "",
+"last": "Lunsford",
+"name": "Jen Lunsford",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Johns",
+"name": "Mark Johns",
+"party": "R",
+"start": ""
+}
+],
+"A:136": [
+{
+"end": "",
+"last": "Clark",
+"name": "Sarah Clark",
+"party": "D",
+"start": "2020"
+},
+{
+"end": "2018",
+"last": "Morelle",
+"name": "Joseph Morelle",
+"party": "D",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Romeo",
+"name": "Jamie Romeo",
+"party": "D",
+"start": ""
+}
+],
+"A:137": [
+{
+"end": "",
+"last": "Meeks",
+"name": "Demond Meeks",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Gantt",
+"name": "David Gantt",
+"party": "D",
+"start": ""
+}
+],
+"A:138": [
+{
+"end": "",
+"last": "Bronson",
+"name": "Harry Bronson",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Ceretto",
+"name": "John Ceretto",
+"party": "R",
+"start": "2011"
+}
+],
+"A:139": [
+{
+"end": "",
+"last": "Hawley",
+"name": "Steve Hawley",
+"party": "R",
+"start": "2006"
+}
+],
+"A:14": [
+{
+"end": "",
+"last": "McDonough",
+"name": "Dave McDonough",
+"party": "R",
+"start": "2013"
+}
+],
+"A:140": [
+{
+"end": "",
+"last": "Conrad",
+"name": "Bill Conrad",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Schimminger",
+"name": "Robin Schimminger",
+"party": "D",
+"start": ""
+}
+],
+"A:141": [
+{
+"end": "",
+"last": "Peoples-Stokes",
+"name": "Crystal Peoples-Stokes",
+"party": "D",
+"start": "2003"
+}
+],
+"A:142": [
+{
+"end": "",
+"last": "Burke",
+"name": "Pat Burke",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2012",
+"last": "Corwin",
+"name": "Jane Corwin",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Bohen",
+"name": "Erik Bohen",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Kearns",
+"name": "Michael Kearns",
+"party": "D",
+"start": "2013"
+}
+],
+"A:143": [
+{
+"end": "",
+"last": "Chludzinski",
+"name": "Pat Chludzinski",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2014",
+"last": "Gabryszak",
+"name": "Dennis Gabryszak",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2025",
+"last": "Wallace",
+"name": "Monica Wallace",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Wozniak",
+"name": "Angela Wozniak",
+"party": "R",
+"start": "2015"
+}
+],
+"A:144": [
+{
+"end": "",
+"last": "Bologna",
+"name": "Paul Bologna",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2012",
+"last": "Hoyt",
+"name": "Sam Hoyt",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2016",
+"last": "Corwin",
+"name": "Jane Corwin",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2025",
+"last": "Norris",
+"name": "Mike Norris",
+"party": "R",
+"start": "2017"
+}
+],
+"A:145": [
+{
+"end": "",
+"last": "Morinello",
+"name": "Angelo Morinello",
+"party": "R",
+"start": "2017"
+},
+{
+"end": "2012",
+"last": "Schroeder",
+"name": "Mark J F Schroeder",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2012",
+"last": "Kearns",
+"name": "Michael Kearns",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2016",
+"last": "Ceretto",
+"name": "John Ceretto",
+"party": "R",
+"start": "2013"
+}
+],
+"A:146": [
+{
+"end": "",
+"last": "McMahon",
+"name": "Karen McMahon",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2012",
+"last": "Smardz",
+"name": "Kevin Smardz",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Walter",
+"name": "Raymond Walter",
+"party": "R",
+"start": ""
+}
+],
+"A:147": [
+{
+"end": "",
+"last": "DiPietro",
+"name": "Dave DiPietro",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Burling",
+"name": "Daniel Burling",
+"party": "R",
+"start": "2011"
+}
+],
+"A:148": [
+{
+"end": "",
+"last": "Sempolinski",
+"name": "Joe Sempolinski",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Giglio",
+"name": "Joe Giglio",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Hayes",
+"name": "Jim Hayes",
+"party": "R",
+"start": "2011"
+}
+],
+"A:149": [
+{
+"end": "",
+"last": "Rivera",
+"name": "Jon Rivera",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Ryan",
+"name": "Sean Ryan",
+"party": "D",
+"start": ""
+}
+],
+"A:15": [
+{
+"end": "",
+"last": "Blumencranz",
+"name": "Jake Blumencranz",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Montesano",
+"name": "Michael Montesano",
+"party": "R",
+"start": ""
+}
+],
+"A:150": [
+{
+"end": "",
+"last": "Molitor",
+"name": "Andrew Molitor",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Goodell",
+"name": "Andy Goodell",
+"party": "R",
+"start": "2011"
+}
+],
+"A:16": [
+{
+"end": "",
+"last": "Norber",
+"name": "Danny Norber",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2016",
+"last": "Schimel",
+"name": "Michelle Schimel",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2020",
+"last": "D'Urso",
+"name": "Anthony D'Urso",
+"party": "D",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Sillitti",
+"name": "Gina Sillitti",
+"party": "D",
+"start": "2021"
+}
+],
+"A:17": [
+{
+"end": "",
+"last": "Mikulin",
+"name": "John Mikulin",
+"party": "R",
+"start": "2018"
+},
+{
+"end": "2018",
+"last": "McKevitt",
+"name": "Tom McKevitt",
+"party": "R",
+"start": "2011"
+}
+],
+"A:18": [
+{
+"end": "",
+"last": "Burroughs",
+"name": "Noah Burroughs",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Darling",
+"name": "Taylor Darling",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Hooper",
+"name": "Earlene Hooper",
+"party": "D",
+"start": ""
+}
+],
+"A:19": [
+{
+"end": "",
+"last": "Ra",
+"name": "Ed Ra",
+"party": "R",
+"start": "2013"
+}
+],
+"A:2": [
+{
+"end": "",
+"last": "Giglio",
+"name": "Jodi Giglio",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2020",
+"last": "Palumbo",
+"name": "Tony Palumbo",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2014",
+"last": "Losquadro",
+"name": "Dan Losquadro",
+"party": "R",
+"start": "2013"
+}
+],
+"A:20": [
+{
+"end": "",
+"last": "Brown",
+"name": "Ari Brown",
+"party": "R",
+"start": "2022"
+},
+{
+"end": "2022",
+"last": "Miller",
+"name": "Melissa Miller",
+"party": "R",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Kaminsky",
+"name": "Todd Kaminsky",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Weisenberg",
+"name": "Harvey Weisenberg",
+"party": "D",
+"start": "2011"
+}
+],
+"A:21": [
+{
+"end": "",
+"last": "Griffin",
+"name": "Judy Griffin",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2023",
+"last": "Griffin",
+"name": "Judy Griffin",
+"party": "D",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Curran",
+"name": "Brian Curran",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Curran",
+"name": "Brian Curran",
+"party": "R",
+"start": ""
+}
+],
+"A:22": [
+{
+"end": "",
+"last": "Solages",
+"name": "Michaelle Solages",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Meng",
+"name": "Grace Meng",
+"party": "D",
+"start": "2011"
+}
+],
+"A:23": [
+{
+"end": "",
+"last": "Pheffer Amato",
+"name": "Stacey Pheffer Amato",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Goldfeder",
+"name": "Phillip Goldfeder",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2012",
+"last": "Pheffer",
+"name": "Audrey Pheffer",
+"party": "D",
+"start": "2011"
+}
+],
+"A:24": [
+{
+"end": "",
+"last": "Weprin",
+"name": "David Weprin",
+"party": "D",
+"start": "2010"
+}
+],
+"A:25": [
+{
+"end": "",
+"last": "Rozic",
+"name": "Nily Rozic",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Lancman",
+"name": "Rory Lancman",
+"party": "D",
+"start": "2011"
+}
+],
+"A:26": [
+{
+"end": "",
+"last": "Braunstein",
+"name": "Ed Braunstein",
+"party": "D",
+"start": "2011"
+}
+],
+"A:27": [
+{
+"end": "",
+"last": "Berger",
+"name": "Sam Berger",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Simanowitz",
+"name": "Michael Simanowitz",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2023",
+"last": "Rosenthal",
+"name": "Daniel Rosenthal",
+"party": "D",
+"start": ""
+}
+],
+"A:28": [
+{
+"end": "",
+"last": "Hevesi",
+"name": "Andrew Hevesi",
+"party": "D",
+"start": "2005"
+}
+],
+"A:29": [
+{
+"end": "",
+"last": "Hyndman",
+"name": "Alicia Hyndman",
+"party": "D",
+"start": "2016"
+},
+{
+"end": "2016",
+"last": "Scarborough",
+"name": "William Scarborough",
+"party": "D",
+"start": "2011"
+}
+],
+"A:3": [
+{
+"end": "",
+"last": "DeStefano",
+"name": "Joe DeStefano",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Murray",
+"name": "Dean Murray",
+"party": "R",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Hennessey",
+"name": "Edward Hennessey",
+"party": "D",
+"start": "2013"
+}
+],
+"A:30": [
+{
+"end": "",
+"last": "Raga",
+"name": "Steven Raga",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Barnwell",
+"name": "Brian Barnwell",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Markey",
+"name": "Margaret Markey",
+"party": "D",
+"start": "2011"
+}
+],
+"A:31": [
+{
+"end": "",
+"last": "Anderson",
+"name": "Khaleel Anderson",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Titus",
+"name": "Michele Titus",
+"party": "D",
+"start": ""
+}
+],
+"A:32": [
+{
+"end": "",
+"last": "Cook",
+"name": "Vivian Cook",
+"party": "D",
+"start": "1991"
+}
+],
+"A:33": [
+{
+"end": "",
+"last": "Vanel",
+"name": "Clyde Vanel",
+"party": "D",
+"start": "2016"
+},
+{
+"end": "2016",
+"last": "Clark",
+"name": "Barbara Clark",
+"party": "D",
+"start": "2011"
+}
+],
+"A:34": [
+{
+"end": "",
+"last": "Gonz\u00e1lez-Rojas",
+"name": "Jessica Gonz\u00e1lez-Rojas",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "DenDekker",
+"name": "Michael DenDekker",
+"party": "D",
+"start": ""
+}
+],
+"A:35": [
+{
+"end": "",
+"last": "Hooks",
+"name": "Larinda Hooks",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Aubry",
+"name": "Jeffrion Aubry",
+"party": "D",
+"start": "1992"
+}
+],
+"A:36": [
+{
+"end": "",
+"last": "Moreno",
+"name": "Diana Moreno",
+"party": "D",
+"start": "2026"
+},
+{
+"end": "2020",
+"last": "Simotas",
+"name": "Aravella Simotas",
+"party": "D",
+"start": ""
+},
+{
+"end": "2026",
+"last": "Mamdani",
+"name": "Zohran Mamdani",
+"party": "D",
+"start": "2021"
+}
+],
+"A:37": [
+{
+"end": "",
+"last": "Valdez",
+"name": "Claire Valdez",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Ardila",
+"name": "Juan Ardila",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Nolan",
+"name": "Catherine Nolan",
+"party": "D",
+"start": ""
+}
+],
+"A:38": [
+{
+"end": "",
+"last": "Rajkumar",
+"name": "Jenifer Rajkumar",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Miller",
+"name": "Michael Miller",
+"party": "D",
+"start": ""
+}
+],
+"A:39": [
+{
+"end": "",
+"last": "Cruz",
+"name": "Catalina Cruz",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Moya",
+"name": "Francisco Moya",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Espinal",
+"name": "Aridia Espinal",
+"party": "D",
+"start": ""
+}
+],
+"A:4": [
+{
+"end": "",
+"last": "Kassay",
+"name": "Rebecca Kassay",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2023",
+"last": "Englebright",
+"name": "Steve Englebright",
+"party": "D",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Flood",
+"name": "Ed Flood",
+"party": "R",
+"start": "2023"
+}
+],
+"A:40": [
+{
+"end": "",
+"last": "Kim",
+"name": "Ron Kim",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Barron",
+"name": "Inez Barron",
+"party": "D",
+"start": "2011"
+}
+],
+"A:41": [
+{
+"end": "",
+"last": "Yeger",
+"name": "Kalman Yeger",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2020",
+"last": "Weinstein",
+"name": "Helene Weinstein",
+"party": "D",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Weinstein",
+"name": "Helene Weinstein",
+"party": "D",
+"start": "1981"
+}
+],
+"A:42": [
+{
+"end": "",
+"last": "Bichotte Hermelyn",
+"name": "Rodneyse Bichotte Hermelyn",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Jacobs",
+"name": "Rhoda Jacobs",
+"party": "D",
+"start": "2011"
+}
+],
+"A:43": [
+{
+"end": "",
+"last": "Cunningham",
+"name": "Brian Cunningham",
+"party": "D",
+"start": "2022"
+},
+{
+"end": "2022",
+"last": "Richardson",
+"name": "Diana C. Richardson",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Camara",
+"name": "Karim Camara",
+"party": "D",
+"start": "2011"
+}
+],
+"A:44": [
+{
+"end": "",
+"last": "Carroll",
+"name": "Robert Carroll",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Brennan",
+"name": "James Brennan",
+"party": "D",
+"start": "2011"
+}
+],
+"A:45": [
+{
+"end": "",
+"last": "Novakhov",
+"name": "Misha Novakhov",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Cymbrowitz",
+"name": "Steven Cymbrowitz",
+"party": "D",
+"start": ""
+}
+],
+"A:46": [
+{
+"end": "",
+"last": "Brook-Krasny",
+"name": "Alec Brook-Krasny",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2016",
+"last": "Brook-Krasny",
+"name": "Alec Brook-Krasny",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2023",
+"last": "Frontus",
+"name": "Mathylde Frontus",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Harris",
+"name": "Pamela Harris",
+"party": "D",
+"start": "2015"
+}
+],
+"A:47": [
+{
+"end": "",
+"last": "Colton",
+"name": "William Colton",
+"party": "D",
+"start": "1997"
+}
+],
+"A:48": [
+{
+"end": "",
+"last": "Eichenstein",
+"name": "Simcha Eichenstein",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Hikind",
+"name": "Dov Hikind",
+"party": "D",
+"start": ""
+}
+],
+"A:49": [
+{
+"end": "",
+"last": "Chang",
+"name": "Lester Chang",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Abbate",
+"name": "Peter J. Abbate, Jr.",
+"party": "D",
+"start": ""
+}
+],
+"A:5": [
+{
+"end": "",
+"last": "Smith",
+"name": "Doug Smith",
+"party": "R",
+"start": "2018"
+},
+{
+"end": "2018",
+"last": "Graf",
+"name": "Al Graf",
+"party": "R",
+"start": "2011"
+}
+],
+"A:50": [
+{
+"end": "",
+"last": "Gallagher",
+"name": "Emily Gallagher",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Lentol",
+"name": "Joseph Lentol",
+"party": "D",
+"start": ""
+}
+],
+"A:51": [
+{
+"end": "",
+"last": "Mitaynes",
+"name": "Marcela Mitaynes",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Ortiz",
+"name": "F\u00e9lix Ortiz",
+"party": "D",
+"start": ""
+}
+],
+"A:52": [
+{
+"end": "",
+"last": "Simon",
+"name": "Jo Anne Simon",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Millman",
+"name": "Joan Millman",
+"party": "D",
+"start": "2011"
+}
+],
+"A:53": [
+{
+"end": "",
+"last": "Davila",
+"name": "Maritza Davila",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2014",
+"last": "Lopez",
+"name": "Vito Lopez",
+"party": "D",
+"start": "2011"
+}
+],
+"A:54": [
+{
+"end": "",
+"last": "Dilan",
+"name": "Erik Dilan",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Espinal",
+"name": "Rafael Espinal, Jr.",
+"party": "D",
+"start": "2011"
+}
+],
+"A:55": [
+{
+"end": "",
+"last": "Walker",
+"name": "Latrice Walker",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Boyland",
+"name": "William Boyland Jr.",
+"party": "D",
+"start": "2011"
+}
+],
+"A:56": [
+{
+"end": "",
+"last": "Zinerman",
+"name": "Stefani Zinerman",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Wright",
+"name": "Tremaine Wright",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Robinson",
+"name": "Annette Robinson",
+"party": "D",
+"start": "2011"
+}
+],
+"A:57": [
+{
+"end": "",
+"last": "Souffrant Forrest",
+"name": "Phara Souffrant Forrest",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Mosley",
+"name": "Walter Mosley",
+"party": "D",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Jeffries",
+"name": "Hakeem Jeffries",
+"party": "D",
+"start": "2011"
+}
+],
+"A:58": [
+{
+"end": "",
+"last": "Chandler-Waterman",
+"name": "Monique Chandler-Waterman",
+"party": "D",
+"start": "2022"
+},
+{
+"end": "2022",
+"last": "Perry",
+"name": "N. Nick Perry",
+"party": "D",
+"start": ""
+}
+],
+"A:59": [
+{
+"end": "",
+"last": "Williams",
+"name": "Jaime Williams",
+"party": "D",
+"start": "2016"
+},
+{
+"end": "2014",
+"last": "Maisel",
+"name": "Alan Maisel",
+"party": "D",
+"start": "2011"
+}
+],
+"A:6": [
+{
+"end": "",
+"last": "Ramos",
+"name": "Phil Ramos",
+"party": "D",
+"start": "2003"
+}
+],
+"A:60": [
+{
+"end": "",
+"last": "Lucas",
+"name": "Nikki Lucas",
+"party": "D",
+"start": "2022"
+},
+{
+"end": "2014",
+"last": "Barron",
+"name": "Inez Barron",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2022",
+"last": "Barron",
+"name": "Charles Barron",
+"party": "D",
+"start": ""
+}
+],
+"A:61": [
+{
+"end": "",
+"last": "Fall",
+"name": "Charles Fall",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Titone",
+"name": "Matthew Titone",
+"party": "D",
+"start": ""
+}
+],
+"A:62": [
+{
+"end": "",
+"last": "Reilly",
+"name": "Mike Reilly",
+"party": "R",
+"start": "2019"
+},
+{
+"end": "2016",
+"last": "Borelli",
+"name": "Joseph Borelli",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2018",
+"last": "Castorina",
+"name": "Ron Castorina, Jr.",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Tobacco",
+"name": "Lou Tobacco",
+"party": "R",
+"start": "2011"
+}
+],
+"A:63": [
+{
+"end": "",
+"last": "Pirozzolo",
+"name": "Sam Pirozzolo",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Cusick",
+"name": "Michael Cusick",
+"party": "D",
+"start": ""
+}
+],
+"A:64": [
+{
+"end": "",
+"last": "Tannousis",
+"name": "Mike Tannousis",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Malliotakis",
+"name": "Nicole Malliotakis",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Silver",
+"name": "Sheldon Silver",
+"party": "D",
+"start": "2011"
+}
+],
+"A:65": [
+{
+"end": "",
+"last": "Lee",
+"name": "Grace Lee",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2016",
+"last": "Cancel",
+"name": "Alice Cancel",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2023",
+"last": "Niou",
+"name": "Yuh-Line Niou",
+"party": "D",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Silver",
+"name": "Sheldon Silver",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Kellner",
+"name": "Micah Kellner",
+"party": "D",
+"start": "2011"
+}
+],
+"A:66": [
+{
+"end": "",
+"last": "Glick",
+"name": "Deborah Glick",
+"party": "D",
+"start": "1991"
+}
+],
+"A:67": [
+{
+"end": "",
+"last": "Rosenthal",
+"name": "Linda Rosenthal",
+"party": "D",
+"start": "2006"
+}
+],
+"A:68": [
+{
+"end": "",
+"last": "Gibbs",
+"name": "Eddie Gibbs",
+"party": "D",
+"start": "2022"
+},
+{
+"end": "2021",
+"last": "Rodriguez",
+"name": "Robert J. Rodriguez",
+"party": "D",
+"start": ""
+}
+],
+"A:69": [
+{
+"end": "",
+"last": "Lasher",
+"name": "Micah Lasher",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "O'Donnell",
+"name": "Danny O'Donnell",
+"party": "D",
+"start": "2003"
+}
+],
+"A:7": [
+{
+"end": "",
+"last": "Gandolfo",
+"name": "Jarett Gandolfo",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Garbarino",
+"name": "Andrew Garbarino",
+"party": "R",
+"start": ""
+}
+],
+"A:70": [
+{
+"end": "",
+"last": "Wright",
+"name": "Jordan Wright",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2016",
+"last": "Wright",
+"name": "Keith Wright",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2025",
+"last": "Dickens",
+"name": "Inez Dickens",
+"party": "D",
+"start": "2017"
+}
+],
+"A:71": [
+{
+"end": "",
+"last": "Taylor",
+"name": "Al Taylor",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2018",
+"last": "Farrell",
+"name": "Herman Farrell Jr.",
+"party": "D",
+"start": "2011"
+}
+],
+"A:72": [
+{
+"end": "",
+"last": "De Los Santos",
+"name": "Manny De Los Santos",
+"party": "D",
+"start": "2022"
+},
+{
+"end": "2022",
+"last": "De La Rosa",
+"name": "Carmen N. De La Rosa",
+"party": "D",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Rosa",
+"name": "Gabriela Rosa",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Linares",
+"name": "Guillermo Linares",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2016",
+"last": "Linares",
+"name": "Guillermo Linares",
+"party": "D",
+"start": "2015"
+}
+],
+"A:73": [
+{
+"end": "",
+"last": "Bores",
+"name": "Alex Bores",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Quart",
+"name": "Dan Quart",
+"party": "D",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Bing",
+"name": "Jonathan L T Bing",
+"party": "D",
+"start": "2011"
+}
+],
+"A:74": [
+{
+"end": "",
+"last": "Powers",
+"name": "Keith Powers",
+"party": "D",
+"start": "2026"
+},
+{
+"end": "2026",
+"last": "Epstein",
+"name": "Harvey Epstein",
+"party": "D",
+"start": "2018"
+}
+],
+"A:75": [
+{
+"end": "",
+"last": "Simone",
+"name": "Tony Simone",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Gottfried",
+"name": "Richard N. Gottfried",
+"party": "D",
+"start": ""
+}
+],
+"A:76": [
+{
+"end": "",
+"last": "Seawright",
+"name": "Rebecca Seawright",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2012",
+"last": "Rivera",
+"name": "Peter Rivera",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2014",
+"last": "Kellner",
+"name": "Micah Kellner",
+"party": "D",
+"start": "2013"
+}
+],
+"A:77": [
+{
+"end": "",
+"last": "Dais",
+"name": "Landon Dais",
+"party": "D",
+"start": "2024"
+},
+{
+"end": "2024",
+"last": "Joyner",
+"name": "Latoya Joyner",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Gibson",
+"name": "Vanessa Gibson",
+"party": "D",
+"start": "2011"
+}
+],
+"A:78": [
+{
+"end": "",
+"last": "Alvarez",
+"name": "George Alvarez",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Rivera",
+"name": "Jos\u00e9 Rivera",
+"party": "D",
+"start": ""
+}
+],
+"A:79": [
+{
+"end": "",
+"last": "Jackson",
+"name": "Chantel Jackson",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Blake",
+"name": "Michael Blake",
+"party": "D",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Stevenson",
+"name": "Eric Stevenson",
+"party": "D",
+"start": "2011"
+}
+],
+"A:8": [
+{
+"end": "",
+"last": "Fitzpatrick",
+"name": "Mike Fitzpatrick",
+"party": "R",
+"start": "2013"
+}
+],
+"A:80": [
+{
+"end": "2023",
+"last": "Ferna\u0301ndez",
+"name": "Nathalia Ferna\u0301ndez",
+"party": "D",
+"start": ""
+},
+{
+"end": "",
+"last": "Zaccaro",
+"name": "John Zaccaro",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2012",
+"last": "Rivera",
+"name": "Naomi Rivera",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Gjonaj",
+"name": "Mark Gjonaj",
+"party": "D",
+"start": "2013"
+}
+],
+"A:81": [
+{
+"end": "",
+"last": "Dinowitz",
+"name": "Jeffrey Dinowitz",
+"party": "D",
+"start": "1994"
+}
+],
+"A:82": [
+{
+"end": "",
+"last": "Benedetto",
+"name": "Michael Benedetto",
+"party": "D",
+"start": "2005"
+}
+],
+"A:83": [
+{
+"end": "",
+"last": "Heastie",
+"name": "Carl Heastie",
+"party": "D",
+"start": "2001"
+}
+],
+"A:84": [
+{
+"end": "",
+"last": "Septimo",
+"name": "Amanda Septimo",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Arroyo",
+"name": "Carmen Arroyo",
+"party": "D",
+"start": ""
+}
+],
+"A:85": [
+{
+"end": "",
+"last": "Torres",
+"name": "Em\u00e9rita Torres",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2024",
+"last": "Burgos",
+"name": "Kenny Burgos",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Crespo",
+"name": "Marcos Crespo",
+"party": "D",
+"start": ""
+}
+],
+"A:86": [
+{
+"end": "",
+"last": "Tapia",
+"name": "Yudelka Tapia",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2021",
+"last": "Pichardo",
+"name": "Victor M. Pichardo",
+"party": "D",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Castro",
+"name": "Nelson Castro",
+"party": "D",
+"start": "2011"
+}
+],
+"A:87": [
+{
+"end": "",
+"last": "Reyes",
+"name": "Karines Reyes",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2016",
+"last": "Sep\u00falveda",
+"name": "Luis Sepulveda",
+"party": "D",
+"start": "2013"
+}
+],
+"A:88": [
+{
+"end": "",
+"last": "Paulin",
+"name": "Amy Paulin",
+"party": "D",
+"start": "2001"
+}
+],
+"A:89": [
+{
+"end": "",
+"last": "Pretlow",
+"name": "Gary Pretlow",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Castelli",
+"name": "Robert Castelli",
+"party": "R",
+"start": "2011"
+}
+],
+"A:9": [
+{
+"end": "",
+"last": "Durso",
+"name": "Michael Durso",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2018",
+"last": "Pellegrino",
+"name": "Christine Pellegrino",
+"party": "D",
+"start": ""
+},
+{
+"end": "2020",
+"last": "LiPetri",
+"name": "Michael LiPetri",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Saladino",
+"name": "Joseph Saladino",
+"party": "R",
+"start": "2013"
+}
+],
+"A:90": [
+{
+"end": "",
+"last": "Sayegh",
+"name": "Nader Sayegh",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2016",
+"last": "Mayer",
+"name": "Shelley Mayer",
+"party": "D",
+"start": "2013"
+}
+],
+"A:91": [
+{
+"end": "",
+"last": "Otis",
+"name": "Steve Otis",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Latimer",
+"name": "George Latimer",
+"party": "D",
+"start": "2011"
+}
+],
+"A:92": [
+{
+"end": "",
+"last": "Shimsky",
+"name": "MaryJane Shimsky",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Abinanti",
+"name": "Thomas J. Abinanti",
+"party": "D",
+"start": ""
+}
+],
+"A:93": [
+{
+"end": "2012",
+"last": "Mayer",
+"name": "Shelley Mayer",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "",
+"last": "Burdick",
+"name": "Chris Burdick",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2012",
+"last": "Spano",
+"name": "Mike Spano",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2020",
+"last": "Buchwald",
+"name": "David Buchwald",
+"party": "D",
+"start": ""
+}
+],
+"A:94": [
+{
+"end": "",
+"last": "Slater",
+"name": "Matt Slater",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2016",
+"last": "Katz",
+"name": "Steve Katz",
+"party": "R",
+"start": "2013"
+},
+{
+"end": "2023",
+"last": "Byrne",
+"name": "Kevin M. Byrne",
+"party": "R",
+"start": ""
+}
+],
+"A:95": [
+{
+"end": "",
+"last": "Levenberg",
+"name": "Dana Levenberg",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Galef",
+"name": "Sandy Galef",
+"party": "D",
+"start": ""
+}
+],
+"A:96": [
+{
+"end": "",
+"last": "Carroll",
+"name": "Pat Carroll",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2012",
+"last": "Calhoun",
+"name": "Nancy Calhoun",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2024",
+"last": "Zebrowski",
+"name": "Ken Zebrowski",
+"party": "D",
+"start": "2013"
+}
+],
+"A:97": [
+{
+"end": "",
+"last": "Wieder",
+"name": "Aron Wieder",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "McGowan",
+"name": "John McGowan",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2020",
+"last": "Jaffee",
+"name": "Ellen Jaffee",
+"party": "D",
+"start": ""
+},
+{
+"end": "2023",
+"last": "Lawler",
+"name": "Mike Lawler",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Rabbitt",
+"name": "Annie Rabbitt",
+"party": "R",
+"start": "2011"
+}
+],
+"A:98": [
+{
+"end": "",
+"last": "Brabenec",
+"name": "Karl Brabenec",
+"party": "R",
+"start": "2014"
+},
+{
+"end": "2014",
+"last": "Rabbitt",
+"name": "Annie Rabbitt",
+"party": "R",
+"start": "2013"
+}
+],
+"A:99": [
+{
+"end": "2018",
+"last": "Skoufis",
+"name": "James Skoufis",
+"party": "D",
+"start": ""
+},
+{
+"end": "",
+"last": "Eachus",
+"name": "Chris Eachus",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Schmitt",
+"name": "Colin Schmitt",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Katz",
+"name": "Steve Katz",
+"party": "R",
+"start": "2011"
+}
+],
+"S:1": [
+{
+"end": "",
+"last": "Palumbo",
+"name": "Tony Palumbo",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "LaValle",
+"name": "Kenneth P. LaValle",
+"party": "R",
+"start": ""
+}
+],
+"S:10": [
+{
+"end": "",
+"last": "Sanders",
+"name": "James Sanders",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Huntley",
+"name": "Shirley L Huntley",
+"party": "D",
+"start": "2011"
+}
+],
+"S:11": [
+{
+"end": "",
+"last": "Stavisky",
+"name": "Toby Stavisky",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Liu",
+"name": "John Liu",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Avella",
+"name": "Tony Avella",
+"party": "D",
+"start": ""
+}
+],
+"S:12": [
+{
+"end": "2026",
+"last": "Gianaris",
+"name": "Mike Gianaris",
+"party": "D",
+"start": "2019"
+}
+],
+"S:13": [
+{
+"end": "",
+"last": "Ramos",
+"name": "Jessica Ramos",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Peralta",
+"name": "Jose Peralta",
+"party": "D",
+"start": ""
+}
+],
+"S:14": [
+{
+"end": "",
+"last": "Comrie",
+"name": "Leroy Comrie",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Smith",
+"name": "Malcolm A Smith",
+"party": "D",
+"start": "2011"
+}
+],
+"S:15": [
+{
+"end": "",
+"last": "Addabbo",
+"name": "Joe Addabbo",
+"party": "D",
+"start": "2009"
+}
+],
+"S:16": [
+{
+"end": "2022",
+"last": "Stavisky",
+"name": "Toby Stavisky",
+"party": "D",
+"start": ""
+},
+{
+"end": "",
+"last": "Liu",
+"name": "John Liu",
+"party": "D",
+"start": "2023"
+}
+],
+"S:17": [
+{
+"end": "",
+"last": "Chan",
+"name": "Steve Chan",
+"party": "R",
+"start": "2025"
+},
+{
+"end": "2025",
+"last": "Chu",
+"name": "Iwen Chu",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Felder",
+"name": "Simcha Felder",
+"party": "D",
+"start": ""
+}
+],
+"S:18": [
+{
+"end": "",
+"last": "Salazar",
+"name": "Julia Salazar",
+"party": "D",
+"start": "2020"
+},
+{
+"end": "2018",
+"last": "Dilan",
+"name": "Martin Malav\u00e9 Dilan",
+"party": "D",
+"start": ""
+}
+],
+"S:19": [
+{
+"end": "",
+"last": "Persaud",
+"name": "Roxanne Persaud",
+"party": "D",
+"start": "2015"
+},
+{
+"end": "2016",
+"last": "Sampson",
+"name": "John L Sampson",
+"party": "D",
+"start": "2011"
+}
+],
+"S:2": [
+{
+"end": "",
+"last": "Mattera",
+"name": "Mario Mattera",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Flanagan",
+"name": "John J. Flanagan",
+"party": "R",
+"start": ""
+}
+],
+"S:20": [
+{
+"end": "",
+"last": "Myrie",
+"name": "Zellnor Myrie",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2014",
+"last": "Adams",
+"name": "Eric Adams",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Hamilton",
+"name": "Jesse Hamilton",
+"party": "D",
+"start": ""
+}
+],
+"S:21": [
+{
+"end": "",
+"last": "Parker",
+"name": "Kevin Parker",
+"party": "D",
+"start": "2003"
+}
+],
+"S:22": [
+{
+"end": "",
+"last": "Sutton",
+"name": "Sam Sutton",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2022",
+"last": "Gounardes",
+"name": "Andrew Gounardes",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Golden",
+"name": "Martin J. Golden",
+"party": "R",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Felder",
+"name": "Simcha Felder",
+"party": "D",
+"start": "2023"
+}
+],
+"S:23": [
+{
+"end": "",
+"last": "Scarcella-Spanton",
+"name": "Jessica Scarcella-Spanton",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Savino",
+"name": "Diane J. Savino",
+"party": "D",
+"start": ""
+}
+],
+"S:24": [
+{
+"end": "",
+"last": "Lanza",
+"name": "Andrew Lanza",
+"party": "R",
+"start": "2007"
+}
+],
+"S:25": [
+{
+"end": "",
+"last": "Brisport",
+"name": "Jabari Brisport",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Montgomery",
+"name": "Velmanette Montgomery",
+"party": "D",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Squadron",
+"name": "Daniel L Squadron",
+"party": "D",
+"start": "2011"
+}
+],
+"S:26": [
+{
+"end": "",
+"last": "Gounardes",
+"name": "Andrew Gounardes",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Kavanagh",
+"name": "Brian Kavanagh",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Squadron",
+"name": "Daniel L Squadron",
+"party": "D",
+"start": "2013"
+}
+],
+"S:27": [
+{
+"end": "",
+"last": "Kavanagh",
+"name": "Brian Kavanagh",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2012",
+"last": "Storobin",
+"name": "David Storobin",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2023",
+"last": "Hoylman-Sigal",
+"name": "Brad Hoylman-Sigal",
+"party": "D",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Kruger",
+"name": "Carl Kruger",
+"party": "D",
+"start": "2011"
+}
+],
+"S:28": [
+{
+"end": "",
+"last": "Krueger",
+"name": "Liz Krueger",
+"party": "D",
+"start": "2013"
+}
+],
+"S:29": [
+{
+"end": "",
+"last": "Serrano",
+"name": "Jose Serrano",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Duane",
+"name": "Thomas Duane",
+"party": "D",
+"start": "2011"
+}
+],
+"S:3": [
+{
+"end": "",
+"last": "Murray",
+"name": "Dean Murray",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Weik",
+"name": "Alexis Weik",
+"party": "R",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Martinez",
+"name": "Monica R. Martinez",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Croci",
+"name": "Thomas D. Croci",
+"party": "R",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Zeldin",
+"name": "Lee M Zeldin",
+"party": "R",
+"start": "2011"
+}
+],
+"S:30": [
+{
+"end": "",
+"last": "Cleare",
+"name": "Cordell Cleare",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2018",
+"last": "Perkins",
+"name": "Bill Perkins",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2021",
+"last": "Benjamin",
+"name": "Brian A. Benjamin",
+"party": "D",
+"start": ""
+}
+],
+"S:31": [
+{
+"end": "",
+"last": "Jackson",
+"name": "Robert Jackson",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Espaillat",
+"name": "Adriano Espaillat",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Alcantara",
+"name": "Marisol Alcantara",
+"party": "D",
+"start": ""
+}
+],
+"S:32": [
+{
+"end": "",
+"last": "Sep\u00falveda",
+"name": "Luis Sep\u00falveda",
+"party": "D",
+"start": "2018"
+},
+{
+"end": "2016",
+"last": "Diaz",
+"name": "Ruben Diaz",
+"party": "D",
+"start": "2011"
+}
+],
+"S:33": [
+{
+"end": "",
+"last": "Rivera",
+"name": "Gustavo Rivera",
+"party": "D",
+"start": "2011"
+}
+],
+"S:34": [
+{
+"end": "",
+"last": "Ferna\u0301ndez",
+"name": "Nathalia Ferna\u0301ndez",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Klein",
+"name": "Jeffrey D. Klein",
+"party": "D",
+"start": ""
+},
+{
+"end": "2023",
+"last": "Biaggi",
+"name": "Alessandra Biaggi",
+"party": "D",
+"start": ""
+}
+],
+"S:35": [
+{
+"end": "",
+"last": "Stewart-Cousins",
+"name": "Andrea Stewart-Cousins",
+"party": "D",
+"start": "2023"
+}
+],
+"S:36": [
+{
+"end": "",
+"last": "Bailey",
+"name": "Jamaal Bailey",
+"party": "D",
+"start": "2017"
+},
+{
+"end": "2016",
+"last": "Hassell-Thompson",
+"name": "Ruth Hassell-Thompson",
+"party": "D",
+"start": "2011"
+}
+],
+"S:37": [
+{
+"end": "",
+"last": "Mayer",
+"name": "Shelley Mayer",
+"party": "D",
+"start": "2018"
+},
+{
+"end": "2012",
+"last": "Oppenheimer",
+"name": "Suzi Oppenheimer",
+"party": "D",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Latimer",
+"name": "George Latimer",
+"party": "D",
+"start": "2013"
+}
+],
+"S:38": [
+{
+"end": "",
+"last": "Weber",
+"name": "Bill Weber",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Reichlin-Melnick",
+"name": "Elijah Reichlin-Melnick",
+"party": "D",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Carlucci",
+"name": "David Carlucci",
+"party": "D",
+"start": ""
+}
+],
+"S:39": [
+{
+"end": "",
+"last": "Rolison",
+"name": "Rob Rolison",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Skoufis",
+"name": "James Skoufis",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Larkin",
+"name": "William J. Larkin, Jr.",
+"party": "R",
+"start": ""
+}
+],
+"S:4": [
+{
+"end": "",
+"last": "Martinez",
+"name": "Monica Martinez",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Boyle",
+"name": "Phil Boyle",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Johnson",
+"name": "Owen H Johnson",
+"party": "R",
+"start": "2011"
+}
+],
+"S:40": [
+{
+"end": "",
+"last": "Harckham",
+"name": "Pete Harckham",
+"party": "D",
+"start": "2019"
+},
+{
+"end": "2018",
+"last": "Murphy",
+"name": "Terrence Murphy",
+"party": "R",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Ball",
+"name": "Greg Ball",
+"party": "R",
+"start": "2011"
+}
+],
+"S:41": [
+{
+"end": "",
+"last": "Hinchey",
+"name": "Michelle Hinchey",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Serino",
+"name": "Sue Serino",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "Saland",
+"name": "Stephen M Saland",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2014",
+"last": "Gipson",
+"name": "Terry Gipson",
+"party": "D",
+"start": "2013"
+}
+],
+"S:42": [
+{
+"end": "",
+"last": "Skoufis",
+"name": "James Skoufis",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Bonacic",
+"name": "John J. Bonacic",
+"party": "R",
+"start": ""
+},
+{
+"end": "2023",
+"last": "Martucci",
+"name": "Mike Martucci",
+"party": "R",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Metzger",
+"name": "Jen Metzger",
+"party": "D",
+"start": ""
+}
+],
+"S:43": [
+{
+"end": "",
+"last": "Ashby",
+"name": "Jake Ashby",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Jordan",
+"name": "Daphne Jordan",
+"party": "R",
+"start": ""
+},
+{
+"end": "2012",
+"last": "McDonald",
+"name": "Roy J McDonald",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2018",
+"last": "Marchione",
+"name": "Kathleen A. Marchione",
+"party": "R",
+"start": ""
+}
+],
+"S:44": [
+{
+"end": "",
+"last": "Tedisco",
+"name": "Jim Tedisco",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2012",
+"last": "Farley",
+"name": "Hugh T Farley",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2022",
+"last": "Breslin",
+"name": "Neil Breslin",
+"party": "D",
+"start": ""
+}
+],
+"S:45": [
+{
+"end": "",
+"last": "Stec",
+"name": "Dan Stec",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Little",
+"name": "Betty Little",
+"party": "R",
+"start": ""
+}
+],
+"S:46": [
+{
+"end": "2022",
+"last": "Hinchey",
+"name": "Michelle Hinchey",
+"party": "D",
+"start": ""
+},
+{
+"end": "",
+"last": "Fahy",
+"name": "Pat Fahy",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2020",
+"last": "Amedore",
+"name": "George A. Amedore, Jr.",
+"party": "R",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Tkaczyk",
+"name": "Cecilia Tkaczyk",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2025",
+"last": "Breslin",
+"name": "Neil Breslin",
+"party": "D",
+"start": "2023"
+}
+],
+"S:47": [
+{
+"end": "",
+"last": "Bottcher",
+"name": "Erik Bottcher",
+"party": "D",
+"start": "2026"
+},
+{
+"end": "2022",
+"last": "Griffo",
+"name": "Joe Griffo",
+"party": "R",
+"start": ""
+},
+{
+"end": "2026",
+"last": "Hoylman-Sigal",
+"name": "Brad Hoylman-Sigal",
+"party": "D",
+"start": "2023"
+}
+],
+"S:48": [
+{
+"end": "",
+"last": "May",
+"name": "Rachel May",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Ritchie",
+"name": "Patty Ritchie",
+"party": "R",
+"start": ""
+}
+],
+"S:49": [
+{
+"end": "",
+"last": "Walczyk",
+"name": "Mark Walczyk",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "Tedisco",
+"name": "Jim Tedisco",
+"party": "R",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Farley",
+"name": "Hugh T Farley",
+"party": "R",
+"start": "2013"
+}
+],
+"S:5": [
+{
+"end": "",
+"last": "Rhoads",
+"name": "Steve Rhoads",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Marcellino",
+"name": "Carl L Marcellino",
+"party": "R",
+"start": ""
+},
+{
+"end": "2023",
+"last": "Gaughran",
+"name": "James Gaughran",
+"party": "D",
+"start": ""
+}
+],
+"S:50": [
+{
+"end": "",
+"last": "Ryan",
+"name": "Chris Ryan",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2020",
+"last": "Antonacci",
+"name": "Robert E. Antonacci",
+"party": "R",
+"start": ""
+},
+{
+"end": "2018",
+"last": "DeFrancisco",
+"name": "John A. DeFrancisco",
+"party": "R",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Mannion",
+"name": "John Mannion",
+"party": "D",
+"start": "2021"
+}
+],
+"S:51": [
+{
+"end": "",
+"last": "Oberacker",
+"name": "Peter Oberacker",
+"party": "R",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Seward",
+"name": "James L. Seward",
+"party": "R",
+"start": ""
+}
+],
+"S:52": [
+{
+"end": "",
+"last": "Webb",
+"name": "Lea Webb",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2023",
+"last": "Akshar",
+"name": "Fred Akshar",
+"party": "R",
+"start": ""
+},
+{
+"end": "2016",
+"last": "Libous",
+"name": "Tom Libous",
+"party": "R",
+"start": "2011"
+}
+],
+"S:53": [
+{
+"end": "2022",
+"last": "May",
+"name": "Rachel May",
+"party": "D",
+"start": ""
+},
+{
+"end": "",
+"last": "Griffo",
+"name": "Joe Griffo",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Valesky",
+"name": "David J. Valesky",
+"party": "D",
+"start": ""
+}
+],
+"S:54": [
+{
+"end": "",
+"last": "Helming",
+"name": "Pam Helming",
+"party": "R",
+"start": "2017"
+},
+{
+"end": "2018",
+"last": "Nozzolio",
+"name": "Michael F Nozzolio",
+"party": "R",
+"start": "2011"
+}
+],
+"S:55": [
+{
+"end": "",
+"last": "Brouk",
+"name": "Samra Brouk",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2014",
+"last": "O'Brien",
+"name": "Ted O'Brien",
+"party": "D",
+"start": "2013"
+},
+{
+"end": "2012",
+"last": "Alesi",
+"name": "James S Alesi",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2020",
+"last": "Funke",
+"name": "Rich Funke",
+"party": "R",
+"start": ""
+}
+],
+"S:56": [
+{
+"end": "",
+"last": "Cooney",
+"name": "Jeremy Cooney",
+"party": "D",
+"start": "2021"
+},
+{
+"end": "2020",
+"last": "Robach",
+"name": "Joseph E. Robach",
+"party": "R",
+"start": ""
+}
+],
+"S:57": [
+{
+"end": "",
+"last": "Borrello",
+"name": "George Borrello",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2019",
+"last": "Young",
+"name": "Catharine Young",
+"party": "R",
+"start": ""
+}
+],
+"S:58": [
+{
+"end": "",
+"last": "O'Mara",
+"name": "Tom O'Mara",
+"party": "R",
+"start": "2023"
+}
+],
+"S:59": [
+{
+"end": "2023",
+"last": "Gallivan",
+"name": "Patrick Gallivan",
+"party": "R",
+"start": ""
+},
+{
+"end": "",
+"last": "Gonzalez",
+"name": "Kristen Gonzalez",
+"party": "D",
+"start": "2023"
+}
+],
+"S:6": [
+{
+"end": "",
+"last": "Bynoe",
+"name": "Siela Bynoe",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2018",
+"last": "Hannon",
+"name": "Kemp Hannon",
+"party": "R",
+"start": ""
+},
+{
+"end": "2025",
+"last": "Thomas",
+"name": "Kevin Thomas",
+"party": "D",
+"start": "2019"
+}
+],
+"S:60": [
+{
+"end": "",
+"last": "Gallivan",
+"name": "Patrick Gallivan",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2014",
+"last": "Grisanti",
+"name": "Mark Grisanti",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2022",
+"last": "Ryan",
+"name": "Sean Ryan",
+"party": "D",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Jacobs",
+"name": "Chris Jacobs",
+"party": "R",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Panepinto",
+"name": "Marc Panepinto",
+"party": "D",
+"start": "2015"
+}
+],
+"S:61": [
+{
+"end": "",
+"last": "Zellner",
+"name": "Jeremy Zellner",
+"party": "D",
+"start": "2026"
+},
+{
+"end": "2026",
+"last": "Ryan",
+"name": "Sean Ryan",
+"party": "D",
+"start": "2023"
+},
+{
+"end": "2022",
+"last": "III",
+"name": "Edward A. Rath III",
+"party": "R",
+"start": ""
+},
+{
+"end": "2020",
+"last": "Ranzenhofer",
+"name": "Michael H. Ranzenhofer",
+"party": "R",
+"start": ""
+}
+],
+"S:62": [
+{
+"end": "",
+"last": "Ortt",
+"name": "Rob Ortt",
+"party": "R",
+"start": "2015"
+},
+{
+"end": "2014",
+"last": "Maziarz",
+"name": "George D Maziarz",
+"party": "R",
+"start": "2011"
+}
+],
+"S:63": [
+{
+"end": "",
+"last": "Baskin",
+"name": "April Baskin",
+"party": "D",
+"start": "2025"
+},
+{
+"end": "2024",
+"last": "Kennedy",
+"name": "Tim Kennedy",
+"party": "D",
+"start": "2023"
+}
+],
+"S:7": [
+{
+"end": "",
+"last": "Martins",
+"name": "Jack Martins",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Martins",
+"name": "Jack M Martins",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2023",
+"last": "Kaplan",
+"name": "Anna M. Kaplan",
+"party": "D",
+"start": ""
+},
+{
+"end": "2018",
+"last": "Phillips",
+"name": "Elaine Phillips",
+"party": "R",
+"start": ""
+}
+],
+"S:8": [
+{
+"end": "",
+"last": "Weik",
+"name": "Alexis Weik",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2018",
+"last": "Venditto",
+"name": "Michael Venditto",
+"party": "R",
+"start": "2015"
+},
+{
+"end": "2022",
+"last": "Brooks",
+"name": "John E. Brooks",
+"party": "D",
+"start": ""
+},
+{
+"end": "2014",
+"last": "Fuschillo",
+"name": "Charles J Fuschillo Jr.",
+"party": "R",
+"start": "2011"
+}
+],
+"S:9": [
+{
+"end": "",
+"last": "Canzoneri-Fitzpatrick",
+"name": "Patricia Canzoneri-Fitzpatrick",
+"party": "R",
+"start": "2023"
+},
+{
+"end": "2016",
+"last": "Skelos",
+"name": "Dean G Skelos",
+"party": "R",
+"start": "2011"
+},
+{
+"end": "2022",
+"last": "Kaminsky",
+"name": "Todd Kaminsky",
+"party": "D",
+"start": ""
+}
+]
+}

@@ -7,3 +7,4 @@ __pycache__/
 .DS_Store
 !data/contacts_*.json
 !data/assembly_votes_*.json
+!data/seat_parties.json

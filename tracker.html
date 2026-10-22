@@ -292,17 +292,17 @@ table.oc th { vertical-align: bottom; }
 .glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 
 /* Statistics visuals */
-.vlist { display: grid; gap: 10px; max-width: 960px; }
-.vrow { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) minmax(0, 210px); gap: 16px; align-items: center; }
+.vlist { display: grid; gap: 6px; }
+.vrow { display: grid; grid-template-columns: minmax(0, 240px) 260px minmax(0, 300px); gap: 14px; align-items: center; justify-content: start; }
 .vrow .lab b { display: block; font-weight: 600; font-size: 14px; line-height: 1.25; }
 .vrow .lab small, .vrow .val small { display: block; color: var(--ink-2); font-size: 12px; }
-.vtrack { position: relative; height: 14px; background: var(--pip-off); border-radius: 3px; }
+.vtrack { position: relative; height: 12px; background: var(--pip-off); border-radius: 3px; }
 .vtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
 .vtrack i.a { background: var(--navy); }
 .vtrack i.l { background: var(--signed); }
 .vtrack .tick { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1px; background: var(--gold); border-radius: 1px; }
 .vrow .val { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.vrow .val b.big { font: 700 18px var(--display); font-stretch: 85%; color: var(--ink); }
+.vrow .val b.big { font: 700 16px var(--display); font-stretch: 85%; color: var(--ink); }
 .key .k-tick { width: 3px !important; height: 14px !important; background: var(--gold); }
 .houses { display: grid; gap: 22px; }
 .house h3.sub { margin-bottom: 8px; }
@@ -333,6 +333,7 @@ table.oc th { vertical-align: bottom; }
 .key.track-key i.dot.s-1 { background: none; border: 2px solid var(--ink-2); }
 @media (max-width: 760px) {
   .vrow { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .vtrack { max-width: 100%; }
 }
 @media (max-width: 900px) { .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .fact { appearance: none; text-align: left; cursor: pointer; align-content: start; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; color: var(--ink); font: inherit; }
@@ -375,6 +376,8 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .twobar .l { background: var(--signed); }
 .twobar b { font-weight: 600; min-width: 34px; color: var(--navy); }
 .twobar em { font-style: normal; color: var(--signed); font-weight: 600; }
+.commsort { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
+.commsort select { width: auto; padding: 4px 8px; font-size: 13px; }
 .key { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-2); margin: 0; }
 .key span { display: inline-flex; align-items: center; gap: 6px; }
 .key i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
@@ -646,10 +649,10 @@ table.st col.c-m { width: 80px; }
       <select id="statTopic"><option value="all">All bills</option></select>
     </div>
     <nav class="subtabs" id="statTabs" aria-label="Statistics sections">
-      <button type="button" data-sec="statOdds">What happens next</button>
+      <button type="button" data-sec="statOdds">Odds of becoming law</button>
       <button type="button" data-sec="statComm">Committees</button>
-      <button type="button" data-sec="statTiming">Timing and the governor</button>
-      <button type="button" data-sec="statPersist">Persistence</button>
+      <button type="button" data-sec="statTiming">Timing</button>
+      <button type="button" data-sec="statPersist">Repeat tries</button>
       <button type="button" data-sec="statCosp">Co-sponsors and party</button>
       <button type="button" data-sec="statSessions">By session</button>
     </nav>
@@ -661,7 +664,7 @@ table.st col.c-m { width: 80px; }
     <section class="act-sec statsec" id="statSessions" hidden aria-labelledby="ocHead">
       <h2 id="ocHead">Outcomes by session</h2>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
-      <p class="note">“Passed both houses” includes bills later signed or vetoed. “Became law” is bills signed out of all bills introduced. “Governor signed” is bills signed out of bills she signed or vetoed. The current session's numbers change until December 31.</p>
+      <p class="note">“Became law”: share of all bills introduced. “Governor signed”: share of bills the governor acted on. Current session changes until Dec. 31.</p>
     </section>
   </section>
 
@@ -747,7 +750,7 @@ table.st col.c-m { width: 80px; }
       <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
       <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays.</p>
-      <p>Party filter: a bill counts as “both parties” if either version has at least one sponsor or co-sponsor from each party. Party is from Open States and covers sitting members only, so the filter is available for the current session.</p>
+      <p>Party filter: a bill counts as “both parties” if either version has at least one sponsor or co-sponsor from each party. Party is from Open States, including former members.</p>
     </div>
   </section>
 </div>
@@ -808,7 +811,7 @@ function billUrl(p, session = DATA.session) {
 // Outcome wording for a bill in any session: finished sessions say "died", the open one doesn't.
 function outcomeLabel(stage, session, chapter, veto) {
   if (stage === -2) return "Withdrawn by sponsor";
-  if (stage < 0) return "Outcome not loaded";
+  if (stage < 0) return "Outcome not available";
   if (stage === 5 && chapter) return `Signed, Chapter ${chapter}`;
   if (stage === 6 && veto) return `Vetoed, Memo ${veto}`;
   return (session === LATEST ? STAGE_TEXT.live : STAGE_TEXT.final).long[stage];
@@ -1119,10 +1122,14 @@ function renderOpenNow() {
     $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died.</p>`;
     return;
   }
-  const desk = BILLS.filter((b) => b.stage === 4).sort((a, b) => (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
-  const waiting = BILLS.filter((b) => b.stage === 3).sort((a, b) => (b.last || "").localeCompare(a.last || ""));
+  // On a legislator's page, only bills they sponsor or co-sponsor.
+  const L = PRESET?.who && LEG_BY_ID[PRESET.who];
+  const mine = (b) => !L || sponsoredBy(b, L, true);
+  const desk = BILLS.filter((b) => b.stage === 4 && mine(b)).sort((a, b) => (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
+  const waiting = BILLS.filter((b) => b.stage === 3 && mine(b)).sort((a, b) => (b.last || "").localeCompare(a.last || ""));
   const more = waiting.length - openShown;
-  $("openNow").innerHTML = `<h2>Open for comment</h2>
+  $("openNow").innerHTML = `<h2>${L ? `${esc(L.label)}'s bills open for comment` : "Open for comment"}</h2>
+    ${L ? `<p class="muted">Bills they sponsor or co-sponsor.</p>` : ""}
     <h3>On the governor's desk (${num(desk.length)}), soonest deadline first</h3>
     <div class="list">${desk.map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
     <h3>Passed both houses, not yet requested by her (${num(waiting.length)})</h3>
@@ -1199,12 +1206,11 @@ function govTiming(I) {
   return `<h3 class="sub">The governor's decisions by month</h3>
     <p class="key"><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span></p>
     <div class="govcols">${table("Cuomo", "Gov. Cuomo, 2017 to Aug. 2021")}${table("Hochul", `Gov. Hochul, Aug. 2021 to ${(I.pastSessions[I.pastSessions.length - 1] || 2023) + 1}`)}</div>
-    <p>Under both governors, bills that raise no concerns are requested and signed through the year; the rest wait, and nearly all vetoes come in November and December.</p>
     <h3 class="sub">By year</h3>
     <div class="tablewrap"><table class="oc st years"><colgroup><col class="c-m"><col class="c-gov"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
       <thead><tr><th>Year</th><th>Governor</th><th>Signed</th><th>Vetoed</th><th>Share signed</th></tr></thead>
       <tbody>${years.map(([y, who, s, v]) => `<tr><td>${y}${+y === new Date().getFullYear() ? " (so far)" : ""}</td><td>${who}</td><td>${num(s)}</td><td>${num(v)}</td><td>${s + v ? pctOf(s, s + v) + "%" : "–"}</td></tr>`).join("")}</tbody></table></div>
-    <p class="note">2020 was a short COVID-year session. Gov. Cuomo resigned in August 2021, before the end-of-year vetoes. The current year's vetoes mostly come in November and December.</p>`;
+    <p class="note">2020: short COVID session. 2021: Cuomo resigned in August, before year-end vetoes.</p>`;
 }
 
 let statSec = "statOdds";
@@ -1237,6 +1243,9 @@ function persCard(n, title) {
 }
 
 let commAll = false;
+let commSort = "bills";
+try { commSort = localStorage.getItem("abt:commsort") || "bills"; } catch (e) {}
+const COMM_SORTS = { bills: "Most bills", low: "Lowest approval", high: "Highest approval", name: "Name" };
 // Plain names for committees whose official names don't explain themselves.
 const COMM_LABELS = {
   "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)",
@@ -1262,24 +1271,26 @@ function renderStats() {
   const odds = I.odds[t] || {};
   const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
   const maxN = Math.max(1, ...ODDS_POINTS.map(([k]) => (odds[k] || [0])[0]));
-  $("statOdds").innerHTML = `<h2>What usually happens next</h2>
-    <p class="takeaway">About ${inTen(lI, nI)} in 10 bills introduced become law. Once a committee approves a bill, it's about ${inTen(lF, nF)} in 10.</p>
+  $("statOdds").innerHTML = `<h2>Odds of becoming law</h2>
     <p class="key"><span><i class="k-appr"></i>Bills that got this far</span><span><i class="k-law"></i>Of those, became law</span></p>
     <div class="vlist">${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0];
       return vrow(l, `${num(n)} bills`, [[(n / maxN) * 100, "a"], [(law / maxN) * 100, "l"]], `<b class="big">${pctOf(law, n)}%</b> became law`); }).join("")}</div>
-    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} in ${pastSpan()}.</p>`;
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}.</p>`;
 
   // Where bills die: Assembly and Senate committees in separate lists.
   const nPast = (I.pastSessions || []).length || 1;
   const past = I.committees.past[t] || {}, cur = I.committees.current[t] || {};
   const rows = Object.entries(past).map(([k, [n, out, law]]) => ({
     k, perSession: Math.round(n / nPast), out: pctOf(out, n), law: pctOf(law, n),
-    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null,
-  })).sort((a, b) => a.out - b.out || b.perSession - a.perSession);
-  const plainName = (k) => commLabel(k).replace(/^A · /, "Assembly ").replace(/^S · /, "Senate ");
-  // Compare subject committees; the money committees are usually a bill's second stop.
-  const big = rows.filter((r) => r.perSession >= 50 && !/Finance|Ways And Means|Budget/.test(r.k));
-  const low = big[0], high = big.slice().sort((a, b) => b.out - a.out)[0];
+    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null, nowLaw: cur[k] ? pctOf(cur[k][2], cur[k][0]) : null,
+  }));
+  const bySort = {
+    bills: (a, b) => b.perSession - a.perSession,
+    low: (a, b) => a.out - b.out || b.perSession - a.perSession,
+    high: (a, b) => b.out - a.out || b.perSession - a.perSession,
+    name: (a, b) => commLabel(a.k).localeCompare(commLabel(b.k)),
+  };
+  rows.sort(bySort[commSort] || bySort.bills);
   const scale = Math.max(1, ...rows.map((r) => Math.max(r.out, r.nowOut || 0)));
   const houseList = (h, title) => {
     const hr = rows.filter((r) => r.k.startsWith(h + " "));
@@ -1287,14 +1298,14 @@ function renderStats() {
     return `<div class="house"><h3 class="sub">${title}</h3><div class="vlist">${hr.slice(0, commAll ? hr.length : 8).map((r) =>
       vrow(esc(commLabel(r.k).replace(/^[AS] · /, "")), `about ${num(r.perSession)} bills a session`,
         [[(r.out / scale) * 100, "a"], [(r.law / scale) * 100, "l"]],
-        `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>this session so far: ${r.nowOut}%</small>` : ""}`,
+        `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
         r.nowOut != null ? (r.nowOut / scale) * 100 : null)).join("")}</div>
       ${hr.length > 8 && !commAll ? `<p class="muted">${hr.length - 8} more</p>` : ""}</div>`;
   };
-  $("statComm").innerHTML = `<h2>Where bills die</h2>
-    <p class="takeaway">Most bills die in committee without a vote, and some committees move far fewer bills than others.${low && high ? ` ${esc(plainName(low.k))} sends on ${low.out} in 100 of its bills; ${esc(plainName(high.k))}, ${high.out} in 100.` : ""} If a bill you care about is stuck in committee, contact the committee chair, who decides which bills get a vote.</p>
-    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span><span><i class="k-tick"></i>This session so far</span></p>
-    <p class="note">Share of ${topicName} each committee sent on to the floor or another committee, ${pastSpan()}. Committees that approve the fewest are listed first; committees with few bills are left out.</p>
+  $("statComm").innerHTML = `<h2>Committees</h2>
+    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span><span><i class="k-tick"></i>This session so far (approved)</span></p>
+    <p class="note">Share of ${topicName} referred to each committee, ${pastSpan()}. Committees with few bills left out.</p>
+    <label class="commsort">Sort by <select data-commsort>${Object.entries(COMM_SORTS).map(([k, l]) => `<option value="${k}"${k === commSort ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <div class="houses">${houseList("A", "Assembly committees")}${houseList("S", "Senate committees")}</div>
     ${rows.length > 16 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
 
@@ -1304,9 +1315,8 @@ function renderStats() {
   const mid = shares.slice().sort((a, b) => a - b)[Math.floor(shares.length / 2)];
   const [late, signed] = I.lateSigning;
   $("statTiming").innerHTML = `<h2>Timing</h2>
-    <p class="takeaway">Most floor votes happen in the last three weeks of the session, which ends in early June, so contact legislators by May. The governor decides most bills in the fall, and nearly all vetoes come in November and December.</p>
-    <p>In a typical year, about <b>${mid}%</b> of floor votes come in the <b>last three weeks</b> of the session (from ${Math.min(...shares)}% to ${Math.max(...shares)}% in ${years[0].year}–${years[years.length - 1].year}, leaving out 2020). The session usually ends in early or mid June, so May is when weighing in matters most.</p>
-    <p>About <b>${pctOf(late, signed)}%</b> of bills signed into law are signed in October, November or December, after most bills have waited months for the governor to request them.</p>
+    <div class="vlist">${vrow("Floor votes in the session's last 3 weeks", `${years[0].year}–${years[years.length - 1].year}, except 2020`, [[mid, "a"]], `<b class="big">${mid}%</b> in a typical year<small>Range ${Math.min(...shares)}–${Math.max(...shares)}%</small>`)}
+    ${vrow("Laws signed in Oct.–Dec.", `${num(signed)} laws`, [[pctOf(late, signed), "l"]], `<b class="big">${pctOf(late, signed)}%</b>`)}</div>
     ${govTiming(I)}`;
 
   // Persistence
@@ -1316,48 +1326,40 @@ function renderStats() {
   const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
   const pers = I.persistent?.[t] || [];
   const TRIES = [[p0, "First try", "t0"], [p1, "Second try", "t1"], [p2, "Third try", "t2"], [p3, "Fourth or later", "t3"]];
-  $("statPersist").innerHTML = `<h2>Persistence</h2>
-    <p class="takeaway">${(() => { const [n1, b1, l1] = fate.oneHouse || [0, 0, 0]; return `About ${inTen(p0, total)} in 10 laws pass on the first try. A bill that dies after passing one house comes back ${inTen(b1, n1)} times in 10 and eventually becomes law ${pctOf(l1, n1)}% of the time.`; })()}</p>
-    <h3 class="sub">How many tries laws took</h3>
+  $("statPersist").innerHTML = `<h2>Repeat tries</h2>
+    <h3 class="sub">Sessions it took laws to pass</h3>
     <div class="stack">${TRIES.map(([n, , cls]) => `<i class="${cls}" style="width:${pctOf(n, total)}%"></i>`).join("")}</div>
     <p class="key">${TRIES.map(([n, l, cls]) => `<span><i class="${cls}"></i>${l}: <b>${pctOf(n, total)}%</b></span>`).join("")}</p>
-    <p class="note">${num(total)} laws passed in ${lawSpan}${t === "all" ? "" : ` (${TOPICS[t]})`}, by how many sessions they had been introduced in.</p>
-    <h3 class="sub">What happens to bills that die</h3>
+    <p class="note">${num(total)} laws passed in ${lawSpan}${t === "all" ? "" : ` (${TOPICS[t]})`}.</p>
+    <h3 class="sub">Bills that died</h3>
     <p class="key"><span><i class="k-appr"></i>Came back the next session</span><span><i class="k-law"></i>Later became law</span></p>
     <div class="vlist">${FATE.map(([k, l]) => { const [n, back, law] = fate[k] || [0, 0, 0];
       return vrow(l, `${num(n)} bills`, [[pctOf(back, n), "a"], [pctOf(law, n), "l"]], `${pctOf(back, n)}% came back · <b class="big">${pctOf(law, n)}%</b> law`); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${I.pastSessions[0]}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, followed through ${I.pastSessions[I.pastSessions.length - 1] + 1}.</p>
     ${pers.length ? `<h3 class="sub">This session's most persistent bills</h3>
-    <p class="key track-key">${[["s-1", "Before 2017 (outcome not loaded)"], ["s0", "Died in committee"], ["s2", "Passed one house"], ["s3", "Passed both houses"], ["s6", "Vetoed"], ["s5", "Signed"]].map(([c, l]) => `<span><i class="dot ${c}"></i>${l}</span>`).join("")}</p>
+    <p class="key track-key">${[["s-1", "Introduced, outcome not available"], ["s0", "Died in committee"], ["s2", "Passed one house"], ["s3", "Passed both houses"], ["s6", "Vetoed"], ["s5", "Signed"]].map(([c, l]) => `<span><i class="dot ${c}"></i>${l}</span>`).join("")}</p>
     <div class="perscards">${pers.map(([n, title]) => persCard(n, title)).join("")}</div>` : ""}`;
 
   // Co-sponsors and party
   const CB = ["None", "1–4", "5–9", "10–19", "20–39", "40 or more"];
   const cs = I.cosponsors?.[t] || [];
-  const mix = { DR: [0, 0, 0], D: [0, 0, 0], R: [0, 0, 0] };
-  if (DATA.current) for (const b of BILLS) {
-    if (t !== "all" && !b.topics.includes(t)) continue;
-    const m = mix[b.parties]; if (!m) continue;
-    m[0]++; m[1] += b.stage >= 3; m[2] += b.stage === 5;
-  }
+  const PARTY = [["DR", "Both parties"], ["D", "Democrats only"], ["R", "Republicans only"]];
+  const pPast = I.party?.past?.[t] || {}, pNow = I.party?.current?.[t] || {};
   const csMax = Math.max(1, ...cs.map(([n, both]) => pctOf(both, n)));
-  const mixMax = Math.max(1, ...Object.values(mix).map(([n, both]) => pctOf(both, n)));
+  const passRate = (c) => (c ? pctOf(c[1], c[0]) : 0);
+  const mixMax = Math.max(1, ...PARTY.map(([k]) => Math.max(passRate(pPast[k]), passRate(pNow[k]))));
   $("statCosp").innerHTML = `<h2>Co-sponsors and party</h2>
-    <p class="takeaway">${(() => {
-      const tot = cs.reduce((a, c) => [a[0] + c[0], a[1] + c[2]], [0, 0]); const top = cs[cs.length - 1] || [0, 0, 0];
-      const lawAll = pctOf(tot[1], tot[0]), lawTop = pctOf(top[2], top[0]);
-      const both = pctOf(mix.DR[1], mix.DR[0]), dOnly = pctOf(mix.D[1], mix.D[0]);
-      return `Bills with 40 or more co-sponsors became law ${lawTop}% of the time, against ${lawAll}% for all bills.${DATA.current && dOnly ? ` This session, ${both}% of bills backed by both parties passed both houses, against ${dOnly}% of Democrat-only bills.` : ""} Both mostly reflect bills that were easy to agree on to begin with.`;
-    })()}</p>
-    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span></p>
+    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span><span><i class="k-tick"></i>This session so far (passed)</span></p>
     <h3 class="sub">By number of co-sponsors</h3>
     <div class="vlist">${cs.map(([n, both, law], i) => vrow(CB[i], `${num(n)} bills`, [[(pctOf(both, n) / csMax) * 100, "a"], [(pctOf(law, n) / csMax) * 100, "l"]],
       `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law`)).join("")}</div>
-    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} in ${pastSpan()}, by the most co-sponsors either version had. Many laws have none: local bills, fixes to laws just signed, and bills carried for state agencies.</p>
-    ${DATA.current ? `<h3 class="sub">By party, this session</h3>
-    <div class="vlist">${[["DR", "Both parties"], ["D", "Democrats only"], ["R", "Republicans only"]].map(([k, l]) => { const [n, both, law] = mix[k];
-      return vrow(l, `${num(n)} bills`, [[(pctOf(both, n) / mixMax) * 100, "a"], [(pctOf(law, n) / mixMax) * 100, "l"]], `<b class="big">${pctOf(both, n)}%</b> passed · ${pctOf(law, n)}% law so far`); }).join("")}</div>
-    <p class="note">By the party of everyone sponsoring or co-sponsoring either version. Party is known for sitting members only, so this covers the current session. Democrats hold majorities in both houses, so bills without Democratic support rarely move.</p>` : ""}`;
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}, by the most co-sponsors either version had.</p>
+    <h3 class="sub">By party of sponsors and co-sponsors</h3>
+    <div class="vlist">${PARTY.map(([k, l]) => { const [n, both, law] = pPast[k] || [0, 0, 0]; const now = pNow[k];
+      return vrow(l, `${num(n)} bills`, [[(pctOf(both, n) / mixMax) * 100, "a"], [(pctOf(law, n) / mixMax) * 100, "l"]],
+        `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law${now ? `<small>This session so far: ${pctOf(now[1], now[0])}% passed · ${pctOf(now[2], now[0])}% law</small>` : ""}`,
+        now ? (pctOf(now[1], now[0]) / mixMax) * 100 : null); }).join("")}</div>
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. “Both parties”: at least one sponsor or co-sponsor from each party on either version. Party from Open States.</p>`;
 
   renderOutcomes();
 }
@@ -1876,6 +1878,12 @@ function wire() {
   $("statTopic").addEventListener("change", renderStats);
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
+  $("statComm").addEventListener("change", (e) => {
+    if (!e.target.matches("[data-commsort]")) return;
+    commSort = e.target.value;
+    try { localStorage.setItem("abt:commsort", commSort); } catch (err) {}
+    renderStats();
+  });
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
@@ -2035,8 +2043,6 @@ function hydrate(raw) {
     .map(([k, p]) => `<option value="${k}">${esc(p.label)} (${num(BILLS.filter(p.test).length)})</option>`).join("");
   // Party data covers sitting members only, so the filter appears for the current session.
   $("statTopic").innerHTML = `<option value="all">All bills</option>` + Object.entries(TOPICS).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
-  $("partyField").hidden = !raw.current;
-  if (!raw.current) state.party = "";
   $("party").innerHTML = `<option value="">Any</option>` + Object.entries(PARTIES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.parties === k).length)})</option>`).join("");
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
@@ -2070,6 +2076,8 @@ function hydrate(raw) {
     $("who").hidden = true;
     $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
+    // The watchlist lives on the main pages; here it would only mix in unrelated bills.
+    document.querySelector('.view-tab[data-view="watch"]').hidden = true;
   }
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
@@ -2077,6 +2085,7 @@ function hydrate(raw) {
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
   if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (PRESET?.watch || SHARED) view = "watch";
+  if (PRESET?.who && view === "watch") view = "bills";
   // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
