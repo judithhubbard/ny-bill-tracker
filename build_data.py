@@ -205,6 +205,13 @@ LEFT_COMMITTEE = ("ADVANCED TO THIRD READING", "ORDERED TO THIRD READING", "REPO
                   "PASSED SENATE", "PASSED ASSEMBLY")
 
 
+# Committees renamed between sessions, mapped to their current names.
+COMMITTEE_RENAMES = {
+    "Alcoholism And Substance Abuse": "Alcoholism And Substance Use Disorders",
+    "Mental Health And Developmental Disabilities": "Mental Health",
+}
+
+
 def first_committees(live):
     """For each version: the first committee in its own house, and whether the bill got out of it."""
     out = []
@@ -212,7 +219,7 @@ def first_committees(live):
         own = [c for c in b["pastCommittees"] if c["chamber"] == b["chamber"]]
         if not own:
             continue
-        name = norm_comm(own[0]["name"])
+        name = COMMITTEE_RENAMES.get(norm_comm(own[0]["name"]), norm_comm(own[0]["name"]))
         if name in ("Rules", "Calendar"):
             continue
         left = any(a["chamber"] == b["chamber"] and a["text"].startswith(LEFT_COMMITTEE) for a in b["actions"])
@@ -614,8 +621,10 @@ def insights(loaded, hist, current):
     topics = ["all"] + list(TOPICS)
     has = lambda r, t: t == "all" or t in r["topics"]
 
+    current_comms = {f"{h} · {n}" for r in loaded[current][0] for h, n, _ in r["firstComms"]}
+
     # Where bills die: share of bills each committee let out, current session and past sessions.
-    def committee_table(sessions):
+    def committee_table(sessions, minimum=True):
         out = {t: defaultdict(lambda: [0, 0, 0]) for t in topics}
         for s in sessions:
             for r in loaded[s][0]:
@@ -626,7 +635,8 @@ def insights(loaded, hist, current):
                             c[0] += 1
                             c[1] += left
                             c[2] += r["stage"] == 5
-        return {t: {k: v for k, v in d.items() if v[0] >= (40 if t == "all" else 15)} for t, d in out.items()}
+        # Only committees that exist this session; defunct ones would only confuse.
+        return {t: {k: v for k, v in d.items() if k in current_comms and (not minimum or v[0] >= (40 if t == "all" else 15))} for t, d in out.items()}
 
     # What usually happens next: of bills that reached each point, how many became law.
     odds = {t: defaultdict(lambda: [0, 0]) for t in topics}
@@ -690,7 +700,7 @@ def insights(loaded, hist, current):
 
     return {
         "pastSessions": past,
-        "committees": {"current": committee_table([current]), "past": committee_table(past)},
+        "committees": {"current": committee_table([current], minimum=False), "past": committee_table(past)},
         "odds": {t: dict(v) for t, v in odds.items()},
         "timing": timing,
         "lateSigning": [late_sign, len(signed)],

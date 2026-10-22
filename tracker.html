@@ -309,6 +309,10 @@ table.st th.barh, table.st td.bar { text-align: left; padding-left: 18px; }
 table.st th.grp { text-align: center; border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
 table.st td.bar .sharebar i { max-width: 110px; }
 table.st col.c-two { width: 280px; }
+/* Keep the committee table's headers in view while scrolling the full list. */
+@media (min-width: 760px) { .commwrap { overflow: visible; } }
+table.st.comm thead th { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--paper); z-index: 2; }
+table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px) + 26px); }
 .twobar { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
 .twobar .track { position: relative; width: 140px; height: 10px; background: var(--pip-off); border-radius: 2px; flex: none; }
 .twobar .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
@@ -1083,6 +1087,9 @@ function oddsLine(b) {
 const twoBar = (appr, law) => `<div class="twobar"><span class="track"><i class="a" style="width:${appr}%"></i><i class="l" style="width:${law}%"></i></span><b>${appr}%</b><em>${law}%</em></div>`;
 
 let commAll = false;
+// Plain names for committees whose official names don't explain themselves.
+const COMM_LABELS = { "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)" };
+const commLabel = (k) => (COMM_LABELS[k] || k).replace(/ And /g, " and ");
 function renderStats() {
   const I = DATA.insights;
   if (!I) return;
@@ -1110,13 +1117,13 @@ function renderStats() {
   $("statComm").innerHTML = `<h2>Where bills die</h2>
     <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span></p>
     <p class="note">How often each committee approved ${topicName} referred to it, averaged over ${pastSpan()} (${nPast} sessions). “Approved” means sent on to the floor or to another committee. Committees with few bills are left out. S = Senate, A = Assembly.</p>
-    <div class="tablewrap"><table class="oc st comm">
+    <div class="tablewrap commwrap"><table class="oc st comm">
       <colgroup><col class="c-name"><col class="c-num"><col class="c-two"><col class="c-num"><col class="c-num"></colgroup>
       <thead>
       <tr><th rowspan="2">Committee</th><th colspan="2" class="grp">Past sessions, ${pastSpan()}</th><th colspan="2" class="grp">This session so far</th></tr>
       <tr><th>Bills a session</th><th class="barh">Approved by committee / became law</th><th>Bills</th><th>Approved</th></tr>
     </thead><tbody>
-    ${rows.slice(0, commAll ? rows.length : 15).map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.perSession)}</td><td class="bar">${twoBar(r.out, r.law)}</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
+    ${rows.slice(0, commAll ? rows.length : 15).map((r) => `<tr><td>${esc(commLabel(r.k))}</td><td>${num(r.perSession)}</td><td class="bar">${twoBar(r.out, r.law)}</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
     </tbody></table></div>
     ${rows.length > 15 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
 
@@ -1817,7 +1824,7 @@ function hydrate(raw) {
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.parties === k).length)})</option>`).join("");
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.house === k).length)})</option>`).join("");
-  $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => opt(c, n)).join("");
+  $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => `<option value="${esc(c)}">${esc((COMM_LABELS[c] || c).replace(/ And /g, " and "))} (${num(n)})</option>`).join("");
   $("hist").innerHTML = `<option value="">Any history</option>` + Object.entries(HIST_FILTERS)
     .filter(([, f]) => !f.past || !raw.current)
     .map(([k, f]) => `<option value="${k}">${esc(f.label)} (${num(BILLS.filter(f.test).length)})</option>`).join("");
