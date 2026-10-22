@@ -1400,21 +1400,13 @@ const twoBar = (appr, law) => `<div class="twobar"><span class="track"><i class=
 // When the governor signs and vetoes: vetoes come almost entirely at the end of the year.
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function govTiming(I) {
-  const gm = I.govMonths || {};
-  const govRow = (who, label, sub) => {
-    const rows = MONTH_NAMES.map((m, i) => { const [s, v] = gm[`${who}|${String(i + 1).padStart(2, "0")}`] || [0, 0]; return { m, s, v, n: s + v }; });
-    const max = Math.max(1, ...rows.map((r) => r.n));
-    const tot = rows.reduce((a, r) => [a[0] + r.s, a[1] + r.v], [0, 0]);
-    const cols = rows.map((r) => ({ segs: [[(r.n / max) * 100, "v"], [(r.s / max) * 100, "l"]], title: `${r.m}: ${num(r.s)} signed, ${num(r.v)} vetoed` }));
-    return colRow(label, sub, cols, `<b class="big">${pctOf(tot[1], tot[0] + tot[1])}%</b> vetoed<small>${num(tot[0] + tot[1])} decisions</small>`);
-  };
+  // By year: bar length is how many bills the governor decided; green signed, red vetoed.
   const years = (I.govYears || []).filter(([y]) => y >= "2017");
+  const maxY = Math.max(1, ...years.map(([, , s, v]) => s + v));
   const yearRows = years.map(([y, who, s, v]) => vrow(`${y}${+y === new Date().getFullYear() ? " (so far)" : ""} · ${who}`, "",
-    s + v ? [[100, "v"], [pctOf(s, s + v), "l"]] : [], `<b class="big">${pctOf(v, s + v)}%</b> vetoed · ${num(s)} signed · ${num(v)} vetoed`)).join("");
-  return `<h3 class="sub">The governor's decisions by month</h3>
+    [[((s + v) / maxY) * 100, "v"], [(s / maxY) * 100, "l"]], `<b class="big">${num(s + v)}</b> decisions · ${pctOf(v, s + v)}% vetoed`)).join("");
+  return `<h3 class="sub">The governor's decisions by year</h3>
     <p class="key"><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span></p>
-    <div class="vlist">${govRow("Cuomo", "Gov. Cuomo", "2017 to Aug. 2021")}${govRow("Hochul", "Gov. Hochul", `Aug. 2021 to ${(I.pastSessions[I.pastSessions.length - 1] || 2023) + 1}`)}${monthAxis(12)}</div>
-    <h3 class="sub">By year</h3>
     <div class="vlist">${yearRows}</div>
     <p class="note">2020: short COVID session. 2021: Cuomo resigned in August, before year-end vetoes.</p>`;
 }
@@ -1654,9 +1646,20 @@ function monthChart(I, t) {
       title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
     return colRow(label, "", cols, `<b class="big">${num(Math.round(avg.reduce((a, b) => a + b, 0)))}</b> a session`, 12);
   }).join("");
+  // The governor's decisions on the same timeline: signed (green) and vetoed (red) stacked.
+  let gov = "";
+  if (past.signed) {
+    const s = past.signed.map((x) => x / n), v = past.vetoed.map((x) => x / n);
+    const curS = live ? now.signed : null, curV = live ? now.vetoed : null;
+    const max = Math.max(1, ...s.map((x, m) => x + v[m]), ...(curS ? curS.map((x, m) => x + curV[m]) : []));
+    const cols = s.map((x, m) => ({ segs: [[((x + v[m]) / max) * 100, "v"], [(x / max) * 100, "l"]], tick: curS && curS[m] + curV[m] ? ((curS[m] + curV[m]) / max) * 100 : null,
+      title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} signed, ${num(Math.round(v[m]))} vetoed a session${curS ? `; this session ${num(curS[m])} signed, ${num(curV[m])} vetoed` : ""}` }));
+    const ts = s.reduce((a, b) => a + b, 0), tv = v.reduce((a, b) => a + b, 0);
+    gov = colRow("Signed or vetoed", "", cols, `<b class="big">${num(Math.round(ts + tv))}</b> a session<small>${pctOf(tv, ts + tv)}% vetoed</small>`, 12);
+  }
   return `<h3 class="sub">Through the session, by month</h3>
-    <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
-    <div class="vlist">${rows}${monthAxis(24, 12)}
+    <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
+    <div class="vlist">${rows}${gov}${monthAxis(24, 12)}
     <div class="vrow"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 

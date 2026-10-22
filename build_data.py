@@ -815,11 +815,12 @@ def insights(loaded, hist, current):
     # When things happen, by month of the two-year session (0-11 first year, 12-23 second):
     # bills introduced, first approved by a committee, first passed by each house.
     def month_counts(sessions):
-        out = {t: {k: [0] * 24 for k in ("intro", "comm", "passS", "passA")} for t in topics}
+        out = {t: {k: [0] * 24 for k in ("intro", "comm", "passS", "passA", "signed", "vetoed")} for t in topics}
         for s in sessions:
             for r in loaded[s][0]:
                 k = r["keyDates"]
-                when = {"intro": r["first"] or "", "comm": k[0], "passS": k[1].split(";")[0], "passA": k[2].split(";")[0]}
+                when = {"intro": r["first"] or "", "comm": k[0], "passS": k[1].split(";")[0], "passA": k[2].split(";")[0],
+                        "signed": k[5] if r["stage"] == 5 else "", "vetoed": k[6] if r["stage"] == 6 else ""}
                 for key, d in when.items():
                     if len(d) < 7 or d[:4] > str(s + 1):
                         continue
