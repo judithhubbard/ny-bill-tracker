@@ -16,10 +16,9 @@ import html, json, os, re, sys, time, unicodedata, urllib.parse, urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
-KEY = os.environ.get("NYSENATE_API_KEY") or open(os.path.expanduser("~/.nysenate_api_key")).read().strip()
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "data", f"contacts_{SESSION}.json")
+# Set in main(), so build_data.py can import the name helpers without an API key.
+SESSION = KEY = OUT = None
 UA = "Mozilla/5.0 (compatible; ny-bill-tracker; +https://github.com/judithhubbard/ny-bill-tracker)"
 
 # nysenate.gov page addresses, keyed by first + last name (see name_key).
@@ -148,6 +147,10 @@ def assembly():
 
 
 def main():
+    global SESSION, KEY, OUT
+    SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
+    KEY = os.environ.get("NYSENATE_API_KEY") or open(os.path.expanduser("~/.nysenate_api_key")).read().strip()
+    OUT = os.path.join(HERE, "data", f"contacts_{SESSION}.json")
     old = json.load(open(OUT)) if os.path.exists(OUT) else {}
     out = {"session": SESSION, "fetched": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")}
     try:
