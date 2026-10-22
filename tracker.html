@@ -429,48 +429,45 @@ table.oc th { vertical-align: bottom; }
     <div class="act-sec" id="openNow"></div>
 
     <div class="act-sec">
-      <h2>Who can weigh in, and how</h2>
+      <h2>How to weigh in</h2>
       <div class="act-grid">
         <div class="card">
           <h3>Residents</h3>
           <ul>
-            <li>Contact your own state senator and Assembly member first. They vote on every bill that reaches the floor, and they can press committee chairs and leaders. Look them up with the Senate's <a href="https://www.nysenate.gov/find-my-senator" target="_blank" rel="noopener">Find My Senator</a> and the Assembly's <a href="https://nyassembly.gov/mem/search/" target="_blank" rel="noopener">member search</a>.</li>
-            <li>A short, specific message works best: the bill number, whether you support or oppose it, and one or two reasons in your own words.</li>
-            <li>While a bill is in committee, write to the committee chair, who decides what goes on the agenda.</li>
-            <li>Once a bill has passed both houses, write to the governor's office (contact details below).</li>
-            <li>Committees sometimes hold public hearings on an issue and take testimony, written or in person.</li>
+            <li>Contact your state senator and Assembly member (<a href="https://www.nysenate.gov/find-my-senator" target="_blank" rel="noopener">find your senator</a>, <a href="https://nyassembly.gov/mem/search/" target="_blank" rel="noopener">find your Assembly member</a>).</li>
+            <li>Give the bill number, your position, and a reason.</li>
+            <li>In committee: write the chair. Passed both houses: write the governor.</li>
           </ul>
         </div>
         <div class="card">
           <h3>Organizations and businesses</h3>
           <ul>
-            <li>Send a memo of support or opposition: a one- or two-page letter with the bill number, your position, and the reasons. Send it to the sponsors and the committee chairs while the bill is moving, and to the governor's counsel after it passes both houses.</li>
-            <li>Joining with others carries more weight: coalitions, trade associations, and statewide groups often send memos together.</li>
-            <li>Anyone who expects to spend or be paid more than $5,000 a year on lobbying has to register with the state <a href="https://ethics.ny.gov/lobbyist-and-public-corporation-registration-instructions" target="_blank" rel="noopener">Commission on Ethics and Lobbying in Government</a>.</li>
+            <li>Send a memo of support or opposition to the sponsors and committee chairs.</li>
+            <li>After it passes both houses, send it to the governor's counsel.</li>
+            <li>Spending over $5,000 a year on lobbying requires <a href="https://ethics.ny.gov/lobbyist-and-public-corporation-registration-instructions" target="_blank" rel="noopener">registration</a>.</li>
           </ul>
         </div>
         <div class="card">
-          <h3>Counties, cities, towns and villages</h3>
+          <h3>Local governments</h3>
           <ul>
-            <li>Pass a resolution supporting or opposing a bill and send it to your state legislators, the sponsors, and the governor.</li>
-            <li>After a bill passes both houses, a letter from the local government to the counsel to the governor goes into the bill's official file (the “bill jacket”), which her staff reviews before she signs or vetoes.</li>
-            <li>A bill that applies only to one locality generally needs that local government's request (a “home rule request”) before the Legislature can pass it: a vote of two-thirds of the local legislative body, or the chief executive's request with a majority vote.</li>
-            <li>Statewide associations, such as the New York State Association of Counties, track bills and send memos for their members.</li>
+            <li>Send a resolution to your legislators, the sponsors, and the governor.</li>
+            <li>After it passes both houses, write the governor's counsel. The letter goes in the bill's file.</li>
+            <li>A bill affecting only your locality needs your home rule request.</li>
           </ul>
         </div>
       </div>
     </div>
 
     <div class="act-sec">
-      <h2>What helps at each stage</h2>
+      <h2>Who decides at each stage</h2>
       <div class="tablewrap"><table class="stagehelp">
-        <thead><tr><th>Stage</th><th>Who decides</th><th>Who to contact</th></tr></thead>
+        <thead><tr><th>Stage</th><th>Who decides</th><th>Contact</th></tr></thead>
         <tbody>
-          <tr><td>In committee</td><td>The committee chair decides which bills go on the agenda; the committee votes.</td><td>The chair, committee members (especially your own legislators), and the sponsors.</td></tr>
-          <tr><td>Awaiting a floor vote</td><td>Each house's leaders decide which bills come up for a vote; the calendar comes out the day of the vote.</td><td>Your own senator and Assembly member, and the sponsors.</td></tr>
-          <tr><td>Passed one house</td><td>The other house, starting with its committee.</td><td>The committee chair in the other house, the sponsor there, and your legislator in that house.</td></tr>
-          <tr><td>Passed both, not yet sent</td><td>The governor's office decides when to ask for the bill, any day through December.</td><td>The governor's office and counsel. Sponsors can urge the governor's office to take up the bill.</td></tr>
-          <tr><td>On the governor's desk</td><td>The governor has 10 days, not counting Sundays, to sign or veto.</td><td>The governor's office and counsel, quickly.</td></tr>
+          <tr><td>In committee</td><td>The chair sets the agenda</td><td>Chair, members, sponsors</td></tr>
+          <tr><td>Awaiting a floor vote</td><td>House leaders</td><td>Your legislators, sponsors</td></tr>
+          <tr><td>Passed one house</td><td>The other house</td><td>Its committee chair and sponsor</td></tr>
+          <tr><td>Passed both, not yet sent</td><td>Governor's office, any day through December</td><td>Governor's office, sponsors</td></tr>
+          <tr><td>On the governor's desk</td><td>Governor, within 10 days (Sundays excluded)</td><td>Governor's office</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -479,7 +476,7 @@ table.oc th { vertical-align: bottom; }
       <h2>Governor's office</h2>
       <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message to the governor</a></p>
       <p>Phone: <span class="phone">(518) 474-8390</span>, 9 a.m. to 5 p.m.</p>
-      <p>Mail: Governor of New York State, NYS State Capitol Building, Albany, NY 12224. Letters about a bill that has passed both houses can be addressed to the Counsel to the Governor at the same address.</p>
+      <p>Mail: NYS State Capitol Building, Albany, NY 12224. Letters on passed bills: Counsel to the Governor, same address.</p>
     </div>
   </section>
 
@@ -780,10 +777,9 @@ function renderOpenNow() {
   }
   const desk = BILLS.filter((b) => b.stage === 4), waiting = BILLS.filter((b) => b.stage === 3);
   const next = desk.map((b) => b.due).filter((d) => d && d >= isoToday()).sort()[0];
-  $("openNow").innerHTML = `<h2>Where comment can matter right now</h2>
-    <p>${num(desk.length)} bill${desk.length === 1 ? " is" : "s are"} on the governor's desk${next ? `, with the next decision due about ${fmtDate(next)}` : ""}, and ${num(waiting.length)} more ${waiting.length === 1 ? "has" : "have"} passed both houses and can be sent to her any day.</p>
-    <h3>Finding bills to weigh in on</h3>
-    <p>On the Bills tab, choose “On the governor's desk” or “Passed both houses” under <i>Where it is now</i>, and sort by “Governor's deadline” to see the most urgent first. Open any bill to see what happens next and who to contact about it.</p>`;
+  $("openNow").innerHTML = `<h2>Open for comment</h2>
+    <p>${num(desk.length)} on the governor's desk${next ? ` (next decision due about ${fmtDate(next)})` : ""}. ${num(waiting.length)} more passed both houses and can be sent to her any day.</p>
+    <p>To find them, use <i>Where it is now</i> on the Bills tab. Each bill lists who to contact.</p>`;
 }
 
 function keyDates(b) {
@@ -1133,14 +1129,14 @@ function sessionNotice(raw) {
   const quiet = lv ? (new Date(today) - new Date(lv)) / 864e5 > 21 : false;
   const waiting = BILLS.filter((b) => b.stage === 3).length, desk = BILLS.filter((b) => b.stage === 4).length;
   const governor = waiting + desk
-    ? `The governor still has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} to act on: ${num(desk)} on her desk and ${num(waiting)} not yet sent to her.`
+    ? `The governor has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} left: ${num(desk)} on her desk, ${num(waiting)} not yet sent.`
     : "The governor has acted on every bill that passed both houses.";
   if (today > `${y2}-12-31`)
-    return `The ${span(y1)} session ended on December 31, ${y2}. Bills that hadn't passed both houses died and have to be reintroduced in the new session. ${governor}`;
+    return `The ${span(y1)} session ended December 31, ${y2}. Bills that didn't pass both houses died. ${governor}`;
   if (quiet && lv.startsWith(String(y2)))
-    return `The Legislature held its last floor votes of this session on ${fmtDate(lv)}. Bills that hadn't passed both houses by then can move only if lawmakers return for a special session, and they die on December 31, ${y2}. ${governor}`;
+    return `Floor votes ended ${fmtDate(lv)}. Bills that haven't passed both houses die December 31 unless lawmakers return for a special session. ${governor}`;
   if (quiet && lv.startsWith(String(y1)) && today.startsWith(String(y1)))
-    return `The Legislature finished its ${y1} floor votes on ${fmtDate(lv)}. Bills that haven't passed both houses carry over to January ${y2}, when the second year of the session begins; bills that passed only one house will be sent back to committee and have to pass again. ${waiting + desk ? governor : ""}`.trim();
+    return `Floor votes for ${y1} ended ${fmtDate(lv)}. Bills carry over to January ${y2}; those that passed only one house must pass again. ${waiting + desk ? governor : ""}`.trim();
   return "";
 }
 
