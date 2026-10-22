@@ -240,7 +240,8 @@ table.oc th { vertical-align: bottom; }
 .results { min-width: 0; display: grid; gap: 10px; align-content: start; }
 .sortby { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
 .sortby select { width: auto; padding: 4px 8px; font-size: 13px; }
-.resultbar { align-items: center; }
+.resultbar { align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-top: 8px; }
+.resultbar .q { flex: 1 1 240px; min-width: 0; width: auto; }
 
 /* Stage list in the sidebar */
 .pg { display: grid; gap: 1px; }
@@ -264,6 +265,20 @@ table.oc th { vertical-align: bottom; }
 .chipx b { font-weight: 400; color: var(--ink-2); }
 .chipx span[aria-hidden] { font-size: 14px; line-height: 1; color: var(--ink-2); }
 .chipx:hover { background: var(--sheet); }
+.chipx.fixed { cursor: default; padding-right: 10px; }
+.watchbtn { appearance: none; border: 0; background: none; padding: 2px 0 0; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; justify-self: start; }
+.watchbtn[aria-pressed="true"] { color: var(--gold); }
+.watchbtn:hover { color: var(--gold); }
+.news { display: inline-block; font: 600 11px var(--body); background: var(--gold-soft); color: var(--ink); border-radius: 3px; padding: 1px 6px; vertical-align: 2px; }
+.watchtoggle { display: flex; gap: 8px; align-items: center; font: 600 14px var(--body); cursor: pointer; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.watchtoggle .wcount { color: var(--ink-2); font-weight: 400; }
+.wl { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.wl h2 { margin: 0; font: 700 20px var(--display); font-stretch: 85%; }
+.wl p { margin: 0; font-size: 14px; }
+.wl .muted { color: var(--ink-2); font-size: 13px; }
+.wl .sharerow { display: flex; gap: 8px; flex-wrap: wrap; }
+.wl .sharerow input { flex: 1 1 280px; min-width: 0; font: 12.5px var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 6px 8px; }
+.wl .act-btn, .act-btn { appearance: none; border: 1px solid var(--navy); background: var(--sheet); color: var(--navy); border-radius: 5px; padding: 6px 12px; font: 600 13px var(--body); cursor: pointer; }
 .clearall { appearance: none; background: none; border: 0; color: var(--navy); font: 600 12.5px var(--body); text-decoration: underline; cursor: pointer; padding: 3px 4px; }
 
 /* Statistics and How it works views */
@@ -295,6 +310,10 @@ table.oc th { vertical-align: bottom; }
 .next .contact { overflow-wrap: anywhere; }
 .next .phone { font-family: var(--mono); font-size: 12.5px; user-select: all; }
 .next .ours { color: var(--signed); font-weight: 600; font-size: 12px; }
+.next li .ask { font-size: 13px; font-weight: 600; }
+.next li.key { border-left: 3px solid var(--gold); padding-left: 8px; margin-left: -11px; }
+.next .star { color: var(--gold); }
+.next .hint { font-size: 12px; color: var(--ink-2); }
 
 /* Weigh in tab */
 .actview { display: grid; gap: 22px; }
@@ -334,6 +353,7 @@ table.oc th { vertical-align: bottom; }
     </div>
     <p class="notice" id="notice" hidden></p>
     <div class="person" id="person" hidden></div>
+    <div class="wl" id="wl" hidden></div>
   </header>
 
   <nav class="views" role="tablist" aria-label="Page sections">
@@ -348,10 +368,7 @@ table.oc th { vertical-align: bottom; }
     <details class="side" id="side" open>
       <summary class="side-toggle">Filters <span id="filterCount"></span></summary>
       <div class="side-body">
-        <div class="field">
-          <label for="q">Search</label>
-          <input type="search" id="q" placeholder="Bill number, words, sponsor" autocomplete="off">
-        </div>
+        <label class="watchtoggle" for="watch"><input type="checkbox" id="watch"> <span>★ My watchlist</span> <span class="wcount" id="watchCount"></span></label>
         <div class="group">
           <div class="group-h">Where it is now</div>
           <div id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
@@ -403,6 +420,7 @@ table.oc th { vertical-align: bottom; }
 
     <div class="results" id="view-bills">
       <div class="resultbar">
+        <input type="search" id="q" class="q" placeholder="Search bills: number, words, sponsor" autocomplete="off" aria-label="Search bills">
         <span id="count"></span>
         <label class="sortby" for="sort">Sort
           <select id="sort">
@@ -539,8 +557,8 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "watch"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", watch: false, shown: PAGE });
 let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
@@ -566,7 +584,7 @@ function deadline(iso) {
 }
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
-const storeKey = (k) => `abt:${DATA.session}:${PRESET ? "who:" + PRESET.who + ":" : ""}${k}`;
+const storeKey = (k) => `abt:${DATA.session}:${PRESET?.who ? "who:" + PRESET.who + ":" : PRESET?.watch ? "watch:" : ""}${k}`;
 function store(k, v) { try { localStorage.setItem(storeKey(k), JSON.stringify(v)); } catch (e) {} }
 function recall(k) { try { const v = localStorage.getItem(storeKey(k)); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
 
@@ -630,6 +648,7 @@ function matches(b, skip) {
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
   if (state.party && b.parties !== state.party) return false;
+  if (state.watch && !(SHARED ? SHARED.has(billKey(b)) || b.nums.some((n) => SHARED.has(baseNum(n))) : isWatched(b))) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     for (const w of words) if (!b._hay.includes(w)) return false;
@@ -732,34 +751,46 @@ function statusText(b) {
 }
 
 // ---- What's next and who to contact (current session only) ----
-const GOV = `<li><span class="contact"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Governor's office</a></span><span class="role">Online message form</span><span class="reach"><span class="phone">(518) 474-8390</span></span></li>`;
+const govItem = (ask) => `<li class="key"><span class="contact"><span class="star" title="Decides the next step">★</span> <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Governor's office</a></span><span class="role">Online message form</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><span class="phone">(518) 474-8390</span></span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
 const lastName = (n) => (n || "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
 
 // Collects the people to contact about a bill, one entry each, with every role they play.
-function contactBook(b) {
+function contactBook(b, canMove = true) {
   const book = new Map();
   // Keyed by house and last name, so "Anna Kelles" and "Anna R. Kelles" are one person.
-  const add = (name, house, role) => {
+  const add = (name, house, role, ask, star) => {
     if (!name) return;
     const key = `${house}:${lastName(name)}`;
-    if (!book.has(key)) book.set(key, { name, house, roles: [], cosponsor: false });
+    if (!book.has(key)) book.set(key, { name, house, roles: [], asks: [], star: false });
     const p = book.get(key);
     if (role && !p.roles.includes(role)) p.roles.push(role);
+    if (ask && !p.asks.includes(ask)) p.asks.push(ask);
+    if (star) p.star = true;
   };
   const cos = (house) => b.vers.filter((v) => v.p[0] === house).flatMap((v) => v.cosponsors.map(lastName));
   return {
-    sponsor(v) { add(v.sponsor, v.p[0], `sponsor of ${v.p}`); },
-    chair(house, cname) {
+    sponsor(v, ask) { add(v.sponsor, v.p[0], `sponsor of ${v.p}`, ask); },
+    chair(house, cname, ask, star) {
       const c = (DATA.contacts?.committees || {})[`${house}:${commKey(cname)}`];
       if (!c || !c.chair) return;
-      add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`);
-      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`); }
+      add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`, ask, star);
+      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, "vote yes in committee"); }
     },
-    reps(houses = ["S", "A"]) {
-      for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) add(r.name, r.house, r.house === "S" ? "your state senator" : "your Assembly member");
+    leader(house, ask, star) {
+      const L = (DATA.contacts?.leaders || {})[house];
+      if (L) add(L.name, house, L.role.charAt(0).toLowerCase() + L.role.slice(1) + ", decides which bills come to the floor", ask, star);
+    },
+    reps(houses = ["S", "A"], ask) {
+      for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) {
+        // Ask our legislators to sign on, unless they already sponsor or co-sponsor it.
+        const sponsors = b.vers.some((v) => v.p[0] === r.house && lastName(v.sponsor) === r.last);
+        const theirs = sponsors || b.vers.some((v) => v.p[0] === r.house && v.cosponsors.some((n) => lastName(n) === r.last));
+        add(r.name, r.house, r.house === "S" ? "your state senator" : "your Assembly member",
+          sponsors ? "" : ask || (theirs || !canMove ? "" : "sign on as a co-sponsor"));
+      }
     },
     html(gov) {
       const items = [...book.values()].map((p) => {
@@ -773,9 +804,11 @@ function contactBook(b) {
         const name = info.url ? `<a href="${esc(info.url)}" target="_blank" rel="noopener">${title} ${esc(p.name)}</a>` : `${title} ${esc(p.name)}`;
         const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, info.phone && `<span class="phone">${esc(info.phone)}</span>`].filter(Boolean).join(" · ");
         const roles = p.roles.join("; ");
-        return `<li><span class="contact">${name}${status}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${reach ? `<span class="reach">${reach}</span>` : ""}</li>`;
+        const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
+        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${p.star ? `<span class="star" title="Decides the next step">★</span> ` : ""}${name}${status}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
       });
-      return (gov ? GOV : "") + items.join("");
+      items.sort((x, y) => y.star - x.star);
+      return (gov ? gov : "") + items.map((x) => x.html).join("");
     },
   };
 }
@@ -789,36 +822,47 @@ function nextSteps(b) {
   const stalled = adjourned
     ? `Floor votes are over for this session. Unless lawmakers return for a special session, it dies December 31, ${y2}.`
     : recess ? `The Legislature is out until January ${y2}.` : "";
-  let what = "", gov = false;
-  const book = contactBook(b);
+  let what = "", gov = "";
+  const live = !stalled || recess; // can anything move before the session ends?
+  const book = contactBook(b, live || b.stage >= 3);
   const inComm = b.vers.filter((v) => v.committee && /committee/i.test(v.statusDesc || ""));
   if (b.stage === 0) {
     what = `<p class="when">Next: a committee vote.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    inComm.forEach((v) => book.chair(v.p[0], v.committee));
-    b.vers.forEach(book.sponsor); book.reps();
+    inComm.forEach((v) => book.chair(v.p[0], v.committee, live ? "put it on the committee agenda" : "", live));
+    b.vers.forEach((v) => book.sponsor(v, live ? "press the chair to put it on the agenda" : "reintroduce it next session"));
+    book.reps();
   } else if (b.stage === 1) {
-    what = `<p class="when">Next: a vote of the full ${b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => HOUSE[v.p[0]]).join(" and ") || "house"}.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    b.vers.forEach(book.sponsor); book.reps();
+    const houses = b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => v.p[0]);
+    what = `<p class="when">Next: a vote of the full ${houses.map((h) => HOUSE[h]).join(" and ") || "house"}.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
+    houses.forEach((h) => book.leader(h, live ? "bring it to a floor vote" : "", live));
+    b.vers.forEach((v) => book.sponsor(v, live ? "press leadership to bring it to a vote" : "reintroduce it next session"));
+    book.reps(houses.length ? houses : ["S", "A"], live ? "vote yes" : "");
   } else if (b.stage === 2) {
     const other = b.passedIn === "Senate" ? "A" : "S";
     const twin = b.vers.find((v) => v.p[0] === other);
     what = `<p class="when">Next: the ${HOUSE[other]} has to pass it.${twin ? "" : ` It has no ${HOUSE[other]} version.`}</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    if (twin && twin.committee) book.chair(other, twin.committee);
-    b.vers.filter((v) => v.p[0] === other).forEach(book.sponsor); book.reps([other]);
-    b.vers.filter((v) => v.p[0] !== other).forEach(book.sponsor);
+    if (twin && twin.committee) book.chair(other, twin.committee, live ? "put it on the committee agenda" : "", live);
+    else book.leader(other, live ? "bring it to a floor vote" : "", live);
+    b.vers.filter((v) => v.p[0] === other).forEach((v) => book.sponsor(v, live ? `push for it in the ${HOUSE[other]}` : "reintroduce it next session"));
+    book.reps([other], live ? "vote yes" : "");
+    b.vers.filter((v) => v.p[0] !== other).forEach((v) => book.sponsor(v, live ? `press the ${HOUSE[other]} to take it up` : "reintroduce it next session"));
   } else if (b.stage === 3) {
     what = `<p class="when">Next: the governor's office requests it (any day through December), then she has 10 days to act.</p>`;
-    gov = true; b.vers.forEach(book.sponsor); book.reps();
+    gov = govItem("request the bill and sign it");
+    b.vers.forEach((v) => book.sponsor(v, "urge the governor's office to request it"));
+    book.reps(["S", "A"], "urge the governor to sign it");
   } else if (b.stage === 4) {
     what = `<p class="when">Next: the governor signs or vetoes it${b.due ? `, by about ${fmtDate(b.due)}` : ""}.</p>`;
-    gov = true; b.vers.forEach(book.sponsor);
+    gov = govItem(`sign it${b.due ? ` by ${fmtDate(b.due)}` : ""}`);
+    b.vers.forEach((v) => book.sponsor(v, "urge the governor to sign it"));
   } else if (b.stage === 5) {
     what = `<p class="when">Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}.</p>`;
-    b.vers.forEach(book.sponsor);
+    b.vers.forEach((v) => book.sponsor(v));
   } else if (b.stage === 6) {
     what = `<p class="when">Vetoed. The sponsors can reintroduce it next session.</p>`;
-    b.vers.forEach(book.sponsor);
+    b.vers.forEach((v) => book.sponsor(v, "reintroduce it next session"));
   }
+  if (b.stage <= 4 && (live || b.stage >= 3)) what += `<p class="hint">★ decides the next step. Asks are for supporters; if you oppose the bill, ask for the opposite.</p>`;
   const who = book.html(gov);
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
@@ -912,9 +956,9 @@ function billRow(b) {
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
       return `<details class="bill" data-idx="${b.idx}">
         <summary>
-          <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}</div>
+          <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}${watchButton(b)}</div>
           <div class="main">
-            <div class="title">${esc(b.title)}</div>
+            <div class="title">${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</div>
             <div class="meta">${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
             <div class="tags">${tags}</div>
           </div>
@@ -1041,6 +1085,7 @@ function activeFilters() {
   if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
   for (const t of state.topics) out.push(["topics", t, "Topic", TOPICS[t]]);
   if (state.party) out.push(["party", null, "Party", PARTIES[state.party]]);
+  if (state.watch) out.push(["watch", null, "Showing", SHARED ? "shared watchlist" : "my watchlist"]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
   if (state.law) out.push(["law", null, "Law", `contains “${state.law}”`]);
   if (state.who && LEG_BY_ID[state.who]) out.push(["who", null, state.whoCos ? "Sponsor or co-sponsor" : "Sponsor", LEG_BY_ID[state.who].label]);
@@ -1053,9 +1098,13 @@ function activeFilters() {
 
 function renderActive() {
   const list = activeFilters();
-  const html = list.length ? list.map(([k, v, label, val]) =>
-    `<button class="chipx" type="button" data-k="${k}" data-v="${esc(v ?? "")}" title="Remove this filter"><b>${esc(label)}:</b> ${esc(val)} <span aria-hidden="true">×</span></button>`).join("")
-    + `<button class="clearall" type="button" data-clear="all">Clear all</button>` : "";
+  // On a legislator's page their sponsor filter is fixed: shown, but not removable.
+  const fixed = (k) => (PRESET?.who && k === "who") || (PRESET?.watch && k === "watch");
+  const removable = list.filter(([k]) => !fixed(k)).length;
+  const html = list.length ? list.map(([k, v, label, val]) => fixed(k)
+    ? `<span class="chipx fixed"><b>${esc(label)}:</b> ${esc(val)}</span>`
+    : `<button class="chipx" type="button" data-k="${k}" data-v="${esc(v ?? "")}" title="Remove this filter"><b>${esc(label)}:</b> ${esc(val)} <span aria-hidden="true">×</span></button>`).join("")
+    + (removable ? `<button class="clearall" type="button" data-clear="all">Clear all</button>` : "") : "";
   for (const id of ["active", "activeStats"]) { $(id).innerHTML = html; $(id).hidden = !list.length; }
   $("filterCount").textContent = list.length ? `${list.length} active` : "";
 }
@@ -1067,7 +1116,55 @@ function clearFilter(k, v) {
   state.shown = PAGE; syncControls(); render();
 }
 
+// ---- Watchlist: kept in this browser; a share link carries a copy to someone else ----
+const WATCH_STORE = "abt:watch";
+let WATCH = new Map(); // "2025:S1234" -> date of the last action seen
+let SHARED = null;      // a watchlist opened from a share link (#w=2025.S1234.A5678)
+const baseNum = (n) => n.replace(/[A-Z]$/, "");
+const billKey = (b) => `${DATA.session}:${baseNum(b.nums[0])}`;
+const keysOf = (b) => b.nums.map((n) => `${DATA.session}:${baseNum(n)}`);
+function loadWatch() { try { WATCH = new Map(Object.entries(JSON.parse(localStorage.getItem(WATCH_STORE) || "{}"))); } catch (e) { WATCH = new Map(); } }
+function saveWatch() { try { localStorage.setItem(WATCH_STORE, JSON.stringify(Object.fromEntries(WATCH))); } catch (e) {} }
+const isWatched = (b) => keysOf(b).some((k) => WATCH.has(k));
+const WATCH_COUNT = () => BILLS.filter(isWatched).length;
+function seenDate(b) { for (const k of keysOf(b)) if (WATCH.has(k)) return WATCH.get(k); return null; }
+const hasNews = (b) => { const s = seenDate(b); return !!s && (b.last || "") > s; };
+function toggleWatch(b) {
+  if (isWatched(b)) keysOf(b).forEach((k) => WATCH.delete(k));
+  else WATCH.set(billKey(b), b.last || "");
+  saveWatch();
+}
+function markSeen(b) { if (!isWatched(b)) return; keysOf(b).forEach((k) => WATCH.delete(k)); WATCH.set(billKey(b), b.last || ""); saveWatch(); }
+function watchButton(b) {
+  const on = isWatched(b);
+  return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${on}" title="${on ? "Remove from" : "Add to"} my watchlist">${on ? "★" : "☆"}</button>`;
+}
+function shareLink(list) {
+  const nums = BILLS.filter(list).map((b) => baseNum(b.nums[0]));
+  const root = location.href.replace(/[#?].*$/, "").replace(/(watchlist\/|[a-z-]+\/)?(index\.html|\d{4}\.html)?$/, "");
+  return `${root}watchlist/#w=${DATA.session}.${nums.join(".")}`;
+}
+function renderWatchCard() {
+  const card = $("wl");
+  if (!state.watch) { card.hidden = true; return; }
+  const mine = WATCH_COUNT();
+  if (SHARED) {
+    const n = BILLS.filter((b) => b.nums.some((x) => SHARED.has(baseNum(x)))).length;
+    card.innerHTML = `<h2>Shared watchlist</h2><p>${num(n)} bill${n === 1 ? "" : "s"} someone shared with you.</p>
+      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
+  } else {
+    const link = /^https?:/.test(location.href) && !location.href.startsWith("https://claude.ai") ? shareLink(isWatched) : "";
+    card.innerHTML = `<h2>My watchlist</h2>
+      <p>${mine ? `${num(mine)} bill${mine === 1 ? "" : "s"}. Bills marked “New activity” have changed since you last opened them.` : "No bills yet. Click ☆ next to any bill to add it."}</p>
+      <p class="muted">Saved in this browser only. To share it or move it to another device, copy this link:</p>
+      ${mine && link ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(link)}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy link</button></p>` : ""}`;
+  }
+  card.hidden = false;
+}
+
 function render() {
+  renderWatchCard();
+  $("watchCount").textContent = WATCH.size ? `(${WATCH_COUNT()})` : "";
   renderChart();
   renderPipeline();
   renderTopics();
@@ -1084,6 +1181,7 @@ function fillDetail(el) {
   if (d.dataset.done) return;
   d.dataset.done = "1";
   const b = BILLS[+el.dataset.idx];
+  markSeen(b);
   d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
@@ -1104,7 +1202,7 @@ function showView(v) {
 function syncControls() {
   $("q").value = state.q;
   for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).value = state[id];
-  for (const id of ["whoCos"]) $(id).checked = state[id];
+  for (const id of ["whoCos", "watch"]) $(id).checked = state[id];
   $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
 
@@ -1131,7 +1229,7 @@ function wire() {
       if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
     }, 200);
   });
-  for (const id of ["whoCos"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  for (const id of ["whoCos", "watch"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
   $("who").addEventListener("input", (e) => {
     const text = e.target.value.trim().toLowerCase();
     const hit = LEGS.find((L) => L.label.toLowerCase() === text);
@@ -1140,13 +1238,33 @@ function wire() {
   });
   for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
     const chip = e.target.closest("button"); if (!chip) return;
-    if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }); syncControls(); render(); return; }
+    if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }, PRESET?.who ? { who: PRESET.who, whoCos: state.whoCos } : {}, PRESET?.watch ? { watch: true } : {}); syncControls(); render(); return; }
     clearFilter(chip.dataset.k, chip.dataset.v);
   });
   document.querySelector(".views").addEventListener("click", (e) => {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
+  for (const id of ["list", "openNow"]) $(id).addEventListener("click", (e) => {
+    const btn = e.target.closest(".watchbtn"); if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    const b = BILLS[+btn.dataset.watch]; toggleWatch(b);
+    for (const el of document.querySelectorAll(`.watchbtn[data-watch="${b.idx}"]`)) el.outerHTML = watchButton(b);
+    $("watchCount").textContent = WATCH.size ? `(${WATCH_COUNT()})` : "";
+    if (state.watch) render(); else renderWatchCard();
+  });
+  $("wl").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-wl]"); if (!btn) return;
+    if (btn.dataset.wl === "copy") {
+      const input = $("shareLink");
+      try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
+    } else if (btn.dataset.wl === "import") {
+      for (const b of BILLS) if (b.nums.some((x) => SHARED.has(baseNum(x))) && !isWatched(b)) WATCH.set(billKey(b), b.last || "");
+      saveWatch(); SHARED = null; history.replaceState(null, "", location.pathname); render();
+    } else if (btn.dataset.wl === "mine") {
+      SHARED = null; history.replaceState(null, "", location.pathname); render();
+    }
+  });
   for (const id of ["list", "openNow"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
   $("openNow").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-more]"); if (!btn) return;
@@ -1318,6 +1436,9 @@ function hydrate(raw) {
     `<option value="${y}">${y}${y === raw.session ? " (first year)" : " (second year)"} (${num(BILLS.filter((b) => b.intro === y).length)})</option>`).join("");
 
   setupLegislators(raw);
+  loadWatch();
+  const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.]+)$/);
+  if (m && +m[1] === raw.session) { SHARED = new Set(m[2].split(".")); state.watch = true; }
   const saved = recall("filters");
   if (saved) {
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
@@ -1326,11 +1447,15 @@ function hydrate(raw) {
     if (state.sort === "due" && !raw.current) state.sort = "recent";
     syncControls();
   }
-  if (PRESET) {
+  if (PRESET?.watch) { if (!saved) Object.assign(state, blank()); state.watch = true; syncControls(); $("watch").closest("label").hidden = true; }
+  if (SHARED) state.watch = true;
+  if (PRESET?.who) {
     // A legislator's page: start from their bills, keeping only filters saved on this page.
     if (!saved) Object.assign(state, blank());
     state.who = PRESET.who;
     syncControls();
+    $("who").hidden = true;
+    $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
   }
   try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "time", "sessions"].includes(v)) chartView = v; } catch (err) {}

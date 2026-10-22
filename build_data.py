@@ -50,6 +50,11 @@ DELEGATION = {
 DEFAULT_DELEGATION = {"SENATE": {52}, "ASSEMBLY": {125}}  # 2023 onward
 DELEGATION_NAMES = {"Webb", "Kelles"}
 
+# Who decides which bills reach each house's floor. Check after leadership votes in January
+# of odd years; a leader is shown only while the named person still holds a seat.
+LEADERS = {"S": ("Andrea Stewart-Cousins", "Senate Majority Leader"),
+           "A": ("Carl Heastie", "Assembly Speaker")}
+
 
 def delegation(session):
     return DELEGATION.get(session, DEFAULT_DELEGATION if session >= 2023 else {})
@@ -455,7 +460,12 @@ def contacts_for(session, recs, delegation_names):
                 name = next((n for n in people if name_key(n) == seat["key"]), seat["name"])
                 people.setdefault(name, lookup(name, house, district))
                 reps.append({"title": title, "name": name, "house": house, "last": seat["key"].split()[-1]})
-    return {"fetched": raw.get("fetched"), "committees": committees, "people": people, "reps": reps}
+    leaders = {}
+    for house, (name, role) in LEADERS.items():
+        if any(k[0] == house and v["key"] == name_key(name) for k, v in seats.items()):
+            person(name, house)
+            leaders[house] = {"name": name, "role": role}
+    return {"fetched": raw.get("fetched"), "committees": committees, "people": people, "reps": reps, "leaders": leaders}
 
 
 def choose_page(legs):
@@ -614,6 +624,13 @@ def main():
                     os.makedirs(os.path.join(GITHUB, leg["slug"]), exist_ok=True)
                     with open(os.path.join(GITHUB, leg["slug"], "index.html"), "w") as f:
                         f.write(github_page(page))
+                # /watchlist/: the same page, opened to the visitor's own watchlist.
+                page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../"></script>')
+                page = page.replace("<title>Albany Bill Tracker</title>",
+                                    '<title>Watchlist · Albany Bill Tracker</title>\n<meta name="abt-preset" content="{&quot;watch&quot;: true}">', 1)
+                os.makedirs(os.path.join(GITHUB, "watchlist"), exist_ok=True)
+                with open(os.path.join(GITHUB, "watchlist", "index.html"), "w") as f:
+                    f.write(github_page(page))
                 # A shared last name gets a page for picking the right person, e.g. /ramos/.
                 by_last = defaultdict(list)
                 for leg in data.get("legislators", []):

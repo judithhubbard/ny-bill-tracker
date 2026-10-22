@@ -17,6 +17,10 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - On GitHub Pages each current legislator also has a page filtered to their bills, at
   `/<last name>/` (or `/<first>-<last>/` when a last name is shared, with `/<last name>/` then
   offering a choice). The list comes from the nightly contacts refresh, so it follows elections.
+- `/watchlist/` shows the visitor's starred bills. Watchlists are kept in each browser
+  (localStorage); the share link (`/watchlist/#w=2025.S1234.A5678`) carries a copy.
+- Floor leaders (Senate Majority Leader, Assembly Speaker) are set in `LEADERS` in
+  `build_data.py`; check them after leadership votes each January of odd years.
 - `tracker.html` is the page template; topic rules and the sponsor checkboxes are at the top of `build_data.py`.
 - `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages. The note at
   the top of the page (end of votes, governor's remaining bills, session over) is worked out
