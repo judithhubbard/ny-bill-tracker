@@ -300,10 +300,14 @@ table.oc th { vertical-align: bottom; }
 .vtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
 .vtrack i.a { background: var(--navy); }
 .vtrack i.l { background: var(--signed); }
-.vtrack .tick { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1px; background: var(--gold); border-radius: 1px; }
+.vtrack .tick { position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; border-radius: 1px; box-shadow: 0 0 0 1.5px var(--paper); }
+.vtrack .tick.a { background: var(--navy); }
+.vtrack .tick.l { background: var(--signed); }
 .vrow .val { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .vrow .val b.big { font: 700 16px var(--display); font-stretch: 85%; color: var(--ink); }
-.key .k-tick { width: 3px !important; height: 14px !important; background: var(--gold); }
+.key .k-tick { width: 4px !important; height: 14px !important; box-shadow: 0 0 0 1.5px var(--paper); }
+.key .k-tick.a { background: var(--navy); }
+.key .k-tick.l { background: var(--signed); }
 .houses { display: grid; gap: 22px; }
 .house h3.sub { margin-bottom: 8px; }
 .house .muted { color: var(--ink-2); font-size: 12.5px; margin: 6px 0 0; }
@@ -1263,8 +1267,8 @@ function renderStats() {
   const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
 
   // Bars instead of tables: one row per item, a label, a bar, and a short reading.
-  const vrow = (label, sub, segs, right, tick) => `<div class="vrow"><div class="lab"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</div>
-    <div class="vtrack">${segs.map(([w, cls]) => `<i class="${cls}" style="width:${Math.max(0, Math.min(100, w))}%"></i>`).join("")}${tick != null ? `<span class="tick" style="left:${Math.min(100, tick)}%" title="This session so far"></span>` : ""}</div>
+  const vrow = (label, sub, segs, right, ticks) => `<div class="vrow"><div class="lab"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</div>
+    <div class="vtrack">${segs.map(([w, cls]) => `<i class="${cls}" style="width:${Math.max(0, Math.min(100, w))}%"></i>`).join("")}${(ticks || []).map(([w, cls, what]) => `<span class="tick ${cls}" style="left:${Math.max(0, Math.min(100, w))}%" title="This session so far: ${what}"></span>`).join("")}</div>
     <div class="val">${right}</div></div>`;
 
   // What usually happens next: a funnel. Bar length is how many bills got that far; green is how many of them became law.
@@ -1299,11 +1303,11 @@ function renderStats() {
       vrow(esc(commLabel(r.k).replace(/^[AS] · /, "")), `about ${num(r.perSession)} bills a session`,
         [[(r.out / scale) * 100, "a"], [(r.law / scale) * 100, "l"]],
         `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
-        r.nowOut != null ? (r.nowOut / scale) * 100 : null)).join("")}</div>
+        r.nowOut != null ? [[(r.nowOut / scale) * 100, "a", `${r.nowOut}% approved`], [(r.nowLaw / scale) * 100, "l", `${r.nowLaw}% law`]] : null)).join("")}</div>
       ${hr.length > 8 && !commAll ? `<p class="muted">${hr.length - 8} more</p>` : ""}</div>`;
   };
   $("statComm").innerHTML = `<h2>Committees</h2>
-    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span><span><i class="k-tick"></i>This session so far (approved)</span></p>
+    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span><span>This session so far:</span><span><i class="k-tick a"></i>approved</span><span><i class="k-tick l"></i>law</span></p>
     <p class="note">Share of ${topicName} referred to each committee, ${pastSpan()}. Committees with few bills left out.</p>
     <label class="commsort">Sort by <select data-commsort>${Object.entries(COMM_SORTS).map(([k, l]) => `<option value="${k}"${k === commSort ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <div class="houses">${houseList("A", "Assembly committees")}${houseList("S", "Senate committees")}</div>
@@ -1349,7 +1353,7 @@ function renderStats() {
   const passRate = (c) => (c ? pctOf(c[1], c[0]) : 0);
   const mixMax = Math.max(1, ...PARTY.map(([k]) => Math.max(passRate(pPast[k]), passRate(pNow[k]))));
   $("statCosp").innerHTML = `<h2>Co-sponsors and party</h2>
-    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span><span><i class="k-tick"></i>This session so far (passed)</span></p>
+    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span><span>This session so far:</span><span><i class="k-tick a"></i>passed</span><span><i class="k-tick l"></i>law</span></p>
     <h3 class="sub">By number of co-sponsors</h3>
     <div class="vlist">${cs.map(([n, both, law], i) => vrow(CB[i], `${num(n)} bills`, [[(pctOf(both, n) / csMax) * 100, "a"], [(pctOf(law, n) / csMax) * 100, "l"]],
       `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law`)).join("")}</div>
@@ -1358,7 +1362,7 @@ function renderStats() {
     <div class="vlist">${PARTY.map(([k, l]) => { const [n, both, law] = pPast[k] || [0, 0, 0]; const now = pNow[k];
       return vrow(l, `${num(n)} bills`, [[(pctOf(both, n) / mixMax) * 100, "a"], [(pctOf(law, n) / mixMax) * 100, "l"]],
         `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law${now ? `<small>This session so far: ${pctOf(now[1], now[0])}% passed · ${pctOf(now[2], now[0])}% law</small>` : ""}`,
-        now ? (pctOf(now[1], now[0]) / mixMax) * 100 : null); }).join("")}</div>
+        now ? [[(pctOf(now[1], now[0]) / mixMax) * 100, "a", `${pctOf(now[1], now[0])}% passed`], [(pctOf(now[2], now[0]) / mixMax) * 100, "l", `${pctOf(now[2], now[0])}% law`]] : null); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. “Both parties”: at least one sponsor or co-sponsor from each party on either version. Party from Open States.</p>`;
 
   renderOutcomes();
