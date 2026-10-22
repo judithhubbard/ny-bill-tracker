@@ -302,6 +302,21 @@ table.oc th { vertical-align: bottom; }
 .vtrack i.l { background: var(--signed); }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
+.vtrack .tick.p, .key .k-tick.p { background: var(--gold); }
+.mlist { display: grid; gap: 6px; margin: 6px 0 14px; }
+.mrow { display: grid; grid-template-columns: minmax(0, 230px) 360px; gap: 12px; align-items: end; }
+.mrow .lab b { display: block; font-weight: 600; font-size: 13px; line-height: 1.2; }
+.mrow .lab small { display: block; color: var(--ink-2); font-size: 11.5px; }
+.mcols { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; height: 40px; align-items: end; }
+.mcol { position: relative; height: 100%; display: flex; align-items: flex-end; background: var(--pip-off); border-radius: 1px; }
+.mcol i { display: block; width: 100%; background: var(--navy); border-radius: 1px; }
+.mcol b { position: absolute; left: -1px; right: -1px; height: 2px; margin-bottom: -1px; background: var(--gold); }
+.mcol.y2, .mcols.axis span.y2 { margin-left: 4px; }
+.mcols.axis { height: auto; font: 10px var(--mono, monospace); color: var(--ink-2); text-align: center; }
+.myears { display: grid; grid-template-columns: 1fr 1fr; font-size: 11.5px; color: var(--ink-2); }
+.myears span + span { padding-left: 6px; }
+.key .k-tick.now { background: var(--gold); width: 10px !important; height: 2px !important; box-shadow: none; }
+@media (max-width: 760px) { .mrow { grid-template-columns: minmax(0, 1fr); } .mrow > div:first-child:empty { display: none; } }
 .vtrack i.n, .vtrack .tick.n, .key .k-n, .key .k-tick.n { background: var(--ink-2); }
 .commctl { display: flex; gap: 20px; flex-wrap: wrap; }
 .vtrack .tick.l { background: var(--signed); }
@@ -572,6 +587,7 @@ table.st col.c-m { width: 80px; }
     <button class="view-tab" role="tab" type="button" data-view="watch" aria-selected="false">★ Watchlist<span id="watchTabCount"></span></button>
     <button class="view-tab" role="tab" type="button" data-view="act" aria-selected="false">Weigh in</button>
     <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
+    <button class="view-tab" role="tab" type="button" data-view="person" aria-selected="false" hidden>Their numbers</button>
     <button class="view-tab view-tab-end" role="tab" type="button" data-view="how" aria-selected="false">How a bill becomes law in New York</button>
   </nav>
 
@@ -741,6 +757,8 @@ table.st col.c-m { width: 80px; }
   </section>
 
   <!-- How it works -->
+  <section class="statsview" id="view-person" hidden><div id="personStats"></div></section>
+
   <section class="howview" id="view-how" hidden>
     <h2>The steps</h2>
     <ol class="steps">
@@ -1265,6 +1283,35 @@ const COMM_LABELS = {
   "A · Codes": "A · Codes (criminal law and courts)", "S · Codes": "S · Codes (criminal law and courts)",
 };
 const commLabel = (k) => (COMM_LABELS[k] || k).replace(/ And /g, " and ");
+// One bar chart row: label | bar (segments, plus optional markers) | numbers.
+const vrow = (label, sub, segs, right, ticks) => `<div class="vrow"><div class="lab"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</div>
+  <div class="vtrack">${segs.map(([w, cls]) => `<i class="${cls}" style="width:${Math.max(0, Math.min(100, w))}%"></i>`).join("")}${(ticks || []).map(([w, cls, what]) => `<span class="tick ${cls}" style="left:${Math.max(0, Math.min(100, w))}%" title="${what}"></span>`).join("")}</div>
+  <div class="val">${right}</div></div>`;
+
+// When things happen across the two-year session: one row of 24 monthly columns per event.
+const MONTH_ROWS = [["intro", "Introduced"], ["comm", "Approved by a committee"], ["passS", "Passed the Senate"], ["passA", "Passed the Assembly"]];
+function monthChart(I, t) {
+  const past = I.months?.[t], now = I.monthsNow?.[t];
+  if (!past) return "";
+  const n = (I.pastSessions || []).length || 1;
+  const live = DATA.current && now;
+  const M = "JFMAMJJASOND";
+  const NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const rows = MONTH_ROWS.map(([k, label]) => {
+    const avg = past[k].map((x) => x / n), cur = live ? now[k] : null;
+    const max = Math.max(1, ...avg, ...(cur || []));
+    const cols = avg.map((x, m) => `<span class="mcol${m === 12 ? " y2" : ""}" title="${NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}">
+      <i style="height:${(x / max) * 100}%"></i>${cur && cur[m] ? `<b style="bottom:${(cur[m] / max) * 100}%"></b>` : ""}</span>`).join("");
+    const total = Math.round(avg.reduce((a, b) => a + b, 0));
+    return `<div class="mrow"><div class="lab"><b>${label}</b><small>about ${num(total)} a session</small></div><div class="mcols">${cols}</div></div>`;
+  }).join("");
+  const axis = [...M + M].map((c, m) => `<span class="${m === 12 ? "y2" : ""}">${c}</span>`).join("");
+  return `<h3 class="sub">Through the session, by month</h3>
+    <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
+    <div class="mlist">${rows}<div class="mrow"><div></div><div class="mcols axis">${axis}</div></div>
+    <div class="mrow"><div></div><div class="myears"><span>First year</span><span>Second year</span></div></div></div>`;
+}
+
 function renderStats() {
   const I = DATA.insights;
   if (!I) return;
@@ -1274,9 +1321,7 @@ function renderStats() {
   const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
 
   // Bars instead of tables: one row per item, a label, a bar, and a short reading.
-  const vrow = (label, sub, segs, right, ticks) => `<div class="vrow"><div class="lab"><b>${label}</b>${sub ? `<small>${sub}</small>` : ""}</div>
-    <div class="vtrack">${segs.map(([w, cls]) => `<i class="${cls}" style="width:${Math.max(0, Math.min(100, w))}%"></i>`).join("")}${(ticks || []).map(([w, cls, what]) => `<span class="tick ${cls}" style="left:${Math.max(0, Math.min(100, w))}%" title="This session so far: ${what}"></span>`).join("")}</div>
-    <div class="val">${right}</div></div>`;
+
 
   // What usually happens next: a funnel. Bar length is how many bills got that far; green is how many of them became law.
   const odds = I.odds[t] || {};
@@ -1309,7 +1354,7 @@ function renderStats() {
   const shareRow = (r) => [
     [[pos(r.out), "a"], [pos(r.law), "l"]],
     `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
-    r.nowOut != null ? [[pos(r.nowOut), "a", `${r.nowOut}% approved`], [pos(r.nowLaw), "l", `${r.nowLaw}% law`]] : null];
+    r.nowOut != null ? [[pos(r.nowOut), "a", `This session so far: ${r.nowOut}% approved`], [pos(r.nowLaw), "l", `This session so far: ${r.nowLaw}% law`]] : null];
   const countRow = (r) => [
     [[pos(r.perSession), "n"], [pos(r.outN), "a"], [pos(r.lawN), "l"]],
     `<b class="big">${num(r.perSession)}</b> bills · ${num(r.outN)} approved · ${num(r.lawN)} law${r.nowN ? `<small>This session so far: ${num(r.nowN)} bills · ${num(r.nowOutN)} approved · ${num(r.nowLawN)} law</small>` : ""}`,
@@ -1335,6 +1380,8 @@ function renderStats() {
   const mid = shares.slice().sort((a, b) => a - b)[Math.floor(shares.length / 2)];
   const [late, signed] = I.lateSigning;
   $("statTiming").innerHTML = `<h2>Timing</h2>
+    ${monthChart(I, t)}
+    <h3 class="sub">End of session and the governor</h3>
     <div class="vlist">${vrow("Floor votes in the session's last 3 weeks", `${years[0].year}–${years[years.length - 1].year}, except 2020`, [[mid, "a"]], `<b class="big">${mid}%</b> in a typical year<small>Range ${Math.min(...shares)}–${Math.max(...shares)}%</small>`)}
     ${vrow("Laws signed in Oct.–Dec.", `${num(signed)} laws`, [[pctOf(late, signed), "l"]], `<b class="big">${pctOf(late, signed)}%</b>`)}</div>
     ${govTiming(I)}`;
@@ -1378,7 +1425,7 @@ function renderStats() {
     <div class="vlist">${PARTY.map(([k, l]) => { const [n, both, law] = pPast[k] || [0, 0, 0]; const now = pNow[k];
       return vrow(l, `${num(n)} bills`, [[(pctOf(both, n) / mixMax) * 100, "a"], [(pctOf(law, n) / mixMax) * 100, "l"]],
         `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law${now ? `<small>This session so far: ${pctOf(now[1], now[0])}% passed · ${pctOf(now[2], now[0])}% law</small>` : ""}`,
-        now ? [[(pctOf(now[1], now[0]) / mixMax) * 100, "a", `${pctOf(now[1], now[0])}% passed`], [(pctOf(now[2], now[0]) / mixMax) * 100, "l", `${pctOf(now[2], now[0])}% law`]] : null); }).join("")}</div>
+        now ? [[(pctOf(now[1], now[0]) / mixMax) * 100, "a", `This session so far: ${pctOf(now[1], now[0])}% passed`], [(pctOf(now[2], now[0]) / mixMax) * 100, "l", `This session so far: ${pctOf(now[2], now[0])}% law`]] : null); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. “Both parties”: at least one sponsor or co-sponsor from each party on either version. Party from Open States.</p>`;
 
   renderOutcomes();
@@ -1400,28 +1447,69 @@ function renderOutcomes() {
 }
 
 // A legislator's numbers next to the typical member of their party in their house.
-function peerBlock(L) {
+// A legislator's own numbers, next to the typical (median) member of their party in their house.
+function renderPersonStats(L) {
   const me = DATA.profiles?.[L.id];
+  if (!me) { $("personStats").innerHTML = `<p class="muted">No numbers for this legislator.</p>`; return; }
   const party = /Democrat/.test(L.party || "") ? "D" : /Republican/.test(L.party || "") ? "R" : null;
   const peer = party && DATA.peers?.[`${L.house}:${party}`];
-  if (!me || !peer) return "";
-  const who = `${party === "D" ? "Democrat" : "Republican"} in the ${L.house === "S" ? "Senate" : "Assembly"}`;
-  const share = (x, of) => (of ? ` <span class="muted">(${pctOf(x, of)}%)</span>` : "");
-  const rows = [
-    ["Bills sponsored", me.sponsored, peer.sponsored],
-    ["Approved by a committee", me.floor + share(me.floor, me.sponsored), peer.floor + share(peer.floor, peer.sponsored)],
-    [`Passed the ${L.house === "S" ? "Senate" : "Assembly"}`, me.passedHouse + share(me.passedHouse, me.sponsored), peer.passedHouse + share(peer.passedHouse, peer.sponsored)],
-    ["Laws, statewide", me.laws, peer.laws],
-    ["Laws, local (one place) or naming", me.lawsLocal, peer.lawsLocal],
-    ["Bills with co-sponsors from the other party", me.otherParty + share(me.otherParty, me.sponsored), peer.otherParty + share(peer.otherParty, peer.sponsored)],
-    ["Floor votes missed", `${num(me.missed)} of ${num(me.floorVotes)}`, `${num(peer.missed)} of ${num(peer.floorVotes)}`],
-  ];
-  return `<details class="peers"><summary>How ${esc(L.name.split(" ").pop())} compares this session</summary>
-    <table class="oc st"><thead><tr><th></th><th>${esc(L.name.split(" ").pop())}</th><th>Typical ${who}</th></tr></thead>
-    <tbody>${rows.map(([l, a, b]) => `<tr><td>${l}</td><td>${typeof a === "number" ? num(a) : a}</td><td>${typeof b === "number" ? num(Math.round(b)) : b}</td></tr>`).join("")}</tbody></table>
-    <p class="note">“Typical” is the median of the ${peer.members} ${who.replace(" in the", "s in the")}. A bill counts as a law if either house's version was signed. Majority-party members and committee chairs usually pass far more bills, so compare within party.</p></details>`;
-}
+  const typical = peer ? `Typical ${party === "D" ? "Democrat" : "Republican"} in the ${L.house === "S" ? "Senate" : "Assembly"}` : "";
+  const last = esc(L.name.split(" ").pop());
+  const laws = me.laws + me.lawsLocal;
 
+  // Their bills this session: how far they got.
+  const PATH = [["sponsored", "Sponsored"], ["floor", "Approved by a committee"], ["passedHouse", `Passed the ${L.house === "S" ? "Senate" : "Assembly"}`], ["both", "Passed both houses"], ["law", "Became law"]];
+  const val = (o, k) => (k === "law" ? o.laws + o.lawsLocal : o[k] || 0);
+  const path = PATH.map(([k, label]) => {
+    const n = val(me, k), p = peer ? val(peer, k) : null;
+    return vrow(label, "", [[pctOf(n, me.sponsored), "a"]],
+      `<b class="big">${num(n)}</b>${k === "sponsored" ? "" : ` (${pctOf(n, me.sponsored)}%)`}${p != null ? `<small>Typical: ${num(Math.round(p))}${k === "sponsored" ? "" : ` (${pctOf(p, peer.sponsored)}%)`}</small>` : ""}`,
+      p != null && k !== "sponsored" ? [[pctOf(p, peer.sponsored), "p", `Typical: ${pctOf(p, peer.sponsored)}%`]] : null);
+  }).join("");
+
+  // Where their bills go first.
+  const comms = (me.comms || []).slice(0, 10);
+  const cmax = Math.max(1, ...comms.map((c) => c[1]));
+  const commRows = comms.map(([name, n, out, law]) => vrow(esc(commLabel(`${L.house} · ${name}`).replace(/^[AS] · /, "")), "",
+    [[(n / cmax) * 100, "n"], [(out / cmax) * 100, "a"], [(law / cmax) * 100, "l"]], `<b class="big">${num(n)}</b> bills · ${num(out)} approved · ${num(law)} law`)).join("");
+
+  // Who co-sponsors their bills (members of their own house).
+  const mine = BILLS.filter((b) => sponsoredBy(b, L, false));
+  const cos = new Map();
+  for (const b of mine) for (const v of b.vers) if (v.p[0] === L.house && v.sponsor === L.apiName) for (const n of v.cosponsors) cos.set(n, (cos.get(n) || 0) + 1);
+  const top = [...cos].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const cosRows = top.map(([n, c]) => vrow(esc(n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
+
+  // Past sessions.
+  const hist = (me.history || []).slice().sort((a, b) => b[0] - a[0]);
+  const histRows = hist.map(([s, h, n, both, law, tn, tb, tl]) => `<tr><td>${span(s)}${s === DATA.session && DATA.current ? " (so far)" : ""}</td><td>${h === "S" ? "Senate" : "Assembly"}</td>
+    <td>${num(n)} <span class="muted">(${num(Math.round(tn))})</span></td><td>${num(both)} <span class="muted">(${num(Math.round(tb))})</span></td><td>${num(law)} <span class="muted">(${num(Math.round(tl))})</span></td></tr>`).join("");
+
+  // Floor votes.
+  let fv = 0, no = 0, away = 0;
+  for (const b of BILLS) for (const v of b.votes) if (v.kind === "F" && v.house === L.house) {
+    const x = voteOf(v, L); fv++; if (x === "No") no++; else if (x !== "Yes") away++;
+  }
+
+  $("personStats").innerHTML = `<h2>${esc(L.label)}: their numbers</h2>
+    <h3 class="sub">Their bills this session</h3>
+    ${peer ? `<p class="key"><span><i class="k-appr"></i>${last}</span><span><i class="k-tick p"></i>${typical}</span></p>` : ""}
+    <div class="vlist">${path}</div>
+    <p class="note">Share of the bills they sponsor.${peer ? ` “Typical” is the median of the ${peer.members} ${typical.replace("Typical ", "").replace(" in the", "s in the")}.` : ""} Laws include local and naming bills.</p>
+    ${hist.length > 1 ? `<h3 class="sub">By session</h3>
+    <div class="tablewrap"><table class="oc st"><thead><tr><th>Session</th><th>House</th><th>Bills sponsored</th><th>Passed both houses</th><th>Became law</th></tr></thead><tbody>${histRows}</tbody></table></div>
+    <p class="note">In parentheses: the typical member of their party in that house that session.</p>` : ""}
+    ${commRows ? `<h3 class="sub">Committees their bills go to first</h3>
+    <p class="key"><span><i class="k-n"></i>Referred</span><span><i class="k-appr"></i>Approved</span><span><i class="k-law"></i>Became law</span></p>
+    <div class="vlist">${commRows}</div>` : ""}
+    ${cosRows ? `<h3 class="sub">Most frequent co-sponsors</h3><div class="vlist">${cosRows}</div>
+    <p class="note">${num(me.otherParty)} of their bills (${pctOf(me.otherParty, me.sponsored)}%) have a sponsor or co-sponsor from the other party${peer ? `; typical: ${pctOf(peer.otherParty, peer.sponsored)}%` : ""}.</p>` : ""}
+    <h3 class="sub">Floor votes this session</h3>
+    <div class="tablewrap"><table class="oc st"><thead><tr><th></th><th>${last}</th>${peer ? `<th>Typical</th>` : ""}</tr></thead><tbody>
+      <tr><td>Floor votes</td><td>${num(fv)}</td>${peer ? `<td>${num(Math.round(peer.floorVotes))}</td>` : ""}</tr>
+      <tr><td>Voted no</td><td>${num(no)}</td>${peer ? `<td>–</td>` : ""}</tr>
+      <tr><td>Didn't vote</td><td>${num(away)}</td>${peer ? `<td>${num(Math.round(peer.missed))}</td>` : ""}</tr></tbody></table></div>`;
+}
 function keyDates(b) {
   const D = b.dates;
   const items = [
@@ -1776,10 +1864,10 @@ function fillDetail(el) {
 }
 
 function showView(v) {
-  if (!["bills", "watch", "stats", "how", "act"].includes(v)) v = "bills";
-  if (PRESET?.who && ["watch", "stats", "how"].includes(v)) v = "bills";
+  if (!["bills", "watch", "stats", "how", "act", "person"].includes(v)) v = "bills";
+  if (PRESET?.who ? ["watch", "stats", "how"].includes(v) : v === "person") v = "bills";
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
-  for (const id of ["bills", "watch", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
+  for (const id of ["bills", "watch", "stats", "how", "act", "person"]) $("view-" + id).hidden = id !== v;
   if (v === "watch") renderWatchView();
   $("filtered").hidden = v !== "bills";
   try { localStorage.setItem("abt:view", v); } catch (err) {}
@@ -2021,7 +2109,6 @@ function renderPerson(L) {
       ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
       <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.${floorVotes(L)}</p>
       <p>${reach}</p>
-      ${peerBlock(L)}
       <p><a href="${esc(BASE || "./")}">All bills</a></p>
     </div>`;
   $("person").hidden = false;
@@ -2104,6 +2191,8 @@ function hydrate(raw) {
     // A legislator's page is only about them: no watchlist, statistics for all bills, or
     // general guidance; Weigh in becomes just their bills open for comment.
     for (const v of ["watch", "stats", "how"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true;
+    document.querySelector('.view-tab[data-view="person"]').hidden = false;
+    renderPersonStats(LEG_BY_ID[PRESET.who]);
     document.querySelector('.view-tab[data-view="act"]').textContent = "Open for comment";
     for (const sec of document.querySelectorAll("#view-act > .act-sec")) if (sec.id !== "openNow") sec.hidden = true;
   }
@@ -2113,7 +2202,8 @@ function hydrate(raw) {
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
   if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (PRESET?.watch || SHARED) view = "watch";
-  if (PRESET?.who && ["watch", "stats", "how"].includes(view)) view = "bills";
+  if (["stats", "how", "act", "watch", "person"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (PRESET?.who ? ["watch", "stats", "how"].includes(view) : view === "person") view = "bills";
   // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);

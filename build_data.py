@@ -790,7 +790,26 @@ def insights(loaded, hist, current):
                     c[1] += r["stage"] >= 3
                     c[2] += r["stage"] == 5
 
+    # When things happen, by month of the two-year session (0-11 first year, 12-23 second):
+    # bills introduced, first approved by a committee, first passed by each house.
+    def month_counts(sessions):
+        out = {t: {k: [0] * 24 for k in ("intro", "comm", "passS", "passA")} for t in topics}
+        for s in sessions:
+            for r in loaded[s][0]:
+                k = r["keyDates"]
+                when = {"intro": r["first"] or "", "comm": k[0], "passS": k[1].split(";")[0], "passA": k[2].split(";")[0]}
+                for key, d in when.items():
+                    if len(d) < 7 or not str(s) <= d[:4] <= str(s + 1):
+                        continue
+                    m = (int(d[:4]) - s) * 12 + int(d[5:7]) - 1
+                    for t in topics:
+                        if has(r, t):
+                            out[t][key][m] += 1
+        return out
+
     return {
+        "months": month_counts(past),
+        "monthsNow": month_counts([current]),
         "cosponsors": cosp,
         "party": party,
         "fate": fate,
@@ -812,8 +831,8 @@ def profiles(session, recs, legs, party_of):
     resolve = assembly_resolver(session)
     by_seat = {L["id"]: L for L in legs}
     last_of = {L["id"]: name_key(L["name"]).split()[-1] for L in legs}
-    stats = {L["id"]: {"sponsored": 0, "floor": 0, "passedHouse": 0, "laws": 0, "lawsLocal": 0,
-                       "otherParty": 0, "floorVotes": 0, "missed": 0} for L in legs}
+    stats = {L["id"]: {"sponsored": 0, "floor": 0, "passedHouse": 0, "both": 0, "laws": 0, "lawsLocal": 0,
+                       "otherParty": 0, "floorVotes": 0, "missed": 0, "comms": {}} for L in legs}
     for r in recs:
         got = reached(r)
         local = bool(CEREMONIAL.search(r["title"] or ""))
@@ -826,6 +845,15 @@ def profiles(session, recs, legs, party_of):
             st["sponsored"] += 1
             st["floor"] += got["floor"]
             st["passedHouse"] += got["passS"] if house == "S" else got["passA"]
+            st["both"] += got["both"]
+            # The committee their own house sent the bill to first: [bills, approved, became law].
+            for h, name, left in r["firstComms"]:
+                if h == house:
+                    c = st["comms"].setdefault(name, [0, 0, 0])
+                    c[0] += 1
+                    c[1] += left
+                    c[2] += got["law"]
+                    break
             if got["law"]:
                 st["lawsLocal" if local else "laws"] += 1
             mine = "D" if "Democrat" in (by_seat[seat].get("party") or "") else "R" if "Republican" in (by_seat[seat].get("party") or "") else None
@@ -858,9 +886,45 @@ def profiles(session, recs, legs, party_of):
     peers = {}
     for g, sts in groups.items():
         peers[g] = {"members": len(sts)}
-        for k in ("sponsored", "floor", "passedHouse", "laws", "lawsLocal", "otherParty", "missed", "floorVotes"):
+        for k in ("sponsored", "floor", "passedHouse", "both", "laws", "lawsLocal", "otherParty", "missed", "floorVotes"):
             peers[g][k] = median([x[k] for x in sts])
+    for st in stats.values():
+        st["comms"] = sorted(([k] + v for k, v in st["comms"].items()), key=lambda c: -c[1])
     return stats, peers
+
+
+def person_history(loaded, current, legs):
+    """Each sitting legislator's bills in every loaded session, by the name they sponsor under,
+    with the typical (median) member of the same party and house that session:
+    [[session, house, sponsored, passed both houses, laws, typical sponsored, typical both, typical laws]]."""
+    def median(xs):
+        xs = sorted(xs)
+        return xs[len(xs) // 2] if len(xs) % 2 else (xs[len(xs) // 2 - 1] + xs[len(xs) // 2]) / 2
+
+    want = {name_key(L["name"]): L["id"] for L in legs}
+    out = defaultdict(list)
+    for s in sorted(loaded):
+        recs = loaded[s][0]
+        party_of = parties(s, recs)
+        counts = defaultdict(lambda: [0, 0, 0])  # (house, sponsor) -> [bills, both, laws]
+        for r in recs:
+            got = reached(r)
+            for who in {(v["p"][0], v["sponsor"]) for v in r["vers"] if v["sponsor"]}:
+                c = counts[who]
+                c[0] += 1
+                c[1] += got["both"]
+                c[2] += got["law"]
+        groups = defaultdict(list)
+        for who, c in counts.items():
+            if party_of.get(who):
+                groups[(who[0], party_of[who])].append(c)
+        typical = {g: [median([c[i] for c in cs]) for i in range(3)] for g, cs in groups.items()}
+        for (house, name), c in counts.items():
+            seat = want.get(name_key(name))
+            if seat:
+                ty = typical.get((house, party_of.get((house, name))), [0, 0, 0])
+                out[seat].append([s, house] + c + ty)
+    return dict(out)
 
 
 def outcomes(recs):
@@ -990,6 +1054,9 @@ def main():
             data["contacts"] = contacts_for(session, recs, names)
             data["legislators"] = legislators(session)
             data["profiles"], data["peers"] = profiles(session, recs, data["legislators"], party_of)
+            for seat, rows in person_history(loaded, current, data["legislators"]).items():
+                if seat in data["profiles"]:
+                    data["profiles"][seat]["history"] = rows
         payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
         if GITHUB:
             # On GitHub Pages the data is a separate file the page fetches, so the
