@@ -711,7 +711,39 @@ def insights(loaded, hist, current):
                     c[1] += any(e[0] == nxt for e in later)
                     c[2] += any(e[2] == 5 for e in later)
 
+    # What happened to bills that died, by how far they got: [died, back next session, later law].
+    fate = {t: {k: [0, 0, 0] for k in ("committee", "floor", "oneHouse", "vetoed")} for t in topics}
+    for s in past[:-1]:
+        nxt = s + 2
+        for i, r in enumerate(loaded[s][0]):
+            k = {0: "committee", 1: "floor", 2: "oneHouse", 6: "vetoed"}.get(r["stage"])
+            if not k:
+                continue
+            later = [e for e in hist[s][i].values() if e[0] > s]
+            for t in topics:
+                if has(r, t):
+                    c = fate[t][k]
+                    c[0] += 1
+                    c[1] += any(e[0] == nxt for e in later)
+                    c[2] += any(e[2] == 5 for e in later)
+
+    # The current session's most persistent bills: introduced in the most earlier sessions.
+    cur_recs = loaded[current][0]
+    tries = []
+    for i, r in enumerate(cur_recs):
+        earlier = sorted({e[0] for e in hist[current][i].values() if e[0] < current})
+        if len(earlier) >= 3:
+            best = max((e[2] for e in hist[current][i].values() if e[0] < current), default=-1)
+            tries.append((len(earlier), i, earlier[0], best))
+    tries.sort(key=lambda x: (-x[0], -rank(x[3]) if x[3] >= 0 else 1, x[1]))
+    persistent = {}
+    for t in topics:
+        rows = [x for x in tries if has(cur_recs[x[1]], t)][:12]
+        persistent[t] = [[cur_recs[i]["nums"][0], cur_recs[i]["title"], n, first, best, cur_recs[i]["stage"]] for n, i, first, best in rows]
+
     return {
+        "fate": fate,
+        "persistent": persistent,
         "pastSessions": past,
         "committees": {"current": committee_table([current], minimum=False), "past": committee_table(past)},
         "odds": {t: dict(v) for t, v in odds.items()},

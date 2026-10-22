@@ -288,7 +288,9 @@ table.oc th { vertical-align: bottom; }
 .stance.fixed { cursor: default; background: none; }
 .watchview { display: grid; gap: 20px; }
 .statsview { display: grid; gap: 18px; }
-.glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.statsview .takeaway { font-size: 16px; font-weight: 600; color: var(--ink); max-width: 75ch; }
+.glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .fact { appearance: none; text-align: left; cursor: pointer; align-content: start; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; color: var(--ink); font: inherit; }
 .fact:hover { border-color: var(--navy); }
 .fact b { font: 700 26px/1 var(--display); font-stretch: 85%; color: var(--navy); }
@@ -353,6 +355,15 @@ table.st.months .track .v { background: var(--veto); }
 table.st tr.tot td { font-weight: 700; border-top: 1px solid var(--ink); }
 table.st.years { max-width: 560px; }
 table.st col.c-gov { width: 110px; }
+table.st.fate { max-width: 620px; }
+table.st.fate col.c-num { width: 130px; }
+table.st.pers { max-width: 1000px; min-width: 760px; }
+table.st.pers td, table.st.pers th { text-align: left; vertical-align: top; }
+table.st.pers col.c-bill { width: 90px; }
+table.st.pers col.c-num { width: 130px; }
+table.st.pers col.c-best { width: 170px; }
+table.st.pers td:first-child a { font: 700 12.5px var(--mono); }
+table.st .muted { color: var(--ink-2); font-size: 12px; font-weight: 400; }
 table.st.years col.c-m { width: 120px; }
 table.st col.c-m { width: 80px; }
 .statsview h3.sub { margin: 6px 0 0; font: 700 16px var(--display); font-stretch: 90%; }
@@ -590,7 +601,6 @@ table.st col.c-m { width: 80px; }
       <label for="statTopic">Topic</label>
       <select id="statTopic"><option value="all">All bills</option></select>
     </div>
-    <div class="glance" id="statGlance"></div>
     <nav class="subtabs" id="statTabs" aria-label="Statistics sections">
       <button type="button" data-sec="statOdds">What happens next</button>
       <button type="button" data-sec="statComm">Committees</button>
@@ -1159,43 +1169,28 @@ function showStatSec(id) {
   try { localStorage.setItem("abt:statsec", id); } catch (e) {}
 }
 
-// Headline facts for the chosen topic; each opens the section behind it.
-function renderGlance(I, t) {
-  const odds = I.odds[t] || {};
-  const [n0, l0] = odds.intro || [0, 0], [n3, l3] = odds.both || [0, 0];
-  const past = I.committees.past[t] || {};
-  const worst = Object.entries(past).filter(([, v]) => v[0] >= (t === "all" ? 200 : 40)).sort((a, b) => a[1][1] / a[1][0] - b[1][1] / b[1][0])[0];
-  const years = I.timing.filter((y) => y.year !== 2020).map((y) => pctOf(y.final3wk, y.votes)).sort((a, b) => a - b);
-  const mid = years[Math.floor(years.length / 2)];
-  const gm = I.govMonths || {};
-  let nd = [0, 0], all = [0, 0];
-  for (const [k, [s, v]] of Object.entries(gm)) { all[0] += s; all[1] += v; if (/\|1[12]$/.test(k)) { nd[0] += s; nd[1] += v; } }
-  const [p0, , , , total] = I.persistence[t] || [0, 0, 0, 0, 0];
-  const cards = [
-    ["statOdds", `${pctOf(l0, n0)}%`, `of ${t === "all" ? "bills" : TOPICS[t] + " bills"} introduced become law; ${pctOf(l3, n3)}% once they pass both houses`],
-    worst && ["statComm", `${pctOf(worst[1][1], worst[1][0])}%`, `of bills sent to ${commLabel(worst[0]).replace(/^A · /, "Assembly ").replace(/^S · /, "Senate ")} are approved by the committee, the lowest of any large committee`],
-    ["statTiming", `${mid}%`, "of floor votes come in the last three weeks of the session"],
-    ["statTiming", `${pctOf(nd[1], all[1])}%`, "of vetoes come in November and December"],
-    ["statPersist", `${pctOf(total - p0, total)}%`, "of laws had been introduced in an earlier session"],
-  ].filter(Boolean);
-  $("statGlance").innerHTML = cards.map(([sec, big, text]) => `<button type="button" class="fact" data-sec="${sec}"><b>${big}</b><span>${esc(text)}</span></button>`).join("");
-}
-
 let commAll = false;
 // Plain names for committees whose official names don't explain themselves.
-const COMM_LABELS = { "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)" };
+const COMM_LABELS = {
+  "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)",
+  "A · Ways And Means": "A · Ways and Means (budget and taxes)", "S · Finance": "S · Finance (budget and taxes)",
+  "S · Budget And Revenue": "S · Budget and Revenue (taxes)",
+  "A · Codes": "A · Codes (criminal law and courts)", "S · Codes": "S · Codes (criminal law and courts)",
+};
 const commLabel = (k) => (COMM_LABELS[k] || k).replace(/ And /g, " and ");
 function renderStats() {
   const I = DATA.insights;
   if (!I) return;
   const t = $("statTopic").value || "all";
-  renderGlance(I, t);
+
   const topicName = t === "all" ? "all bills" : `${TOPICS[t]} bills`;
   const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
 
   // What usually happens next
   const odds = I.odds[t] || {};
+  const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
   $("statOdds").innerHTML = `<h2>What usually happens next</h2>
+    <p class="takeaway">The big hurdle is committee: a bill's chance of becoming law goes from ${pctOf(lI, nI)}% to ${pctOf(lF, nF)}% once a committee approves it.</p>
     <p class="note">Of ${topicName} that reached each point in ${pastSpan()}, the share that became law.</p>
     <div class="tablewrap"><table class="oc st odds">
       <colgroup><col class="c-name"><col class="c-num"><col class="c-bar"></colgroup>
@@ -1210,7 +1205,9 @@ function renderStats() {
     k, perSession: Math.round(n / nPast), out: pctOf(out, n), law: pctOf(law, n),
     nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null,
   })).sort((a, b) => a.out - b.out || b.perSession - a.perSession);
+  const hard = rows.filter((r) => r.out <= 5).map((r) => commLabel(r.k).replace(/^A · /, "Assembly ").replace(/^S · /, "Senate "));
   $("statComm").innerHTML = `<h2>Where bills die</h2>
+    <p class="takeaway">Which committee a bill lands in matters a lot. ${hard.length ? `${hard.slice(0, 3).join(" and ")} approve${hard.length === 1 ? "s" : ""} 5% or less of their bills, so the chair's support is essential there.` : "The committees at the top of this list approve the fewest bills."}</p>
     <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span></p>
     <p class="note">How often each committee approved ${topicName} referred to it, averaged over ${pastSpan()} (${nPast} sessions). “Approved” means sent on to the floor or to another committee. Committees with few bills are left out. S = Senate, A = Assembly.</p>
     <div class="tablewrap commwrap"><table class="oc st comm">
@@ -1229,16 +1226,37 @@ function renderStats() {
   const mid = shares.slice().sort((a, b) => a - b)[Math.floor(shares.length / 2)];
   const [late, signed] = I.lateSigning;
   $("statTiming").innerHTML = `<h2>Timing</h2>
+    <p class="takeaway">Weigh in by May: most floor votes happen in the session's last three weeks. Vetoes come at the end of the year, so the governor's office hears its last arguments in the fall.</p>
     <p>In a typical year, about <b>${mid}%</b> of floor votes come in the <b>last three weeks</b> of the session (from ${Math.min(...shares)}% to ${Math.max(...shares)}% in ${years[0].year}–${years[years.length - 1].year}, leaving out 2020). The session usually ends in early or mid June, so May is when weighing in matters most.</p>
     <p>About <b>${pctOf(late, signed)}%</b> of bills signed into law are signed in October, November or December, after most bills have waited months for the governor to request them.</p>
     ${govTiming(I)}`;
 
   // Persistence
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
-  const [died, back, later] = I.comeback[t] || [0, 0, 0];
+  const fate = I.fate?.[t] || {};
+  const lawSpan = `${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}`;
+  const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
+  const pers = I.persistent?.[t] || [];
   $("statPersist").innerHTML = `<h2>Persistence</h2>
-    <p>Of ${topicName} that became law in ${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}, <b>${pctOf(total - p0, total)}%</b> had been introduced in an earlier session, and <b>${pctOf(p3, total)}%</b> in three or more.</p>
-    <p>Of ${topicName} that died in committee, <b>${pctOf(back, died)}%</b> were reintroduced the next session and <b>${pctOf(later, died)}%</b> later became law.</p>`;
+    <p class="takeaway">Bills often take more than one try. A bill that got further before dying, or was vetoed, has a much better chance when it comes back.</p>
+    <h3 class="sub">How many tries laws took</h3>
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that became law in ${lawSpan}, by how many earlier sessions they had been introduced in.</p>
+    <div class="tablewrap"><table class="oc st odds"><colgroup><col class="c-name"><col class="c-num"><col class="c-bar"></colgroup>
+      <thead><tr><th>Earlier sessions</th><th>Laws</th><th class="barh">Share</th></tr></thead><tbody>
+      ${[["None (passed the first time)", p0], ["One", p1], ["Two", p2], ["Three or more", p3]].map(([l, n]) => `<tr><td>${l}</td><td>${num(n)}</td><td class="bar">${bar(pctOf(n, total))}</td></tr>`).join("")}
+    </tbody></table></div>
+    <h3 class="sub">What happens to bills that die</h3>
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${pastSpan().replace(/–\d+$/, "")}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, by how far they got, and what happened in later sessions (through ${String(I.pastSessions[I.pastSessions.length - 1] + 1)}).</p>
+    <div class="tablewrap"><table class="oc st fate"><colgroup><col class="c-name"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
+      <thead><tr><th>How far it got</th><th>Bills</th><th>Back next session</th><th>Later became law</th></tr></thead><tbody>
+      ${FATE.map(([k, l]) => { const [n, back, law] = fate[k] || [0, 0, 0]; return `<tr><td>${l}</td><td>${num(n)}</td><td>${pctOf(back, n)}%</td><td>${pctOf(law, n)}%</td></tr>`; }).join("")}
+    </tbody></table></div>
+    ${pers.length ? `<h3 class="sub">This session's most persistent bills</h3>
+    <p class="note">Introduced in the most earlier sessions. “Best before” is the furthest an earlier version got (outcomes are known back to 2017–18).</p>
+    <div class="tablewrap"><table class="oc st pers"><colgroup><col class="c-bill"><col><col class="c-num"><col class="c-best"><col class="c-best"></colgroup>
+      <thead><tr><th>Bill</th><th>Title</th><th>Earlier sessions</th><th>Best before</th><th>Now</th></tr></thead><tbody>
+      ${pers.map(([n, title, tries, first, best, stage]) => `<tr><td><a href="#${esc(baseNum(n))}">${esc(n)}</a></td><td>${esc(title)}</td><td>${tries} <span class="muted">(since ${first})</span></td><td>${best >= 0 ? esc(STAGE_TEXT.final.long[best]) : "–"}</td><td>${esc(TEXT.long[stage])}</td></tr>`).join("")}
+    </tbody></table></div>` : ""}`;
 
   renderOutcomes();
 }
@@ -1755,7 +1773,7 @@ function wire() {
     openShown += 25; renderOpenNow();
   });
   $("statTopic").addEventListener("change", renderStats);
-  for (const id of ["statTabs", "statGlance"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
+  for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
 }
 
