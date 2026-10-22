@@ -371,6 +371,12 @@ table.oc th { vertical-align: bottom; }
 .statsview .note { color: var(--ink-2); font-size: 13px; }
 .stattopic { max-width: 300px; }
 table.st { min-width: 0; }
+/* A legislator's tables: as wide as their content, not the page. */
+#personStats table.oc { width: auto; }
+#personStats h3.sub { margin: 24px 0 6px; }
+#personStats .key { margin-bottom: 8px; }
+#personStats table.oc th, #personStats table.oc td { padding-left: 16px; white-space: nowrap; }
+#personStats table.oc th:first-child, #personStats table.oc td:first-child { padding-left: 8px; font-family: var(--body); font-weight: 600; }
 table.st td:first-child { font-family: var(--body); font-weight: 600; }
 /* Statistics tables: fixed columns, names left, numbers right, bars start under their label. */
 table.st { table-layout: fixed; width: 100%; }
