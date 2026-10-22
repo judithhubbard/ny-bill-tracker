@@ -335,6 +335,24 @@ def github_page(html):
             + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
 
 
+def legislators(session):
+    """Current legislators with a short page address each: last name, or first-last when shared."""
+    path = os.path.join(HERE, "data", f"contacts_{session}.json")
+    if not os.path.exists(path):
+        return []
+    seats = json.load(open(path)).get("people", {})
+    last = lambda p: p["key"].split()[-1]
+    counts = Counter(last(p) for p in seats.values())
+    out = []
+    for seat, p in sorted(seats.items(), key=lambda kv: kv[1]["key"].split()[-1]):
+        house, district = seat.split(":")
+        slug = last(p) if counts[last(p)] == 1 else p["key"].replace(" ", "-")
+        out.append({"id": seat, "slug": slug, "name": p["name"], "title": "Sen." if house == "S" else "Asm.",
+                    "house": house, "district": int(district), "email": p.get("email"), "phone": p.get("phone"),
+                    "url": p.get("url")})
+    return out
+
+
 def contacts_for(session, recs, delegation_names):
     """Who to contact for the current session: committee chairs (and whether our legislators
     sit on each committee), our legislators, and email, phone and page for each person."""
@@ -396,6 +414,36 @@ def contacts_for(session, recs, delegation_names):
                 people.setdefault(name, lookup(name, house, district))
                 reps.append({"title": title, "name": name, "house": house, "last": seat["key"].split()[-1]})
     return {"fetched": raw.get("fetched"), "committees": committees, "people": people, "reps": reps}
+
+
+def choose_page(legs):
+    """A small page for a shared last name: pick which legislator you meant."""
+    last = legs[0]["name"].split()[-1]
+    items = "\n".join(
+        f'<li><a href="../{l["slug"]}/">{l["title"]} {html_escape(l["name"])}</a> '
+        f'<span>{"Senate" if l["house"] == "S" else "Assembly"} District {l["district"]}</span></li>' for l in legs)
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><title>Which {html_escape(last)}? · Albany Bill Tracker</title>
+<style>
+:root {{ --bg: #f6f8fb; --fg: #14213d; --muted: #4a5878; --link: #1d3b78; color-scheme: light; }}
+@media (prefers-color-scheme: dark) {{ :root {{ --bg: #0f1626; --fg: #e6ebf5; --muted: #a3b0c9; --link: #8fb0f0; color-scheme: dark; }} }}
+body {{ margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 40px max(16px, env(safe-area-inset-left, 0px)); }}
+main {{ max-width: 560px; margin: 0 auto; }} h1 {{ font-size: 26px; margin: 0 0 16px; }}
+ul {{ list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 12px; }} a {{ color: var(--link); font-weight: 600; }}
+li span {{ color: var(--muted); font-size: 14px; margin-left: 8px; }}
+</style></head><body><main>
+<h1>Which {html_escape(last)}?</h1>
+<ul>
+{items}
+</ul>
+<p><a href="../">All bills</a></p>
+</main></body></html>
+"""
+
+
+def html_escape(x):
+    return str(x).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def outcomes(recs):
@@ -470,7 +518,7 @@ def main():
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
-                     [S(n) for n in v["cosponsors"]] if session == current else []] for v in r["vers"]]
+                     [S(n) for n in v["cosponsors"]] if session == current else [], v.get("district") or 0] for v in r["vers"]]
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
@@ -495,7 +543,14 @@ def main():
         }
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)
+            data["legislators"] = legislators(session)
         payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
+        if GITHUB:
+            # On GitHub Pages the data is a separate file the page fetches, so the
+            # per-legislator pages can share it.
+            os.makedirs(os.path.join(GITHUB, "data"), exist_ok=True)
+            with open(os.path.join(GITHUB, "data", f"{session}.json"), "w") as f:
+                f.write(payload)
         template = open(TEMPLATE).read()
         if session != current:
             template = template.replace("<title>Albany Bill Tracker</title>",
@@ -505,7 +560,26 @@ def main():
         html = template.replace(marker, f'<script type="application/json" id="bill-data">{payload}</script>')
         if GITHUB:
             out = os.path.join(GITHUB, "index.html" if session == current else f"{session}.html")
-            html = github_page(html)
+            html = github_page(template.replace(marker, f'<script type="application/json" id="bill-data" data-src="data/{session}.json"></script>'))
+            if session == current:
+                for leg in data.get("legislators", []):
+                    page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../"></script>')
+                    preset = json.dumps({"who": leg["id"]}).replace('"', "&quot;")
+                    page = page.replace("<title>Albany Bill Tracker</title>",
+                                        f'<title>{leg["title"]} {leg["name"]} · Albany Bill Tracker</title>\n<meta name="abt-preset" content="{preset}">', 1)
+                    os.makedirs(os.path.join(GITHUB, leg["slug"]), exist_ok=True)
+                    with open(os.path.join(GITHUB, leg["slug"], "index.html"), "w") as f:
+                        f.write(github_page(page))
+                # A shared last name gets a page for picking the right person, e.g. /ramos/.
+                by_last = defaultdict(list)
+                for leg in data.get("legislators", []):
+                    by_last[name_key(leg["name"]).split()[-1]].append(leg)
+                for last, legs in by_last.items():
+                    if len(legs) > 1:
+                        os.makedirs(os.path.join(GITHUB, last), exist_ok=True)
+                        with open(os.path.join(GITHUB, last, "index.html"), "w") as f:
+                            f.write(choose_page(legs))
+                print(f"   {len(data.get('legislators', []))} legislator pages")
         else:
             out = os.path.join(SITE, f"{session}.html")
         os.makedirs(os.path.dirname(out), exist_ok=True)

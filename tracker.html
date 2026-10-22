@@ -228,6 +228,11 @@ table.oc th { vertical-align: bottom; }
 .side .topics { gap: 5px; }
 .side .topic { font-size: 12.5px; padding: 4px 9px; }
 .side .toggles { display: grid; gap: 6px; }
+.side label.inline { display: inline-flex; gap: 6px; align-items: center; font: 400 13px var(--body); letter-spacing: 0; text-transform: none; color: var(--ink-2); margin-top: 4px; }
+.person { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 10px 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.person h2 { margin: 0; font: 700 20px var(--display); font-stretch: 85%; }
+.person span { font-size: 13.5px; color: var(--ink-2); }
+.person .phone { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 .results { min-width: 0; display: grid; gap: 10px; align-content: start; }
 .sortby { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
 .sortby select { width: auto; padding: 4px 8px; font-size: 13px; }
@@ -324,6 +329,7 @@ table.oc th { vertical-align: bottom; }
       <nav class="sessions" id="sessions" aria-label="Legislative sessions"></nav>
     </div>
     <p class="notice" id="notice" hidden></p>
+    <div class="person" id="person" hidden></div>
   </header>
 
   <nav class="views" role="tablist" aria-label="Page sections">
@@ -349,6 +355,12 @@ table.oc th { vertical-align: bottom; }
         <div class="group">
           <div class="group-h">Topic</div>
           <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
+        </div>
+        <div class="field">
+          <label for="who">Sponsor</label>
+          <input type="search" id="who" list="whoOptions" placeholder="Type a legislator's name" autocomplete="off">
+          <datalist id="whoOptions"></datalist>
+          <label class="inline" for="whoCos"><input type="checkbox" id="whoCos"> Include bills they co-sponsored</label>
         </div>
         <div class="toggles" id="sponsorBoxes">
           <label id="senBox"><input type="checkbox" id="sen"> <span id="senLabel">Sponsored by our senator</span></label>
@@ -523,8 +535,9 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "sen", "asm"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", sen: false, asm: false, shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "sen", "asm", "who", "whoCos"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", sen: false, asm: false, who: "", whoCos: false, shown: PAGE });
+let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
 
@@ -549,8 +562,9 @@ function deadline(iso) {
 }
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
-function store(k, v) { try { localStorage.setItem(`abt:${DATA.session}:${k}`, JSON.stringify(v)); } catch (e) {} }
-function recall(k) { try { const v = localStorage.getItem(`abt:${DATA.session}:${k}`); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
+const storeKey = (k) => `abt:${DATA.session}:${PRESET ? "who:" + PRESET.who + ":" : ""}${k}`;
+function store(k, v) { try { localStorage.setItem(storeKey(k), JSON.stringify(v)); } catch (e) {} }
+function recall(k) { try { const v = localStorage.getItem(storeKey(k)); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
 
 function billUrl(p, session = DATA.session) {
   return `https://www.nysenate.gov/legislation/bills/${session}/${p.replace(/[A-Z]$/, "")}`;
@@ -591,6 +605,13 @@ const PROGRESS = {
 };
 const HOUSES = { both: "Both houses", S: "Senate only", A: "Assembly only" };
 
+// A legislator sponsored a bill if a version from their house names them as sponsor
+// (matched on the name the bill data uses for them); co-sponsors are matched the same way.
+function sponsoredBy(b, L, withCos) {
+  if (!L) return true;
+  return b.vers.some((v) => v.p[0] === L.house && (v.sponsor === L.apiName || (withCos && v.cosponsors.includes(L.apiName))));
+}
+
 function matches(b, skip) {
   if (skip !== "stage" && state.stage != null && b.stage !== state.stage) return false;
   if (skip !== "topic" && state.topics.size) {
@@ -600,6 +621,7 @@ function matches(b, skip) {
   if (state.comm && !b.comms.includes(state.comm)) return false;
   if (state.progress && !PROGRESS[state.progress].test(b)) return false;
   if (state.house && b.house !== state.house) return false;
+  if (state.who && !sponsoredBy(b, LEG_BY_ID[state.who], state.whoCos)) return false;
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
   // Checking both sponsor boxes shows bills carried by either one.
@@ -1018,6 +1040,7 @@ function activeFilters() {
   if (state.asm) out.push(["asm", null, "Sponsor", $("asmLabel").textContent.replace("Sponsored by ", "")]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
   if (state.law) out.push(["law", null, "Law", `contains “${state.law}”`]);
+  if (state.who && LEG_BY_ID[state.who]) out.push(["who", null, state.whoCos ? "Sponsor or co-sponsor" : "Sponsor", LEG_BY_ID[state.who].label]);
   if (state.comm) out.push(["comm", null, "Committee", state.comm]);
   if (state.house) out.push(["house", null, "Version in", opt("house", state.house)]);
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
@@ -1037,6 +1060,7 @@ function renderActive() {
 function clearFilter(k, v) {
   if (k === "topics") state.topics.delete(v);
   else state[k] = blank()[k];
+  if (k === "who") state.whoCos = false;
   state.shown = PAGE; syncControls(); render();
 }
 
@@ -1077,7 +1101,8 @@ function showView(v) {
 function syncControls() {
   $("q").value = state.q;
   for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort"]) $(id).value = state[id];
-  for (const id of ["sen", "asm"]) $(id).checked = state[id];
+  for (const id of ["sen", "asm", "whoCos"]) $(id).checked = state[id];
+  $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
 
 function wire() {
@@ -1103,7 +1128,13 @@ function wire() {
       if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
     }, 200);
   });
-  for (const id of ["sen", "asm"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  for (const id of ["sen", "asm", "whoCos"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  $("who").addEventListener("input", (e) => {
+    const text = e.target.value.trim().toLowerCase();
+    const hit = LEGS.find((L) => L.label.toLowerCase() === text);
+    const next = hit ? hit.id : text ? state.who : "";
+    if (next !== state.who) { state.who = next; state.shown = PAGE; render(); }
+  });
   for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
     const chip = e.target.closest("button"); if (!chip) return;
     if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }); syncControls(); render(); return; }
@@ -1142,8 +1173,8 @@ function decode(raw) {
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
     dates.passAAll = kd[3] ? kd[3].split(";").map(day) : [];
-    const v = vers.map(([p, sp, c, sd, cm, acts, cos]) => ({
-      p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm), cosponsors: (cos || []).map(str),
+    const v = vers.map(([p, sp, c, sd, cm, acts, cos, dist]) => ({
+      p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm), cosponsors: (cos || []).map(str), district: dist || 0,
       actions: acts.map(([dt, t]) => [day(dt), T[t]]),
     }));
     return {
@@ -1180,6 +1211,39 @@ function sessionNotice(raw) {
   return "";
 }
 
+// Legislators for the Sponsor box. The current session lists every sitting member with
+// contact details; older sessions use the sponsor names found in their bills.
+function setupLegislators(raw) {
+  const named = {}; // house:district -> sponsor name as the bill data spells it
+  for (const b of BILLS) for (const v of b.vers) if (v.sponsor && v.district) {
+    const k = `${v.p[0]}:${v.district}`;
+    (named[k] ||= {})[v.sponsor] = (named[k][v.sponsor] || 0) + 1;
+  }
+  if (raw.legislators && raw.legislators.length) {
+    LEGS = raw.legislators.map((L) => {
+      const names = Object.entries(named[L.id] || {}).filter(([n]) => lastName(n) === lastName(L.name)).sort((a, b) => b[1] - a[1]);
+      return { ...L, apiName: names.length ? names[0][0] : L.name, label: `${L.title} ${L.name}` };
+    });
+  } else {
+    const seen = {};
+    for (const b of BILLS) for (const v of b.vers) if (v.sponsor) seen[`${v.p[0]}:${v.sponsor}`] = v.p[0];
+    LEGS = Object.entries(seen).map(([id, house]) => {
+      const name = id.slice(2);
+      return { id, house, name, apiName: name, title: house === "S" ? "Sen." : "Asm.", label: `${house === "S" ? "Sen." : "Asm."} ${name}` };
+    }).sort((a, b) => lastName(a.name).localeCompare(lastName(b.name)));
+  }
+  LEG_BY_ID = Object.fromEntries(LEGS.map((L) => [L.id, L]));
+  $("whoOptions").innerHTML = LEGS.map((L) => `<option value="${esc(L.label)}"></option>`).join("");
+}
+
+function renderPerson(L) {
+  if (!L) return;
+  const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, L.phone && `<span class="phone">${esc(L.phone)}</span>`,
+    L.url && `<a href="${esc(L.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
+  $("person").innerHTML = `<h2>${esc(L.label)}</h2><span>${L.house === "S" ? "Senate" : "Assembly"} District ${L.district}</span><span>${reach}</span><span><a href="${esc(BASE || "./")}">All legislators' bills</a></span>`;
+  $("person").hidden = false;
+}
+
 function hydrate(raw) {
   DATA = raw; TOPICS = raw.topics;
   LATEST = Math.max(...raw.sessions.map((s) => s.session));
@@ -1212,7 +1276,7 @@ function hydrate(raw) {
     if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
     if (!url) return `<span class="off">${label}</span>`;
     const external = /^https?:/.test(url) ? ` target="_blank" rel="noopener"` : "";
-    return `<a href="${esc(url)}"${external}>${label}</a>`;
+    return `<a href="${esc(external ? url : BASE + url)}"${external}>${label}</a>`;
   }).join("");
 
   const opt = (v, n) => `<option value="${esc(v)}">${esc(v)} (${num(n)})</option>`;
@@ -1236,6 +1300,7 @@ function hydrate(raw) {
   $("senBox").hidden = !names.SENATE?.length;
   $("asmBox").hidden = !names.ASSEMBLY?.length;
 
+  setupLegislators(raw);
   const saved = recall("filters");
   if (saved) {
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
@@ -1245,6 +1310,13 @@ function hydrate(raw) {
     if (!names.SENATE?.length) state.sen = false;
     if (!names.ASSEMBLY?.length) state.asm = false;
     syncControls();
+  }
+  if (PRESET) {
+    // A legislator's page: start from their bills, keeping only filters saved on this page.
+    if (!saved) Object.assign(state, blank());
+    state.who = PRESET.who;
+    syncControls();
+    renderPerson(LEG_BY_ID[PRESET.who]);
   }
   try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "time", "sessions"].includes(v)) chartView = v; } catch (err) {}
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
@@ -1258,9 +1330,17 @@ function hydrate(raw) {
 }
 
 wire();
-try {
-  hydrate(decode(JSON.parse($("bill-data").textContent)));
-} catch (err) {
-  $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;
-}
+// The data is either embedded in the page or, on GitHub Pages, in a shared file next to it.
+(async () => {
+  try {
+    const el = $("bill-data");
+    BASE = el.dataset.base || "";
+    const meta = document.querySelector('meta[name="abt-preset"]');
+    if (meta) PRESET = JSON.parse(meta.content);
+    const raw = el.dataset.src ? await (await fetch(el.dataset.src)).json() : JSON.parse(el.textContent);
+    hydrate(decode(raw));
+  } catch (err) {
+    $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;
+  }
+})();
 </script>

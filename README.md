@@ -14,6 +14,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `fetch_contacts.py SESSION` collects email, district phone and page for every legislator (Open States), committee chairs, members and meeting times (Senate from the API,
   Assembly from nyassembly.gov) and legislators' page links into `data/contacts_SESSION.json`, used for
   the "What's next and who to contact" box under each bill.
+- On GitHub Pages each current legislator also has a page filtered to their bills, at
+  `/<last name>/` (or `/<first>-<last>/` when a last name is shared, with `/<last name>/` then
+  offering a choice). The list comes from the nightly contacts refresh, so it follows elections.
 - `tracker.html` is the page template; topic rules and the sponsor checkboxes are at the top of `build_data.py`.
 - `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages. The note at
   the top of the page (end of votes, governor's remaining bills, session over) is worked out
