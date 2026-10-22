@@ -287,6 +287,20 @@ table.oc th { vertical-align: bottom; }
 .stance.oppose { color: var(--veto); border-color: var(--veto); }
 .stance.fixed { cursor: default; background: none; }
 .watchview { display: grid; gap: 20px; }
+.statsview { display: grid; gap: 26px; }
+.statsview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
+.statsview p { margin: 0; max-width: 80ch; font-size: 14.5px; }
+.statsview .note { color: var(--ink-2); font-size: 13px; }
+.stattopic { max-width: 300px; }
+table.st { min-width: 0; }
+table.st td:first-child { font-family: var(--body); font-weight: 600; }
+table.st td.bar { width: 40%; }
+.tablewrap.tall { max-height: 520px; overflow-y: auto; }
+.odds { margin: 0; font-size: 13px; color: var(--ink-2); }
+.peers summary { cursor: pointer; font: 600 13.5px var(--body); color: var(--navy); }
+.peers table { margin-top: 8px; max-width: 640px; }
+.peers .note { margin: 6px 0 0; font-size: 12px; max-width: 80ch; }
+.peers .muted { color: var(--ink-2); font-size: 12px; }
 .wcards { display: grid; gap: 12px; }
 .wcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
 .wcard .wtop { display: flex; justify-content: space-between; gap: 12px; align-items: start; flex-wrap: wrap; }
@@ -507,25 +521,23 @@ table.oc th { vertical-align: bottom; }
       <button class="more" id="more" type="button" hidden>Show 100 more</button>
     </div>
 
-    <!-- Statistics -->
-    <div class="statsview" id="view-stats" hidden>
-    <div class="active" id="activeStats" hidden></div>
-    <section class="chart" aria-label="Charts">
-      <div class="tabs" role="tablist" id="chartTabs">
-        <button class="tab" role="tab" type="button" data-v="stage">Stage</button>
-        <button class="tab" role="tab" type="button" data-v="topic">Topic</button>
-        <button class="tab" role="tab" type="button" data-v="comm">Committee</button>
-        <button class="tab" role="tab" type="button" data-v="sessions">Sessions</button>
-      </div>
-      <div id="chartBody"></div>
-    </section>
-    <section class="outcomes" aria-labelledby="ocHead">
-      <h2 id="ocHead">Outcomes across sessions</h2>
-      <p class="note" id="ocScope"></p>
+  </section>
+
+  <!-- Statistics -->
+  <section class="statsview" id="view-stats" hidden>
+    <div class="field stattopic">
+      <label for="statTopic">Topic</label>
+      <select id="statTopic"><option value="all">All bills</option></select>
+    </div>
+    <div class="act-sec" id="statOdds"></div>
+    <div class="act-sec" id="statComm"></div>
+    <div class="act-sec" id="statTiming"></div>
+    <div class="act-sec" id="statPersist"></div>
+    <section class="act-sec" aria-labelledby="ocHead">
+      <h2 id="ocHead">Outcomes by session</h2>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
       <p class="note">“Passed both houses” includes bills later signed or vetoed. “Became law” is bills signed out of all bills introduced. “Governor signed” is bills signed out of bills she signed or vetoed. The current session's numbers change until December 31.</p>
     </section>
-    </div>
   </section>
 
   <!-- Watchlist -->
@@ -796,24 +808,6 @@ function renderTopics() {
     `<button class="topic" type="button" data-t="${t}" aria-pressed="${state.topics.has(t)}">${esc(TOPICS[t])}<span class="c">${num(counts[t] || 0)}</span></button>`).join("");
 }
 
-function renderOutcomes() {
-  // Follows the sidebar when exactly one topic is selected; other filters don't apply across sessions.
-  const t = state.topics.size === 1 ? [...state.topics][0] : "all";
-  $("ocScope").textContent = t === "all"
-    ? (state.topics.size ? "All bills. Select a single topic to narrow this table." : "All bills. Select a topic to narrow this table.")
-    : `${TOPICS[t]} bills. Other filters don't apply to this table.`;
-  const pct = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : "–");
-  const rows = DATA.sessions.map(({ session }) => {
-    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
-    return { session, c, share: c[0] ? c[2] / c[0] : 0 };
-  });
-  const max = Math.max(...rows.map((r) => r.share), 0.0001);
-  $("ocTable").innerHTML = `<thead><tr><th>Session</th><th>Bills introduced</th><th>Passed both houses</th><th>Signed into law</th><th>Vetoed</th><th>Became law, as % of bills introduced</th><th>Governor signed, as % of bills she acted on</th></tr></thead>
-    <tbody>${rows.map(({ session, c, share }) => `<tr class="${session === DATA.session ? "here" : ""}">
-      <td>${span(session)}${session === LATEST ? " (open)" : ""}</td><td>${num(c[0])}</td><td>${num(c[1])}</td><td>${num(c[2])}</td><td>${num(c[3])}</td>
-      <td class="bar"><div class="sharebar"><i style="width:${(share / max) * 70}%"></i><b>${pct(c[2], c[0])}</b></div></td>
-      <td>${pct(c[2], c[2] + c[3])}</td></tr>`).join("")}</tbody>`;
-}
 
 function track(b) {
   const cls = b.stage === 5 ? "ok" : b.stage === 6 ? "no" : b.stage >= 3 ? "gold" : "";
@@ -987,6 +981,7 @@ function nextSteps(b) {
   const plan = planFor(b, watchStance(b) || "support");
   if (!plan) return "";
   let what = plan.what;
+  if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
   if (plan.actionable) what += `<p class="hint">★ decides the next step. ${plan.opp ? "Asks assume you oppose this bill (set on your watchlist)." : "Asks assume you support the bill; to oppose it, star it and choose Oppose."}</p>`;
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
@@ -1031,6 +1026,113 @@ function votesBlock(b) {
     return `<li><time>${fmtDate(v.date)}</time><span>${what}: <b>${v.yes}–${v.no}</b>${other ? ` <span class="muted">(${other} not voting)</span>` : ""}${theirs ? `<br><span class="theirs">${theirs}</span>` : ""}</span></li>`;
   }).join("");
   return `<div class="keydates votes"><h4>Votes</h4><ol>${rows}</ol></div>`;
+}
+
+// ---- Statistics: questions people act on ----
+const pctOf = (n, d) => (d ? Math.round((n / d) * 100) : 0);
+const pastSpan = () => {
+  const p = DATA.insights?.pastSessions || [];
+  return p.length ? `${p[0]}–${String(p[p.length - 1] + 1).slice(2)}` : "";
+};
+const ODDS_POINTS = [
+  ["intro", "Introduced"],
+  ["floor", "Approved by a committee"],
+  ["passS", "Passed the Senate"],
+  ["passA", "Passed the Assembly"],
+  ["both", "Passed both houses"],
+];
+
+// For one bill: how often bills that got this far became law in past sessions.
+function oddsLine(b) {
+  const odds = DATA.insights?.odds?.all;
+  if (!odds || b.stage > 4) return "";
+  const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
+  const [n, law] = odds[point] || [0, 0];
+  if (!n) return "";
+  const label = { intro: "were introduced", floor: "got out of committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
+  return `Of bills that ${label} in ${pastSpan()}, ${pctOf(law, n)}% became law.`;
+}
+
+function renderStats() {
+  const I = DATA.insights;
+  if (!I) return;
+  const t = $("statTopic").value || "all";
+  const topicName = t === "all" ? "all bills" : `${TOPICS[t]} bills`;
+  const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
+
+  // What usually happens next
+  const odds = I.odds[t] || {};
+  $("statOdds").innerHTML = `<h2>What usually happens next</h2>
+    <p class="note">Of ${topicName} that reached each point in ${pastSpan()}, the share that became law.</p>
+    <div class="tablewrap"><table class="oc st"><thead><tr><th>Got as far as</th><th>Bills</th><th>Became law</th></tr></thead><tbody>
+    ${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0]; return `<tr><td>${l}</td><td>${num(n)}</td><td class="bar">${bar(pctOf(law, n))}</td></tr>`; }).join("")}
+    </tbody></table></div>`;
+
+  // Where bills die
+  const past = I.committees.past[t] || {}, cur = I.committees.current[t] || {};
+  const rows = Object.entries(past).map(([k, [n, out, law]]) => ({ k, n, out: pctOf(out, n), law: pctOf(law, n), now: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null }))
+    .sort((a, b) => a.out - b.out || b.n - a.n);
+  $("statComm").innerHTML = `<h2>Where bills die</h2>
+    <p class="note">Each committee's share of ${topicName} it let out (to the floor or to another committee), ${pastSpan()}. Committees with few bills are left out. S = Senate, A = Assembly.</p>
+    <div class="tablewrap tall"><table class="oc st"><thead><tr><th>Committee</th><th>Bills</th><th>Got out</th><th>Became law</th><th>This session, got out</th></tr></thead><tbody>
+    ${rows.map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.n)}</td><td class="bar">${bar(r.out)}</td><td>${r.law}%</td><td>${r.now == null ? "–" : r.now + "%"}</td></tr>`).join("")}
+    </tbody></table></div>`;
+
+  // Timing
+  const years = I.timing.filter((y) => y.year !== 2020);
+  const shares = years.map((y) => pctOf(y.final3wk, y.votes));
+  const mid = shares.slice().sort((a, b) => a - b)[Math.floor(shares.length / 2)];
+  const [late, signed] = I.lateSigning;
+  $("statTiming").innerHTML = `<h2>Timing</h2>
+    <p>In a typical year, about <b>${mid}%</b> of floor votes come in the <b>last three weeks</b> of the session (from ${Math.min(...shares)}% to ${Math.max(...shares)}% in ${years[0].year}–${years[years.length - 1].year}, leaving out 2020). The session usually ends in early or mid June, so May is when weighing in matters most.</p>
+    <p>About <b>${pctOf(late, signed)}%</b> of bills signed into law are signed in October, November or December, after most bills have waited months for the governor to request them.</p>`;
+
+  // Persistence
+  const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
+  const [died, back, later] = I.comeback[t] || [0, 0, 0];
+  $("statPersist").innerHTML = `<h2>Persistence</h2>
+    <p>Of ${topicName} that became law in ${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}, <b>${pctOf(total - p0, total)}%</b> had been introduced in an earlier session, and <b>${pctOf(p3, total)}%</b> in three or more.</p>
+    <p>Of ${topicName} that died in committee, <b>${pctOf(back, died)}%</b> were reintroduced the next session and <b>${pctOf(later, died)}%</b> later became law.</p>`;
+
+  renderOutcomes();
+}
+
+function renderOutcomes() {
+  const t = $("statTopic").value || "all";
+  const pct = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : "–");
+  const rows = DATA.sessions.map(({ session }) => {
+    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
+    return { session, c, share: c[0] ? c[2] / c[0] : 0 };
+  });
+  const max = Math.max(...rows.map((r) => r.share), 0.0001);
+  $("ocTable").innerHTML = `<thead><tr><th>Session</th><th>Bills introduced</th><th>Passed both houses</th><th>Signed into law</th><th>Vetoed</th><th>Became law, as % of bills introduced</th><th>Governor signed, as % of bills she acted on</th></tr></thead>
+    <tbody>${rows.map(({ session, c, share }) => `<tr class="${session === DATA.session ? "here" : ""}">
+      <td>${span(session)}${session === LATEST ? " (open)" : ""}</td><td>${num(c[0])}</td><td>${num(c[1])}</td><td>${num(c[2])}</td><td>${num(c[3])}</td>
+      <td class="bar"><div class="sharebar"><i style="width:${(share / max) * 70}%"></i><b>${pct(c[2], c[0])}</b></div></td>
+      <td>${pct(c[2], c[2] + c[3])}</td></tr>`).join("")}</tbody>`;
+}
+
+// A legislator's numbers next to the typical member of their party in their house.
+function peerBlock(L) {
+  const me = DATA.profiles?.[L.id];
+  const party = /Democrat/.test(L.party || "") ? "D" : /Republican/.test(L.party || "") ? "R" : null;
+  const peer = party && DATA.peers?.[`${L.house}:${party}`];
+  if (!me || !peer) return "";
+  const who = `${party === "D" ? "Democrat" : "Republican"} in the ${L.house === "S" ? "Senate" : "Assembly"}`;
+  const share = (x, of) => (of ? ` <span class="muted">(${pctOf(x, of)}%)</span>` : "");
+  const rows = [
+    ["Bills sponsored", me.sponsored, peer.sponsored],
+    ["Approved by a committee", me.floor + share(me.floor, me.sponsored), peer.floor + share(peer.floor, peer.sponsored)],
+    [`Passed the ${L.house === "S" ? "Senate" : "Assembly"}`, me.passedHouse + share(me.passedHouse, me.sponsored), peer.passedHouse + share(peer.passedHouse, peer.sponsored)],
+    ["Laws, statewide", me.laws, peer.laws],
+    ["Laws, local (one place) or naming", me.lawsLocal, peer.lawsLocal],
+    ["Bills with co-sponsors from the other party", me.otherParty + share(me.otherParty, me.sponsored), peer.otherParty + share(peer.otherParty, peer.sponsored)],
+    ["Floor votes missed", `${num(me.missed)} of ${num(me.floorVotes)}`, `${num(peer.missed)} of ${num(peer.floorVotes)}`],
+  ];
+  return `<details class="peers"><summary>How ${esc(L.name.split(" ").pop())} compares this session</summary>
+    <table class="oc st"><thead><tr><th></th><th>${esc(L.name.split(" ").pop())}</th><th>Typical ${who}</th></tr></thead>
+    <tbody>${rows.map(([l, a, b]) => `<tr><td>${l}</td><td>${typeof a === "number" ? num(a) : a}</td><td>${typeof b === "number" ? num(Math.round(b)) : b}</td></tr>`).join("")}</tbody></table>
+    <p class="note">“Typical” is the median of the ${peer.members} ${who.replace(" in the", "s in the")}. A bill counts as a law if either house's version was signed. Majority-party members and committee chairs usually pass far more bills, so compare within party.</p></details>`;
 }
 
 function keyDates(b) {
@@ -1126,79 +1228,6 @@ function billRow(b) {
 
 
 // ---- Stats panel ----
-let chartView = "stage";
-const SEGS = [["c-law", "Signed"], ["c-veto", "Vetoed"], ["c-both", "Passed both houses"], ["c-one", "Passed one house"], ["c-com", "Not passed"]];
-const segOf = (s) => (s === 5 ? 0 : s === 6 ? 1 : s === 3 || s === 4 ? 2 : s === 2 ? 3 : 4);
-const legend = () => `<div class="legend">${SEGS.map(([c, l]) => `<span><i class="${c}"></i>${l}</span>`).join("")}</div>`;
-
-function stackRows(groups, keyAttr, pressed) {
-  // groups: [{key, label, segs:[5 counts], total}]
-  const max = Math.max(1, ...groups.map((g) => g.total));
-  return `<div class="bars">${groups.map((g) => `<button class="barrow" type="button" data-${keyAttr}="${esc(g.key)}" aria-pressed="${pressed(g.key)}" title="${esc(g.label)}: ${num(g.total)} bills, ${num(g.segs[0])} signed">
-      <span class="bl">${esc(g.label)}</span>
-      <span class="bt">${g.segs.map((n, i) => n ? `<i class="${SEGS[i][0]}" style="width:${(n / max) * 100}%"></i>` : "").join("")}</span>
-      <span class="bv">${num(g.total)}</span></button>`).join("")}</div>`;
-}
-
-function chartStage() {
-  const counts = Array(7).fill(0);
-  for (const b of BILLS) if (matches(b, "stage")) counts[b.stage]++;
-  const cls = ["c-com", "c-floor", "c-one", "c-both", "c-both", "c-law", "c-veto"];
-  const max = Math.max(1, ...counts);
-  return `<p class="chart-cap">Bills at each stage, for the current filters. Click a bar to filter.</p>
-    <div class="bars">${STAGES.map((l, k) => `<button class="barrow" type="button" data-stage="${k}" aria-pressed="${state.stage === k}">
-      <span class="bl">${l}</span><span class="bt"><i class="${cls[k]}" style="width:${(counts[k] / max) * 100}%"></i></span><span class="bv">${num(counts[k])}</span></button>`).join("")}</div>`;
-}
-
-function grouped(keysOf, labelOf, limit) {
-  const m = new Map();
-  for (const b of BILLS) {
-    for (const k of keysOf(b)) {
-      if (!m.has(k)) m.set(k, { key: k, label: labelOf(k), segs: [0, 0, 0, 0, 0], total: 0 });
-      const g = m.get(k); g.segs[segOf(b.stage)]++; g.total++;
-    }
-  }
-  return [...m.values()].sort((a, b) => b.total - a.total).slice(0, limit);
-}
-
-function chartTopic() {
-  const BILLS_ = BILLS.filter((b) => matches(b, "topic"));
-  const m = Object.keys(TOPICS).map((k) => ({ key: k, label: TOPICS[k], segs: [0, 0, 0, 0, 0], total: 0 }));
-  const idx = Object.fromEntries(m.map((g, i) => [g.key, i]));
-  for (const b of BILLS_) for (const t of b.topics) { const g = m[idx[t]]; g.segs[segOf(b.stage)]++; g.total++; }
-  m.sort((a, b) => b.total - a.total);
-  return `<p class="chart-cap">Bills by topic and how far they got. Click a bar to filter.</p>${legend()}${stackRows(m, "topic", (k) => state.topics.has(k))}`;
-}
-
-function chartComm() {
-  const saved = state.comm; state.comm = "";
-  const groups = grouped((b) => (matches(b) ? b.comms.filter((c) => !/· (Rules|Finance|Ways And Means)$/.test(c)) : []), (k) => k, 12);
-  state.comm = saved;
-  return `<p class="chart-cap">The 12 busiest policy committees for the current filters (Rules, Finance and Ways and Means left out). S = Senate, A = Assembly.</p>${legend()}${stackRows(groups, "comm", (k) => state.comm === k)}`;
-}
-
-function chartSessions() {
-  const t = state.topics.size === 1 ? [...state.topics][0] : "all";
-  const rows = DATA.sessions.map(({ session }) => {
-    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0, 0];
-    return { session, c, share: c[0] ? c[2] / c[0] : 0 };
-  });
-  const max = Math.max(1, ...rows.map((r) => r.c[0]));
-  return `<p class="chart-cap">Every session's bills${t === "all" ? "" : ` on ${esc(TOPICS[t])}`} and how they ended. ${t === "all" ? "Select one topic to narrow this view." : ""}</p>${legend()}
-    <div class="bars">${rows.map(({ session, c, share }) => {
-      const one = c[4] || 0;
-      const segs = [c[2], c[3], c[1] - c[2] - c[3], one, c[0] - c[1] - one];
-      return `<div class="barrow" style="cursor:default" title="${num(c[0])} bills, ${num(c[2])} signed (${(share * 100).toFixed(1)}%)">
-        <span class="bl">${span(session)}${session === DATA.session ? " ◂" : ""}</span>
-        <span class="bt">${segs.map((n, i) => n > 0 ? `<i class="${SEGS[i][0]}" style="width:${(n / max) * 100}%"></i>` : "").join("")}</span>
-        <span class="bv">${(share * 100).toFixed(1)}%</span></div>`;
-    }).join("")}</div><p class="chart-cap">The percentage is the share of all bills introduced that became law. Only a single selected topic applies to this view; other filters don't.</p>`;
-}
-
-function renderChart() {
-  for (const b of document.querySelectorAll("#chartTabs .tab")) b.setAttribute("aria-selected", b.dataset.v === chartView);
-  $("chartBody").innerHTML = { stage: chartStage, topic: chartTopic, comm: chartComm, sessions: chartSessions }[chartView]();
-}
 
 // Every filter in effect, as removable chips above the results, so none is ever out of sight.
 function activeFilters() {
@@ -1228,7 +1257,7 @@ function renderActive() {
     ? `<span class="chipx fixed"><b>${esc(label)}:</b> ${esc(val)}</span>`
     : `<button class="chipx" type="button" data-k="${k}" data-v="${esc(v ?? "")}" title="Remove this filter"><b>${esc(label)}:</b> ${esc(val)} <span aria-hidden="true">×</span></button>`).join("")
     + (removable ? `<button class="clearall" type="button" data-clear="all">Clear all</button>` : "") : "";
-  for (const id of ["active", "activeStats"]) { $(id).innerHTML = html; $(id).hidden = !list.length; }
+  $("active").innerHTML = html; $("active").hidden = !list.length;
   $("filterCount").textContent = list.length ? `${list.length} active` : "";
 }
 
@@ -1384,6 +1413,7 @@ function renderWatchView() {
       ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
       ${action}
+      ${x.key && oddsLine(b) ? `<p class="odds">${oddsLine(b)}</p>` : ""}
       ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
       ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
@@ -1429,12 +1459,11 @@ function refreshWatchButtons(b) {
 
 function render() {
   renderWatchView();
-  renderChart();
   renderPipeline();
   renderTopics();
   renderActive();
   renderList();
-  renderOutcomes();
+  renderStats();
   const saved = {};
   for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
   store("filters", saved);
@@ -1464,7 +1493,7 @@ function showView(v) {
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
   for (const id of ["bills", "watch", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
   if (v === "watch") renderWatchView();
-  $("filtered").hidden = !["bills", "stats"].includes(v);
+  $("filtered").hidden = v !== "bills";
   try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
 
@@ -1505,7 +1534,7 @@ function wire() {
     const next = hit ? hit.id : text ? state.who : "";
     if (next !== state.who) { state.who = next; state.shown = PAGE; render(); }
   });
-  for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
+  $("active").addEventListener("click", (e) => {
     const chip = e.target.closest("button"); if (!chip) return;
     if (chip.dataset.clear === "all") { ONE = null; if (/^#[SA]\d/i.test(location.hash)) clearHash(location.pathname + location.search); }
     if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }, PRESET?.who ? { who: PRESET.who, whoCos: state.whoCos } : {}); syncControls(); render(); return; }
@@ -1579,18 +1608,7 @@ function wire() {
     const btn = e.target.closest("[data-more]"); if (!btn) return;
     openShown += 25; renderOpenNow();
   });
-  $("chartTabs").addEventListener("click", (e) => {
-    const tab = e.target.closest(".tab"); if (!tab) return;
-    chartView = tab.dataset.v; try { localStorage.setItem("abt:chart", chartView); } catch (err) {}
-    renderChart();
-  });
-  $("chartBody").addEventListener("click", (e) => {
-    const r = e.target.closest("button.barrow"); if (!r) return;
-    if (r.dataset.stage != null) { const k = +r.dataset.stage; state.stage = state.stage === k ? null : k; }
-    else if (r.dataset.topic) { const t = r.dataset.topic; state.topics.has(t) ? state.topics.delete(t) : state.topics.add(t); }
-    else if (r.dataset.comm) { state.comm = state.comm === r.dataset.comm ? "" : r.dataset.comm; $("comm").value = state.comm; }
-    state.shown = PAGE; render();
-  });
+  $("statTopic").addEventListener("change", renderStats);
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
@@ -1703,6 +1721,7 @@ function renderPerson(L) {
       ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
       <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.${floorVotes(L)}</p>
       <p>${reach}</p>
+      ${peerBlock(L)}
       <p><a href="${esc(BASE || "./")}">All bills</a></p>
     </div>`;
   $("person").hidden = false;
@@ -1748,6 +1767,7 @@ function hydrate(raw) {
   $("progress").innerHTML = `<option value="">Any</option>` + Object.entries(PROGRESS)
     .map(([k, p]) => `<option value="${k}">${esc(p.label)} (${num(BILLS.filter(p.test).length)})</option>`).join("");
   // Party data covers sitting members only, so the filter appears for the current session.
+  $("statTopic").innerHTML = `<option value="all">All bills</option>` + Object.entries(TOPICS).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
   $("partyField").hidden = !raw.current;
   if (!raw.current) state.party = "";
   $("party").innerHTML = `<option value="">Any</option>` + Object.entries(PARTIES)
@@ -1784,7 +1804,6 @@ function hydrate(raw) {
     $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
   }
-  try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "sessions"].includes(v)) chartView = v; } catch (err) {}
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
   let view = "bills";

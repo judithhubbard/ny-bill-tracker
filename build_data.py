@@ -201,6 +201,25 @@ def collect_votes(live, avotes):
     return sorted(out, key=lambda v: v[3])
 
 
+LEFT_COMMITTEE = ("ADVANCED TO THIRD READING", "ORDERED TO THIRD READING", "REPORTED", "COMMITTEE DISCHARGED",
+                  "PASSED SENATE", "PASSED ASSEMBLY")
+
+
+def first_committees(live):
+    """For each version: the first committee in its own house, and whether the bill got out of it."""
+    out = []
+    for b in live:
+        own = [c for c in b["pastCommittees"] if c["chamber"] == b["chamber"]]
+        if not own:
+            continue
+        name = norm_comm(own[0]["name"])
+        if name in ("Rules", "Calendar"):
+            continue
+        left = any(a["chamber"] == b["chamber"] and a["text"].startswith(LEFT_COMMITTEE) for a in b["actions"])
+        out.append((b["chamber"][0], name, left))
+    return out
+
+
 def load_session(session):
     """Read one session's bills and return (records, printNo -> record index, fetched time)."""
     raw = read_session(session)
@@ -333,6 +352,7 @@ def load_session(session):
             "cosp": max(b["cosponsorCount"] for b in live),
             "keyDates": key_dates,
             "votes": collect_votes(live, avotes),
+            "firstComms": first_committees(live),
             "vers": [{
                 "p": b["printNo"] + (b["activeVersion"] or ""),
                 "sponsor": b["sponsor"],
@@ -566,6 +586,174 @@ li span {{ color: var(--muted); font-size: 14px; margin-left: 8px; }}
 def html_escape(x):
     return str(x).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
+# ---- Statistics people can act on ----
+# Titles of laws that are local or ceremonial (naming a road, one property's tax exemption,
+# one town's arrangement), counted separately from substantive laws.
+CEREMONIAL = re.compile(
+    r"designat|dedicat|\bnam(e|es|ing)\b.*\b(highway|bridge|road|route|interchange|building)|"
+    r"(to file|to receive|retroactive).*(exemption|exempt status)|real property tax exemption|"
+    r"legaliz\w*,? validat|in the (town|village|city|county) of|of the (town|village|city|county) of|"
+    r"authoriz\w* (the )?(town|village|city|county|school district|fire district)", re.I)
+
+
+def reached(r):
+    """How far a bill ever got this session (not where it is now)."""
+    k = r["keyDates"]
+    passed_s, passed_a = bool(k[1]), bool(k[2])
+    return {
+        "floor": bool(k[0]) or passed_s or passed_a,
+        "passS": passed_s,
+        "passA": passed_a,
+        "both": r["stage"] >= 3 or (passed_s and passed_a),
+        "law": r["stage"] == 5,
+    }
+
+
+def insights(loaded, hist, current):
+    past = [s for s in sorted(loaded) if s != current]
+    topics = ["all"] + list(TOPICS)
+    has = lambda r, t: t == "all" or t in r["topics"]
+
+    # Where bills die: share of bills each committee let out, current session and past sessions.
+    def committee_table(sessions):
+        out = {t: defaultdict(lambda: [0, 0, 0]) for t in topics}
+        for s in sessions:
+            for r in loaded[s][0]:
+                for house, name, left in r["firstComms"]:
+                    for t in topics:
+                        if has(r, t):
+                            c = out[t][f"{house} · {name}"]
+                            c[0] += 1
+                            c[1] += left
+                            c[2] += r["stage"] == 5
+        return {t: {k: v for k, v in d.items() if v[0] >= (40 if t == "all" else 15)} for t, d in out.items()}
+
+    # What usually happens next: of bills that reached each point, how many became law.
+    odds = {t: defaultdict(lambda: [0, 0]) for t in topics}
+    for s in past:
+        for r in loaded[s][0]:
+            got = reached(r)
+            points = {"intro": True, "floor": got["floor"], "passS": got["passS"], "passA": got["passA"], "both": got["both"]}
+            for t in topics:
+                if has(r, t):
+                    for p, ok in points.items():
+                        if ok:
+                            odds[t][p][0] += 1
+                            odds[t][p][1] += got["law"]
+
+    # Timing: how much floor action comes at the very end of each year's session.
+    timing = []
+    for s in past:
+        for year in (s, s + 1):
+            dates = [d for r in loaded[s][0] for i in (1, 2) for d in r["keyDates"][i].split(";") if d.startswith(str(year))]
+            if not dates:
+                continue
+            # The regular session ends in June; later votes are special sessions.
+            regular = [d for d in dates if d <= f"{year}-07-15"]
+            if not regular:
+                continue
+            # A one-day special session (e.g. July 2022) isn't the end of the regular session:
+            # use the last day with a full slate of votes.
+            per_day = Counter(regular)
+            last = max(d for d, n in per_day.items() if n >= 20)
+            from datetime import date, timedelta
+            cut = (date.fromisoformat(last) - timedelta(days=21)).isoformat()
+            timing.append({"year": year, "votes": len(regular), "lastVote": last,
+                           "final3wk": sum(cut < d <= last for d in regular)})
+    signed = [r["keyDates"][5] for s in past for r in loaded[s][0] if r["keyDates"][5]]
+    late_sign = sum(d[5:7] in ("10", "11", "12") for d in signed)
+
+    # Persistence: how many earlier sessions laws took, and what happens to bills that die.
+    persist = {t: [0, 0, 0, 0, 0] for t in topics}  # laws with 0, 1, 2, 3+ earlier sessions; total
+    for s in past[1:]:
+        for i, r in enumerate(loaded[s][0]):
+            if r["stage"] != 5:
+                continue
+            n = len({e[0] for e in hist[s][i].values() if e[0] < s})
+            for t in topics:
+                if has(r, t):
+                    persist[t][min(n, 3)] += 1
+                    persist[t][4] += 1
+    comeback = {t: [0, 0, 0] for t in topics}  # died in committee; reintroduced next session; later became law
+    for s in past[:-1]:
+        nxt = s + 2
+        for i, r in enumerate(loaded[s][0]):
+            if r["stage"] != 0:
+                continue
+            later = [e for e in hist[s][i].values() if e[0] > s]
+            for t in topics:
+                if has(r, t):
+                    c = comeback[t]
+                    c[0] += 1
+                    c[1] += any(e[0] == nxt for e in later)
+                    c[2] += any(e[2] == 5 for e in later)
+
+    return {
+        "pastSessions": past,
+        "committees": {"current": committee_table([current]), "past": committee_table(past)},
+        "odds": {t: dict(v) for t, v in odds.items()},
+        "timing": timing,
+        "lateSigning": [late_sign, len(signed)],
+        "persistence": persist,
+        "comeback": comeback,
+    }
+
+
+def profiles(session, recs, legs, party_of):
+    """Each sitting legislator's numbers this session, and the median for their party in their house."""
+    resolve = assembly_resolver(session)
+    by_seat = {L["id"]: L for L in legs}
+    last_of = {L["id"]: name_key(L["name"]).split()[-1] for L in legs}
+    stats = {L["id"]: {"sponsored": 0, "floor": 0, "passedHouse": 0, "laws": 0, "lawsLocal": 0,
+                       "otherParty": 0, "floorVotes": 0, "missed": 0} for L in legs}
+    for r in recs:
+        got = reached(r)
+        local = bool(CEREMONIAL.search(r["title"] or ""))
+        for v in r["vers"]:
+            house = v["p"][0]
+            seat = f"{house}:{v.get('district')}"
+            if seat not in stats or name_key(v["sponsor"] or "").split()[-1:] != [last_of[seat]]:
+                continue
+            st = stats[seat]
+            st["sponsored"] += 1
+            st["floor"] += got["floor"]
+            st["passedHouse"] += got["passS"] if house == "S" else got["passA"]
+            if got["law"]:
+                st["lawsLocal" if local else "laws"] += 1
+            mine = "D" if "Democrat" in (by_seat[seat].get("party") or "") else "R" if "Republican" in (by_seat[seat].get("party") or "") else None
+            others = {party_of.get((vv["p"][0], n)) for vv in r["vers"] for n in [vv["sponsor"]] + vv.get("cosponsors", [])}
+            st["otherParty"] += bool(mine and (others - {mine, None}))
+        for h, kind, comm, date, y, n, ny in r["votes"]:
+            if kind != "F":
+                continue
+            absent = set()
+            for (mh, who), code in ny:
+                if code in ("E", "A"):
+                    d = who if mh == "S" else resolve(who)
+                    if d:
+                        absent.add(f"{mh}:{d}")
+            for seat in stats:
+                if seat[0] == h:
+                    stats[seat]["floorVotes"] += 1
+                    stats[seat]["missed"] += seat in absent
+    groups = defaultdict(list)
+    for seat, st in stats.items():
+        p = by_seat[seat].get("party") or ""
+        code = "D" if "Democrat" in p else "R" if "Republican" in p else None
+        if code and st["sponsored"]:
+            groups[f"{seat[0]}:{code}"].append(st)
+
+    def median(xs):
+        xs = sorted(xs)
+        return xs[len(xs) // 2] if len(xs) % 2 else (xs[len(xs) // 2 - 1] + xs[len(xs) // 2]) / 2
+
+    peers = {}
+    for g, sts in groups.items():
+        peers[g] = {"members": len(sts)}
+        for k in ("sponsored", "floor", "passedHouse", "laws", "lawsLocal", "otherParty", "missed", "floorVotes"):
+            peers[g][k] = median([x[k] for x in sts])
+    return stats, peers
+
 
 def outcomes(recs):
     """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
@@ -614,6 +802,7 @@ def main():
 
     summary = {s: outcomes(loaded[s][0]) for s in SESSIONS}
     current = max(SESSIONS)
+    insight = insights(loaded, hist, current)
 
     for session in ONLY:
         recs, _, fetched, names = loaded[session]
@@ -671,6 +860,7 @@ def main():
             "delegation": names,
             "sessions": [{"session": s, "url": urls.get(str(s))} for s in SESSIONS],
             "outcomes": {str(s): summary[s] for s in SESSIONS},
+            "insights": insight,
             # Date of the last floor vote in either house this session.
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
@@ -679,6 +869,7 @@ def main():
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)
             data["legislators"] = legislators(session)
+            data["profiles"], data["peers"] = profiles(session, recs, data["legislators"], party_of)
         payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
         if GITHUB:
             # On GitHub Pages the data is a separate file the page fetches, so the
