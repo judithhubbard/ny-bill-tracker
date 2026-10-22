@@ -329,8 +329,8 @@ table.oc th { vertical-align: bottom; }
     <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
   </nav>
 
-  <!-- Bills: filters in a sidebar, results beside them -->
-  <section class="layout" id="view-bills">
+  <!-- Bills and Statistics share the filter sidebar -->
+  <section class="layout" id="filtered">
     <details class="side" id="side" open>
       <summary class="side-toggle">Filters <span id="filterCount"></span></summary>
       <div class="side-body">
@@ -381,7 +381,7 @@ table.oc th { vertical-align: bottom; }
       </div>
     </details>
 
-    <div class="results">
+    <div class="results" id="view-bills">
       <div class="resultbar">
         <span id="count"></span>
         <label class="sortby" for="sort">Sort
@@ -398,10 +398,9 @@ table.oc th { vertical-align: bottom; }
       <div class="list" id="list"><div class="loading">Loading bills…</div></div>
       <button class="more" id="more" type="button" hidden>Show 100 more</button>
     </div>
-  </section>
 
-  <!-- Statistics -->
-  <section class="statsview" id="view-stats" hidden>
+    <!-- Statistics -->
+    <div class="statsview" id="view-stats" hidden>
     <div class="active" id="activeStats" hidden></div>
     <section class="chart" aria-label="Charts">
       <div class="tabs" role="tablist" id="chartTabs">
@@ -415,13 +414,11 @@ table.oc th { vertical-align: bottom; }
     </section>
     <section class="outcomes" aria-labelledby="ocHead">
       <h2 id="ocHead">Outcomes across sessions</h2>
-      <div class="field">
-        <label for="ocTopic">Topic</label>
-        <select id="ocTopic"><option value="all">All bills</option></select>
-      </div>
+      <p class="note" id="ocScope"></p>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
-      <p class="note">“Passed both houses” counts every bill that got through both the Senate and the Assembly, including those later signed or vetoed. “Became law” divides bills signed by all bills introduced: for 2017–18, 1,027 of 13,223. “Governor signed” divides bills signed by bills signed plus bills vetoed, leaving out bills still waiting for her. The current session is still open, so its numbers will change until December 31.</p>
+      <p class="note">“Passed both houses” includes bills later signed or vetoed. “Became law” is bills signed out of all bills introduced. “Governor signed” is bills signed out of bills she signed or vetoed. The current session's numbers change until December 31.</p>
     </section>
+    </div>
   </section>
 
   <!-- Weigh in -->
@@ -653,7 +650,11 @@ function renderTopics() {
 }
 
 function renderOutcomes() {
-  const t = $("ocTopic").value || "all";
+  // Follows the sidebar when exactly one topic is selected; other filters don't apply across sessions.
+  const t = state.topics.size === 1 ? [...state.topics][0] : "all";
+  $("ocScope").textContent = t === "all"
+    ? (state.topics.size ? "All bills. Select a single topic to narrow this table." : "All bills. Select a topic to narrow this table.")
+    : `${TOPICS[t]} bills. Other filters don't apply to this table.`;
   const pct = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : "–");
   const rows = DATA.sessions.map(({ session }) => {
     const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
@@ -1011,6 +1012,7 @@ function render() {
   renderTopics();
   renderActive();
   renderList();
+  renderOutcomes();
   const saved = {};
   for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
   store("filters", saved);
@@ -1034,6 +1036,7 @@ function showView(v) {
   if (!["bills", "stats", "how", "act"].includes(v)) v = "bills";
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
   for (const id of ["bills", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
+  $("filtered").hidden = !["bills", "stats"].includes(v);
   try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
 
@@ -1072,12 +1075,11 @@ function wire() {
     if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }); syncControls(); render(); return; }
     clearFilter(chip.dataset.k, chip.dataset.v);
   });
-  $("view-bills").parentElement.querySelector(".views").addEventListener("click", (e) => {
+  document.querySelector(".views").addEventListener("click", (e) => {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
   $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
-  $("ocTopic").addEventListener("change", renderOutcomes);
   $("chartTabs").addEventListener("click", (e) => {
     const tab = e.target.closest(".tab"); if (!tab) return;
     chartView = tab.dataset.v; try { localStorage.setItem("abt:chart", chartView); } catch (err) {}
@@ -1188,7 +1190,6 @@ function hydrate(raw) {
   const years = [raw.session, raw.session + 1];
   $("intro").innerHTML = `<option value="">Either year</option>` + years.map((y) =>
     `<option value="${y}">${y}${y === raw.session ? " (first year)" : " (second year)"} (${num(BILLS.filter((b) => b.intro === y).length)})</option>`).join("");
-  $("ocTopic").innerHTML = `<option value="all">All bills</option>` + Object.entries(TOPICS).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
 
   const names = raw.delegation || {};
   const join = (title, list) => list.map((n) => `${title} ${n}`).join(" or ");
@@ -1214,7 +1215,6 @@ function hydrate(raw) {
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
   if (["stats", "how", "act"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   showView(view);
-  renderOutcomes();
   renderOpenNow();
   render();
 }
