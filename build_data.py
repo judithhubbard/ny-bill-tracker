@@ -807,7 +807,31 @@ def insights(loaded, hist, current):
                             out[t][key][m] += 1
         return out
 
+    # Bills that passed both houses but that the governor's office still hadn't requested on
+    # today's date in the same year of past sessions: how many became law. Bills still waiting
+    # late in the year are more often vetoed than bills overall.
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    today = datetime.now(ZoneInfo("America/New_York")).date()
+    year = today.year - current
+    waiting = None
+    if year in (0, 1):
+        md = today.strftime("%m-%d")
+        n = law = 0
+        for s in past:
+            cut = f"{s + year}-{md}"
+            for r in loaded[s][0]:
+                k = r["keyDates"]
+                ps, pa = k[1].split(";")[0], k[2].split(";")[0]
+                decided = min(filter(None, [k[5], k[6]]), default="")
+                if not (ps and pa) or max(ps, pa) > cut or (decided and decided <= cut) or (k[4] and k[4] <= cut):
+                    continue
+                n += 1
+                law += r["stage"] == 5
+        waiting = {"date": md, "year": year, "n": n, "law": law}
+
     return {
+        "waiting": waiting,
         "months": month_counts(past),
         "monthsNow": month_counts([current]),
         "cosponsors": cosp,

@@ -1205,6 +1205,13 @@ function oddsLine(b) {
   const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
   const [n, law] = odds[point] || [0, 0];
   if (!n) return "";
+  // Not yet requested: compare with bills still waiting on this same date in past sessions.
+  const w = DATA.insights?.waiting;
+  if (b.stage === 3 && w && w.n >= 30) {
+    const [mm, dd] = w.date.split("-").map(Number);
+    const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    return `Of bills in ${pastSpan()} still waiting for the governor's office to request them on ${day} of a session's ${w.year ? "second" : "first"} year, ${pctOf(w.law, w.n)}% became law.`;
+  }
   const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
   return `Of bills that ${label} in ${pastSpan()}, ${pctOf(law, n)}% became law.`;
 }
