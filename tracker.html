@@ -292,20 +292,20 @@ table.oc th { vertical-align: bottom; }
 .glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 
 /* Statistics visuals */
-.vlist { display: grid; gap: 6px; }
-.vrow { display: grid; grid-template-columns: minmax(0, 240px) 260px minmax(0, 300px); gap: 14px; align-items: center; justify-content: start; }
-.vrow .lab b { display: block; font-weight: 600; font-size: 14px; line-height: 1.25; }
-.vrow .lab small, .vrow .val small { display: block; color: var(--ink-2); font-size: 12px; }
-.vtrack { position: relative; height: 12px; background: var(--pip-off); border-radius: 3px; }
-.vtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.vlist { display: grid; gap: 4px; }
+.vrow { display: grid; grid-template-columns: minmax(0, 230px) 200px minmax(0, 300px); gap: 12px; align-items: center; justify-content: start; }
+.vrow .lab b { display: block; font-weight: 600; font-size: 13px; line-height: 1.2; }
+.vrow .lab small, .vrow .val small { display: block; color: var(--ink-2); font-size: 11.5px; line-height: 1.25; }
+.vtrack { position: relative; height: 7px; background: var(--pip-off); border-radius: 2px; }
+.vtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
 .vtrack i.a { background: var(--navy); }
 .vtrack i.l { background: var(--signed); }
-.vtrack .tick { position: absolute; top: -5px; bottom: -5px; width: 4px; margin-left: -2px; border-radius: 1px; box-shadow: 0 0 0 1.5px var(--paper); }
+.vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
 .vtrack .tick.l { background: var(--signed); }
-.vrow .val { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.vrow .val b.big { font: 700 16px var(--display); font-stretch: 85%; color: var(--ink); }
-.key .k-tick { width: 4px !important; height: 14px !important; box-shadow: 0 0 0 1.5px var(--paper); }
+.vrow .val { font-size: 12.5px; line-height: 1.25; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.vrow .val b.big { font: 700 14px var(--display); font-stretch: 85%; color: var(--ink); }
+.key .k-tick { width: 3px !important; height: 12px !important; box-shadow: 0 0 0 1px var(--paper); }
 .key .k-tick.a { background: var(--navy); }
 .key .k-tick.l { background: var(--signed); }
 .houses { display: grid; gap: 22px; }
