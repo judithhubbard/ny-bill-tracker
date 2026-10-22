@@ -1004,9 +1004,8 @@ def net_views(spons, w, cross, info):
                 mine = sorted((p for p in lst if x in p[:2]), key=lambda p: -p[2])[:n]
                 for p in mine:
                     keep[(p[0], p[1], p[3])] = p
-        tied = {i for p in keep.values() for i in p[:2]}
-        out[sel] = {"nodes": [[k, info[k][0], info[k][1], spons[k]] for k in ids if k in tied],
-                    "loose": [info[k][0] for k in ids if k not in tied],
+        # Members with no strong ties are drawn too, as dots on their own.
+        out[sel] = {"nodes": [[k, info[k][0], info[k][1], spons[k]] for k in ids],
                     "links": [[a, b, round(s, 3), kind] for a, b, s, kind in keep.values()]}
     return out
 

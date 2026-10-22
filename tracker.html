@@ -1324,17 +1324,16 @@ function netData(sel, t) {
   const keep = new Set();
   for (const [list, n] of [[pairs(w, "co", true), sel === "B" ? 3 : 4], [pairs(cross, "x", false), 3]])
     for (const x of nodes) list.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.share - a.share).slice(0, n).forEach((p) => keep.add(p));
-  // Members with no strong ties aren't drawn; they're listed under the chart instead.
-  const tied = new Set([...keep].flatMap((p) => [p.source, p.target]));
-  return { nodes: nodes.filter((x) => tied.has(x.id)), loose: nodes.filter((x) => !tied.has(x.id)), links: [...keep].map((p) => ({ ...p })) };
+  // Members with no strong ties are still drawn, as dots on their own.
+  return { nodes, links: [...keep].map((p) => ({ ...p })) };
 }
 let netPinned = null;
 let netPeriod = "now";
 // A network worked out by the build (past sessions, or since 2017), in the shape drawNet takes.
 function savedNet(v) {
-  if (!v) return { nodes: [], links: [], loose: [] };
+  if (!v) return { nodes: [], links: [] };
   const nodes = v.nodes.map(([id, label, party, n]) => ({ id, n, party, L: { id, label, house: id[0], name: label.replace(/^(Sen|Asm)\. /, "") } }));
-  return { nodes, links: v.links.map(([source, target, share, kind]) => ({ source, target, share, kind })), loose: v.loose.map((label) => ({ L: { label } })) };
+  return { nodes, links: v.links.map(([source, target, share, kind]) => ({ source, target, share, kind })) };
 }
 function renderNet() {
   const box = $("statNet");
@@ -1353,14 +1352,12 @@ function renderNet() {
     <datalist id="netNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
     <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
-    <p class="note" id="netLoose"></p>
-    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member's ${both ? "three" : "four"} strongest ties${both ? " in each kind" : ""} are drawn (counting only ties of 3 or more bills), so members who are many colleagues' closest partners have more lines. Hover or find a name to highlight; click to see a member's bills.</p>`;
+    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member's ${both ? "three" : "four"} strongest ties${both ? " in each kind" : ""} are drawn (counting only ties of 3 or more bills), so members who are many colleagues' closest partners have more lines. Members close together work together often; the directions have no meaning. Hover or find a name to highlight; click to see a member's bills.</p>`;
   loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
-function drawNet({ nodes, links, loose }) {
+function drawNet({ nodes, links }) {
   const el = $("netBox");
   if (!el) return;
-  $("netLoose").textContent = loose.length ? `Not shown, no strong co-sponsor ties: ${loose.map((x) => x.L.label).join(", ")}.` : "";
   if (!nodes.length) { el.innerHTML = `<p class="muted">No bills to show.</p>`; return; }
   const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * (netHouse === "B" ? 0.75 : 0.6));
   // Dot size relative to the busiest sponsor in view, so one session and many sessions read alike.
@@ -1376,8 +1373,9 @@ function drawNet({ nodes, links, loose }) {
     .force("collide", d3.forceCollide((x) => r(x) + 1.5)).stop();
   for (let i = 0; i < 600; i++) sim.tick();
   // Stretch the finished layout to fill the box, keeping its shape.
-  const pad = 16, xs = nodes.map((x) => x.x), ys = nodes.map((x) => x.y);
-  const x0 = Math.min(...xs), y0 = Math.min(...ys), k = Math.min((W - 2 * pad) / Math.max(1, Math.max(...xs) - x0), (H - 2 * pad) / Math.max(1, Math.max(...ys) - y0));
+  // Wider side margins so a name at the edge isn't cut off.
+  const padX = 60, pad = 20, xs = nodes.map((x) => x.x), ys = nodes.map((x) => x.y);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), k = Math.min((W - 2 * padX) / Math.max(1, Math.max(...xs) - x0), (H - 2 * pad) / Math.max(1, Math.max(...ys) - y0));
   const dx = (W - k * (Math.max(...xs) - x0)) / 2, dy = (H - k * (Math.max(...ys) - y0)) / 2;
   for (const x of nodes) { x.x = dx + k * (x.x - x0); x.y = dy + k * (x.y - y0); }
   const nb = new Map(nodes.map((x) => [x.id, new Set([x.id])]));
