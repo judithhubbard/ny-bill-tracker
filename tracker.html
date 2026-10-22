@@ -1258,9 +1258,9 @@ function renderStats() {
       ${FATE.map(([k, l]) => { const [n, back, law] = fate[k] || [0, 0, 0]; return `<tr><td>${l}</td><td>${num(n)}</td><td>${pctOf(back, n)}%</td><td>${pctOf(law, n)}%</td></tr>`; }).join("")}
     </tbody></table></div>
     ${pers.length ? `<h3 class="sub">This session's most persistent bills</h3>
-    <p class="note">Introduced in the most earlier sessions. “Best before” is the furthest an earlier version got (outcomes are known back to 2017–18).</p>
+    <p class="note">Bills introduced in the most earlier sessions. “Furthest it got before” is how far any earlier version got (known back to 2017–18).</p>
     <div class="tablewrap"><table class="oc st pers"><colgroup><col class="c-bill"><col><col class="c-num"><col class="c-best"><col class="c-best"></colgroup>
-      <thead><tr><th>Bill</th><th>Title</th><th>Earlier sessions</th><th>Best before</th><th>Now</th></tr></thead><tbody>
+      <thead><tr><th>Bill</th><th>Title</th><th>Earlier sessions</th><th>Furthest it got before</th><th>This session</th></tr></thead><tbody>
       ${pers.map(([n, title, tries, first, best, stage]) => `<tr><td><a href="#${esc(baseNum(n))}">${esc(n)}</a></td><td>${esc(title)}</td><td>${tries} <span class="muted">(since ${first})</span></td><td>${best >= 0 ? esc(STAGE_TEXT.final.long[best]) : "–"}</td><td>${esc(TEXT.long[stage])}</td></tr>`).join("")}
     </tbody></table></div>` : ""}`;
 
