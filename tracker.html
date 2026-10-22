@@ -289,13 +289,6 @@ table.oc th { vertical-align: bottom; }
 .actview h3 { margin: 0; font: 700 16px var(--display); font-stretch: 90%; }
 .actview p { margin: 0; max-width: 78ch; }
 .act-sec { display: grid; gap: 10px; }
-.act-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.act-btn { appearance: none; border: 1px solid var(--navy); background: var(--sheet); color: var(--navy); border-radius: 5px; padding: 7px 12px; font: 600 13.5px var(--body); cursor: pointer; }
-.act-btn:hover { background: var(--chip); }
-.soon { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--rule); }
-.soon li { display: grid; grid-template-columns: 120px 110px minmax(0, 1fr); gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 13.5px; align-items: baseline; }
-.soon .due { font-weight: 600; color: var(--gold); }
-.soon .bn { font: 700 12.5px var(--mono); }
 .act-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
 .card ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 14px; }
@@ -303,7 +296,6 @@ table.oc th { vertical-align: bottom; }
 .stagehelp th { text-align: left; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
 .stagehelp td { padding: 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .stagehelp td:first-child { font-weight: 600; white-space: nowrap; }
-@media (max-width: 620px) { .soon li { grid-template-columns: 100px minmax(0, 1fr); } .soon li .t { grid-column: 1 / -1; } }
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -780,24 +772,18 @@ function nextSteps(b) {
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
 
-// Bills where comment can still change the outcome this year, soonest deadline first.
+// Where things stand for the governor, from all bills (filters on the Bills tab don't apply here).
 function renderOpenNow() {
   if (!DATA.current) {
-    $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died. Switch to the current session to see bills that are still open for comment.</p>`;
+    $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died. The current session's page shows bills that are still open for comment.</p>`;
     return;
   }
-  const pool = BILLS.filter((b) => matches(b, "stage"));
-  const desk = pool.filter((b) => b.stage === 4).sort((a, b) => (a.due || "").localeCompare(b.due || ""));
-  const waiting = pool.filter((b) => b.stage === 3);
-  const filtered = activeFilters().filter(([k]) => k !== "stage").length;
-  const rows = desk.slice(0, 12).map((b) => `<li><span class="due">Due ${fmtDate(b.due)}</span><span class="bn">${esc(b.nums[0])}</span><span class="t">${esc(b.title)}</span></li>`).join("");
-  $("openNow").innerHTML = `<h2>Open for comment now</h2>
-    <p>${num(desk.length)} bill${desk.length === 1 ? " is" : "s are"} on the governor's desk, and ${num(waiting.length)} more passed both houses and can be sent to her any day.${filtered ? " These counts use the filters you've set on the Bills tab." : ""}</p>
-    <div class="act-buttons">
-      <button class="act-btn" type="button" data-open="4">See the ${num(desk.length)} on her desk, by deadline</button>
-      <button class="act-btn" type="button" data-open="3">See the ${num(waiting.length)} not yet sent</button>
-    </div>
-    ${rows ? `<h3>Soonest deadlines</h3><ul class="soon">${rows}</ul>` : ""}`;
+  const desk = BILLS.filter((b) => b.stage === 4), waiting = BILLS.filter((b) => b.stage === 3);
+  const next = desk.map((b) => b.due).filter((d) => d && d >= isoToday()).sort()[0];
+  $("openNow").innerHTML = `<h2>Where comment can matter right now</h2>
+    <p>${num(desk.length)} bill${desk.length === 1 ? " is" : "s are"} on the governor's desk${next ? `, with the next decision due about ${fmtDate(next)}` : ""}, and ${num(waiting.length)} more ${waiting.length === 1 ? "has" : "have"} passed both houses and can be sent to her any day.</p>
+    <h3>Finding bills to weigh in on</h3>
+    <p>On the Bills tab, choose “On the governor's desk” or “Passed both houses” under <i>Where it is now</i>, and sort by “Governor's deadline” to see the most urgent first. Open any bill to see what happens next and who to contact about it.</p>`;
 }
 
 function keyDates(b) {
@@ -1029,7 +1015,6 @@ function render() {
   renderTopics();
   renderActive();
   renderList();
-  renderOpenNow();
   const saved = {};
   for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
   store("filters", saved);
@@ -1095,11 +1080,6 @@ function wire() {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
-  $("openNow").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-open]"); if (!btn) return;
-    state.stage = +btn.dataset.open; state.sort = btn.dataset.open === "4" ? "due" : "recent"; state.shown = PAGE;
-    syncControls(); render(); showView("bills"); window.scrollTo(0, 0);
-  });
   $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
   $("ocTopic").addEventListener("change", renderOutcomes);
   $("chartTabs").addEventListener("click", (e) => {
@@ -1239,6 +1219,7 @@ function hydrate(raw) {
   if (["stats", "how", "act"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   showView(view);
   renderOutcomes();
+  renderOpenNow();
   render();
 }
 
