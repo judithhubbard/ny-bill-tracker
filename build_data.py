@@ -671,6 +671,19 @@ def insights(loaded, hist, current):
             timing.append({"year": year, "votes": len(regular), "lastVote": last,
                            "final3wk": sum(cut < d <= last for d in regular)})
     signed = [r["keyDates"][5] for s in past for r in loaded[s][0] if r["keyDates"][5]]
+    # The governor's decisions: by month (past sessions) and by calendar year (all sessions).
+    gov_months = defaultdict(lambda: [0, 0])
+    gov_years = defaultdict(lambda: [0, 0])
+    for s in sorted(loaded):
+        for r in loaded[s][0]:
+            for i, kind in ((5, 0), (6, 1)):
+                d = r["keyDates"][i]
+                if not d:
+                    continue
+                who = "Cuomo" if d < "2021-08-24" else "Hochul"
+                if s != current:
+                    gov_months[f"{who}|{d[5:7]}"][kind] += 1
+                gov_years[f"{d[:4]}|{who}"][kind] += 1
     late_sign = sum(d[5:7] in ("10", "11", "12") for d in signed)
 
     # Persistence: how many earlier sessions laws took, and what happens to bills that die.
@@ -704,6 +717,8 @@ def insights(loaded, hist, current):
         "odds": {t: dict(v) for t, v in odds.items()},
         "timing": timing,
         "lateSigning": [late_sign, len(signed)],
+        "govMonths": dict(sorted(gov_months.items())),
+        "govYears": [[k.split("|")[0], k.split("|")[1], v[0], v[1]] for k, v in sorted(gov_years.items())],
         "persistence": persist,
         "comeback": comeback,
     }

@@ -325,6 +325,20 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .key i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
 .key .k-appr { background: var(--navy); }
 .key .k-law { background: var(--signed); }
+.key .k-veto { background: var(--veto); }
+.twobar .track.wide { width: 220px; }
+.twobar .v { background: var(--veto); }
+.twobar b.plain { color: var(--ink); }
+table.st.months { max-width: 420px; }
+.govcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 420px)); gap: 24px; }
+.govcol h4 { margin: 0 0 4px; font: 600 13px var(--body); }
+.twobar .track.mid { width: 160px; }
+table.st tr.tot td { font-weight: 700; border-top: 1px solid var(--ink); }
+table.st.years { max-width: 560px; }
+table.st col.c-gov { width: 110px; }
+table.st.years col.c-m { width: 120px; }
+table.st col.c-m { width: 80px; }
+.statsview h3.sub { margin: 6px 0 0; font: 700 16px var(--display); font-stretch: 90%; }
 .tablewrap.tall { max-height: 520px; overflow-y: auto; }
 .odds { margin: 0; font-size: 13px; color: var(--ink-2); }
 .peers summary { cursor: pointer; font: 600 13.5px var(--body); color: var(--navy); }
@@ -1086,6 +1100,32 @@ function oddsLine(b) {
 // One bar: full length is the share approved by committee; the darker part, the share that became law.
 const twoBar = (appr, law) => `<div class="twobar"><span class="track"><i class="a" style="width:${appr}%"></i><i class="l" style="width:${law}%"></i></span><b>${appr}%</b><em>${law}%</em></div>`;
 
+// When the governor signs and vetoes: vetoes come almost entirely at the end of the year.
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function govTiming(I) {
+  const gm = I.govMonths || {};
+  const table = (who, label) => {
+    const rows = MONTHS.map((m, i) => { const [s, v] = gm[`${who}|${String(i + 1).padStart(2, "0")}`] || [0, 0]; return { m, s, v, n: s + v }; });
+    const maxN = Math.max(1, ...rows.map((r) => r.n));
+    const tot = rows.reduce((a, r) => [a[0] + r.s, a[1] + r.v], [0, 0]);
+    return `<div class="govcol"><h4>${label}</h4>
+      <table class="oc st months"><colgroup><col class="c-m"><col><col class="c-num"></colgroup>
+      <thead><tr><th>Month</th><th class="barh">Decisions</th><th>Vetoed</th></tr></thead>
+      <tbody>${rows.map((r) => `<tr><td>${r.m}</td><td class="bar"><div class="twobar"><span class="track mid"><i class="l" style="width:${(r.s / maxN) * 100}%"></i><i class="v" style="left:${(r.s / maxN) * 100}%;width:${(r.v / maxN) * 100}%"></i></span><b class="plain">${num(r.n)}</b></div></td><td>${r.n ? pctOf(r.v, r.n) + "%" : "–"}</td></tr>`).join("")}
+      <tr class="tot"><td>All</td><td><b class="plain">${num(tot[0] + tot[1])}</b></td><td>${pctOf(tot[1], tot[0] + tot[1])}%</td></tr></tbody></table></div>`;
+  };
+  const years = (I.govYears || []).filter(([y]) => y >= "2017");
+  return `<h3 class="sub">The governor's decisions by month</h3>
+    <p class="key"><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span></p>
+    <div class="govcols">${table("Cuomo", "Gov. Cuomo, 2017 to Aug. 2021")}${table("Hochul", `Gov. Hochul, Aug. 2021 to ${(I.pastSessions[I.pastSessions.length - 1] || 2023) + 1}`)}</div>
+    <p>Under both governors, bills that raise no concerns are requested and signed through the year; the rest wait, and nearly all vetoes come in November and December.</p>
+    <h3 class="sub">By year</h3>
+    <div class="tablewrap"><table class="oc st years"><colgroup><col class="c-m"><col class="c-gov"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
+      <thead><tr><th>Year</th><th>Governor</th><th>Signed</th><th>Vetoed</th><th>Share signed</th></tr></thead>
+      <tbody>${years.map(([y, who, s, v]) => `<tr><td>${y}${+y === new Date().getFullYear() ? " (so far)" : ""}</td><td>${who}</td><td>${num(s)}</td><td>${num(v)}</td><td>${s + v ? pctOf(s, s + v) + "%" : "–"}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note">2020 was a short COVID-year session. Gov. Cuomo resigned in August 2021, before the end-of-year vetoes. The current year's vetoes mostly come in November and December.</p>`;
+}
+
 let commAll = false;
 // Plain names for committees whose official names don't explain themselves.
 const COMM_LABELS = { "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)" };
@@ -1134,7 +1174,8 @@ function renderStats() {
   const [late, signed] = I.lateSigning;
   $("statTiming").innerHTML = `<h2>Timing</h2>
     <p>In a typical year, about <b>${mid}%</b> of floor votes come in the <b>last three weeks</b> of the session (from ${Math.min(...shares)}% to ${Math.max(...shares)}% in ${years[0].year}–${years[years.length - 1].year}, leaving out 2020). The session usually ends in early or mid June, so May is when weighing in matters most.</p>
-    <p>About <b>${pctOf(late, signed)}%</b> of bills signed into law are signed in October, November or December, after most bills have waited months for the governor to request them.</p>`;
+    <p>About <b>${pctOf(late, signed)}%</b> of bills signed into law are signed in October, November or December, after most bills have waited months for the governor to request them.</p>
+    ${govTiming(I)}`;
 
   // Persistence
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
