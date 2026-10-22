@@ -330,7 +330,7 @@ table.oc th { vertical-align: bottom; }
 .mcol { position: relative; height: 100%; background: var(--pip-off); border-radius: 1px; }
 .mcol i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 1px; }
 .mcol i.a { background: var(--navy); } .mcol i.l { background: var(--signed); } .mcol i.v { background: var(--veto); }
-.mcol b { position: absolute; left: -1px; right: -1px; height: 2px; margin-bottom: -1px; background: var(--gold); }
+.mcol b { position: absolute; left: -1px; right: -1px; height: 3px; margin-bottom: -1px; background: var(--gold); }
 .mcol.gap, .mcols.axis span.gap { margin-left: 4px; }
 .mcols.axis { height: auto; font: 11px var(--mono, monospace); color: var(--ink-2); text-align: center; }
 .myears { display: grid; grid-template-columns: 1fr 1fr; font-size: 12.5px; color: var(--ink-2); }
@@ -1641,10 +1641,12 @@ function monthChart(I, t) {
   if (!past) return "";
   const n = (I.pastSessions || []).length || 1;
   const live = DATA.current && now;
+  // Months of the session so far: a zero there is a real zero, drawn at the bottom; later months stay blank.
+  const today = new Date(), sofar = (today.getFullYear() - DATA.session) * 12 + today.getMonth();
   const rows = MONTH_ROWS.map(([k, label]) => {
     const avg = past[k].map((x) => x / n), cur = live ? now[k] : null;
     const max = Math.max(1, ...avg, ...(cur || []));
-    const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, "a"]], tick: cur && cur[m] ? (cur[m] / max) * 100 : null,
+    const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, "a"]], tick: cur && m <= sofar ? (cur[m] / max) * 100 : null,
       title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
     return colRow(label, "", cols, `<b class="big">${num(Math.round(avg.reduce((a, b) => a + b, 0)))}</b> a session`, 12);
   }).join("");
@@ -1657,7 +1659,7 @@ function monthChart(I, t) {
     gov = [["signed", "Signed", "l"], ["vetoed", "Vetoed", "v"]].map(([k, label, cls]) => {
       const avg = sv[k], cur = live ? now[k] : null;
       const max = Math.max(1, ...avg, ...(cur || []));
-      const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, cls]], tick: cur && cur[m] ? (cur[m] / max) * 100 : null,
+      const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, cls]], tick: cur && m <= sofar ? (cur[m] / max) * 100 : null,
         title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} ${k} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
       const sum = avg.reduce((a, b) => a + b, 0);
       return colRow(label, "", cols, `<b class="big">${num(Math.round(sum))}</b> a session${k === "vetoed" ? `<small>${pctOf(sum, total)}% of decisions</small>` : ""}`, 12);
