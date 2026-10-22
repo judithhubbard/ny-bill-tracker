@@ -52,6 +52,18 @@ jobs:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: python3 fetch_bills.py "$CURRENT_SESSION"
 
+      # Assembly floor votes come from nyassembly.gov, one page per bill. Votes already
+      # collected are kept in data/assembly_votes_<session>.json, so only new ones are fetched;
+      # the updated file is committed back.
+      - name: Collect new Assembly votes
+        run: |
+          python3 fetch_assembly_votes.py "$CURRENT_SESSION" || echo "Assembly votes failed; using the committed file"
+          if [ -n "$(git status --porcelain data/assembly_votes_*.json)" ]; then
+            git add data/assembly_votes_*.json
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Update Assembly votes" && git push || echo "Couldn't save Assembly votes; they'll be refetched next run"
+          fi
+
       # Committee chairs and members, and legislators' page links. If a source is down,
       # the committed data/contacts_<session>.json is used as is.
       - name: Refresh contacts

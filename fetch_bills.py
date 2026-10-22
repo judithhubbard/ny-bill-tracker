@@ -68,6 +68,17 @@ def slim(b):
         "coSponsors": [m["fullName"] for m in items(am.get("coSponsors"))],
         "multiSponsors": [m["fullName"] for m in items(am.get("multiSponsors"))],
         "publishDate": am.get("publishDate"),
+        # Senate votes (floor and committee). The API has no Assembly votes; see fetch_assembly_votes.py.
+        "votes": [{
+            "type": v.get("voteType"),
+            "date": v.get("voteDate"),
+            "committee": (v.get("committee") or {}).get("name"),
+            "printNo": (v.get("billId") or {}).get("printNo"),
+            "counts": {k: g.get("size", 0) for k, g in ((v.get("memberVotes") or {}).get("items") or {}).items()},
+            "notYes": [[m.get("fullName"), m.get("districtCode"), k]
+                       for k, g in ((v.get("memberVotes") or {}).get("items") or {}).items()
+                       if k not in ("AYE", "AYEWR") for m in (g.get("items") or [])],
+        } for v in items(b.get("votes"))],
         "previousVersions": [{"session": p["session"], "printNo": p["basePrintNo"]} for p in items(b.get("previousVersions"))],
     }
 

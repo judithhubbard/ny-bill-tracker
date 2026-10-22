@@ -21,6 +21,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
   (localStorage); the share link (`/watchlist/#w=2025.S1234.A5678`) carries a copy.
 - Floor leaders (Senate Majority Leader, Assembly Speaker) are set in `LEADERS` in
   `build_data.py`; check them after leadership votes each January of odd years.
+- Votes: Senate floor and committee votes come from the API; Assembly floor votes from
+  nyassembly.gov via `fetch_assembly_votes.py`, cached in `data/assembly_votes_SESSION.json`.
+- A bill's own link is the page address plus `#S1234` (or `#A1234`).
 - `tracker.html` is the page template; topic rules and the sponsor checkboxes are at the top of `build_data.py`.
 - `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages. The note at
   the top of the page (end of votes, governor's remaining bills, session over) is worked out

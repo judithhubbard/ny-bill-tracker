@@ -155,6 +155,11 @@ footer p { margin: 0; max-width: 90ch; }
 .keydates li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; }
 .keydates time { font-family: var(--mono); font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .keydates .est { color: var(--gold); font-weight: 600; }
+.votes .theirs { font-size: 12.5px; color: var(--ink-2); }
+.votes .vy { color: var(--signed); } .votes .vn { color: var(--veto); } .votes .vo { color: var(--ink-2); }
+.votes .muted { color: var(--ink-2); font-size: 12px; }
+.linkrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.linkrow input { flex: 1 1 260px; min-width: 0; font: 12px var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 5px 8px; }
 
 /* Session switcher */
 .sessions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -638,7 +643,29 @@ function sponsoredBy(b, L, withCos) {
   return b.vers.some((v) => v.p[0] === L.house && (v.sponsor === L.apiName || (withCos && v.cosponsors.includes(L.apiName))));
 }
 
+function clearHash() { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+
+// A link to one bill (#S4574) shows just that bill, whatever the other filters.
+let ONE = null;
+function billLink(b) {
+  const num_ = baseNum(b.nums[0]);
+  const here = DATA.sessions.find((s) => s.session === DATA.session);
+  if (here && /^https:\/\/claude\.ai/.test(here.url || "")) return `${here.url}#${num_}`;
+  const root = new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
+  return `${root}${DATA.current ? "" : `${DATA.session}.html`}#${num_}`;
+}
+function openFromHash() {
+  const m = location.hash.match(/^#([SA]\d{1,5})$/i);
+  if (!m) return false;
+  const want = m[1].toUpperCase();
+  const b = BILLS.find((x) => x.nums.some((n) => baseNum(n) === want));
+  if (!b) return false;
+  ONE = b.idx;
+  return true;
+}
+
 function matches(b, skip) {
+  if (ONE != null) return b.idx === ONE;
   if (skip !== "stage" && state.stage != null && b.stage !== state.stage) return false;
   if (skip !== "topic" && state.topics.size) {
     for (const t of state.topics) if (!b.topics.includes(t)) return false;
@@ -888,6 +915,29 @@ function renderOpenNow() {
     ${more > 0 ? `<button class="more" type="button" data-more>Show ${num(Math.min(25, more))} more</button>` : ""}`;
 }
 
+// ---- Votes ----
+const VOTE_WORDS = { N: "No", E: "Excused", A: "Absent", B: "Abstained" };
+function voteOf(v, L) {
+  if (!L || v.house !== L.house) return null;
+  // Only committee members vote in committee.
+  if (v.kind === "C" && !(L.committees || []).some((c) => commKey(c.name) === commKey(v.committee))) return null;
+  const code = v.notYes.get(L.id);
+  return code ? VOTE_WORDS[code] || code : "Yes";
+}
+function votesBlock(b) {
+  if (!b.votes.length) return "";
+  const people = [...(DATA.contacts?.reps || []).map((r) => LEGS.find((L) => L.house === r.house && lastName(L.name) === r.last)).filter(Boolean)];
+  const page = PRESET?.who && LEG_BY_ID[PRESET.who];
+  if (page && !people.includes(page)) people.unshift(page);
+  const rows = b.votes.map((v) => {
+    const what = v.kind === "F" ? `${HOUSE[v.house]} floor` : `${HOUSE[v.house]} ${esc(v.committee || "")} Committee`;
+    const other = [...v.notYes.values()].filter((c) => c !== "N").length;
+    const theirs = people.map((L) => { const x = voteOf(v, L); return x ? `${L.title} ${esc(L.name.split(" ").pop())}: <b class="v${x === "Yes" ? "y" : x === "No" ? "n" : "o"}">${x}</b>` : ""; }).filter(Boolean).join(" · ");
+    return `<li><time>${fmtDate(v.date)}</time><span>${what}: <b>${v.yes}–${v.no}</b>${other ? ` <span class="muted">(${other} not voting)</span>` : ""}${theirs ? `<br><span class="theirs">${theirs}</span>` : ""}</span></li>`;
+  }).join("");
+  return `<div class="keydates votes"><h4>Votes</h4><ol>${rows}</ol></div>`;
+}
+
 function keyDates(b) {
   const D = b.dates;
   const items = [
@@ -1083,6 +1133,7 @@ function renderChart() {
 // Every filter in effect, as removable chips above the results, so none is ever out of sight.
 function activeFilters() {
   const out = [];
+  if (ONE != null) out.push(["one", null, "Showing one bill", BILLS[ONE].nums.join(" / ")]);
   const opt = (id, v) => { const o = [...$(id).options].find((x) => x.value === v); return o ? o.textContent.replace(/ \([\d,]+\)$/, "") : v; };
   if (state.q) out.push(["q", null, "Search", `“${state.q}”`]);
   if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
@@ -1113,6 +1164,7 @@ function renderActive() {
 }
 
 function clearFilter(k, v) {
+  if (k === "one") { ONE = null; clearHash(location.pathname + location.search); render(); return; }
   if (k === "topics") state.topics.delete(v);
   else state[k] = blank()[k];
   if (k === "who") state.whoCos = false;
@@ -1188,8 +1240,10 @@ function fillDetail(el) {
   d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
+    <div class="linkrow"><span>Link to this bill:</span><input type="text" readonly value="${esc(billLink(b))}" aria-label="Link to this bill" onclick="this.select()"><button class="act-btn" type="button" data-copylink>Copy</button></div>
     ${nextSteps(b)}
     ${keyDates(b)}
+    ${votesBlock(b)}
     ${lineage(b)}
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
@@ -1241,6 +1295,7 @@ function wire() {
   });
   for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
     const chip = e.target.closest("button"); if (!chip) return;
+    if (chip.dataset.clear === "all") { ONE = null; if (/^#[SA]\d/i.test(location.hash)) clearHash(location.pathname + location.search); }
     if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }, PRESET?.who ? { who: PRESET.who, whoCos: state.whoCos } : {}, PRESET?.watch ? { watch: true } : {}); syncControls(); render(); return; }
     clearFilter(chip.dataset.k, chip.dataset.v);
   });
@@ -1256,6 +1311,12 @@ function wire() {
     $("watchCount").textContent = WATCH.size ? `(${WATCH_COUNT()})` : "";
     if (state.watch) render(); else renderWatchCard();
   });
+  for (const id of ["list", "openNow"]) $(id).addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-copylink]"); if (!btn) return;
+    const input = btn.previousElementSibling;
+    try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
+  });
+  window.addEventListener("hashchange", () => { if (openFromHash()) { render(); openOne(); } });
   $("wl").addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
     if (btn.dataset.wl === "copy") {
@@ -1263,9 +1324,9 @@ function wire() {
       try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
     } else if (btn.dataset.wl === "import") {
       for (const b of BILLS) if (b.nums.some((x) => SHARED.has(baseNum(x))) && !isWatched(b)) WATCH.set(billKey(b), b.last || "");
-      saveWatch(); SHARED = null; history.replaceState(null, "", location.pathname); render();
+      saveWatch(); SHARED = null; clearHash(location.pathname); render();
     } else if (btn.dataset.wl === "mine") {
-      SHARED = null; history.replaceState(null, "", location.pathname); render();
+      SHARED = null; clearHash(location.pathname); render();
     }
   });
   for (const id of ["list", "openNow"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
@@ -1292,7 +1353,7 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes] = r;
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -1303,6 +1364,9 @@ function decode(raw) {
     }));
     return {
       title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates, parties: parties || "",
+      votes: (votes || []).map(([house, kind, cm, date, yes, no, ny]) => ({
+        house, kind, committee: str(cm), date: day(date), yes, no, notYes: new Map(ny.map(([m, code]) => [T[m], code])),
+      })),
       due: raw.current && stage === 4 ? deadline(dates.deliv) : null,
       earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
       laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
@@ -1360,6 +1424,19 @@ function setupLegislators(raw) {
   $("whoOptions").innerHTML = LEGS.map((L) => `<option value="${esc(L.label)}"></option>`).join("");
 }
 
+function floorVotes(L) {
+  let n = 0, no = 0, away = 0;
+  for (const b of BILLS) for (const v of b.votes) if (v.kind === "F" && v.house === L.house) {
+    const x = voteOf(v, L); n++; if (x === "No") no++; else if (x !== "Yes") away++;
+  }
+  return n ? ` Floor votes: ${num(n)}, voted no on ${num(no)}${away ? `, didn't vote on ${num(away)}` : ""}.` : "";
+}
+
+function openOne() {
+  const el = document.querySelector(`#list .bill[data-idx="${ONE}"]`);
+  if (el) { el.open = true; fillDetail(el); el.scrollIntoView({ block: "start" }); }
+}
+
 function renderPerson(L) {
   if (!L) return;
   const house = L.house === "S" ? "Senate" : "Assembly";
@@ -1377,7 +1454,7 @@ function renderPerson(L) {
       <p>${[L.party, `${house} District ${L.district}`, since].filter(Boolean).map(esc).join(" · ")}</p>
       ${chairs.length ? `<p><b>Chairs:</b> ${chairs.map(esc).join(", ")}</p>` : ""}
       ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
-      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.</p>
+      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.${floorVotes(L)}</p>
       <p>${reach}</p>
       <p><a href="${esc(BASE || "./")}">All bills</a></p>
     </div>`;
@@ -1469,7 +1546,10 @@ function hydrate(raw) {
   if (["stats", "how", "act"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   showView(view);
   renderOpenNow();
+  const one = openFromHash();
+  if (one) showView("bills");
   render();
+  if (one) openOne();
 }
 
 wire();

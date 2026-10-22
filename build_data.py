@@ -170,6 +170,35 @@ def rank(stage):
 
 
 
+SENATE_CODES = {"NAY": "N", "EXC": "E", "ABS": "A", "ABD": "B"}
+ASSEMBLY_CODES = {"No": "N", "ER": "E", "Abs": "A", "Abstain": "B", "NV": "A"}
+
+
+def collect_votes(live, avotes):
+    """Senate votes (API) and Assembly floor votes (nyassembly.gov) for a bill's versions.
+    Each: [house, "F"/"C", committee, date, yes, no, [[member, code], ...]] listing only
+    members who didn't vote yes; members are ("S", district) or ("A", short name)."""
+    out, seen = [], set()
+    for b in live:
+        for v in b.get("votes", []):
+            key = ("S", v["type"], v["date"], v.get("committee"))
+            if key in seen:
+                continue
+            seen.add(key)
+            c = v["counts"]
+            out.append(["S", "F" if v["type"] == "FLOOR" else "C", v.get("committee"), v["date"],
+                        c.get("AYE", 0) + c.get("AYEWR", 0), c.get("NAY", 0),
+                        [[("S", d), SENATE_CODES.get(code, code)] for _, d, code in v["notYes"]]])
+        for v in (avotes.get(b["printNo"]) or {}).get("votes", []):
+            key = ("A", "F", v["date"], v["yea"], v["nay"])
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(["A", "F", None, v["date"], v["yea"], v["nay"],
+                        [[("A", n), ASSEMBLY_CODES.get(code, code)] for n, code in v["notYes"]]])
+    return sorted(out, key=lambda v: v[3])
+
+
 def load_session(session):
     """Read one session's bills and return (records, printNo -> record index, fetched time)."""
     raw = read_session(session)
@@ -205,6 +234,8 @@ def load_session(session):
     for p in bills:
         groups.setdefault(find(p), []).append(bills[p])
 
+    avotes_path = os.path.join(HERE, "data", f"assembly_votes_{session}.json")
+    avotes = json.load(open(avotes_path)) if os.path.exists(avotes_path) else {}
     recs, index = [], {}
     for members in groups.values():
         live = [b for b in members if b["status"]["statusType"] != "STRICKEN"]
@@ -299,6 +330,7 @@ def load_session(session):
             "last": last,
             "cosp": max(b["cosponsorCount"] for b in live),
             "keyDates": key_dates,
+            "votes": collect_votes(live, avotes),
             "vers": [{
                 "p": b["printNo"] + (b["activeVersion"] or ""),
                 "sponsor": b["sponsor"],
@@ -338,6 +370,40 @@ def github_page(html):
             '<meta name="robots" content="noindex, nofollow">\n'
             '<style>body { margin: 0; } [hidden] { display: none !important; }</style>\n'
             + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
+
+
+def assembly_resolver(session):
+    """Turns the Assembly's short vote names ("Kelles", "Carroll P") into district numbers."""
+    path = os.path.join(HERE, "data", f"contacts_{session}.json")
+    seats = json.load(open(path)).get("people", {}) if os.path.exists(path) else {}
+    by_last = defaultdict(list)
+    for seat, p in seats.items():
+        if seat[0] == "A":
+            words = p["key"].split()
+            by_last[words[-1]].append((words[0], int(seat[2:])))
+    cache = {}
+
+    def resolve(short):
+        if short in cache:
+            return cache[short]
+        parts = short.replace(".", "").split()
+        last = re.sub(r"[^a-z-]", "", parts[0].lower()) if parts else ""
+        # Multi-word last names ("Pheffer Amato", "De Los Santos"): try the whole name, then its end.
+        full = re.sub(r"[^a-z\s-]", "", short.lower())
+        initials = parts[-1] if len(parts) > 1 and parts[-1].isupper() and len(parts[-1]) <= 3 else ""
+        cands = by_last.get(full.replace(" " + initials.lower(), "").split()[-1] if initials else full.split()[-1], []) if full else []
+        if not cands and full:
+            # The Assembly cuts long names short ("Chandler-Waterm"): match the start of a last name.
+            stem = full.split()[-1]
+            cands = [c for last, cs in by_last.items() if len(stem) >= 5 and last.startswith(stem) for c in cs]
+        if len(cands) > 1 and initials:
+            cands = [c for c in cands if c[0][0].upper() in initials] or cands
+        if short.strip().lower() in ("mr. speaker", "mr speaker", "madam speaker") and "A" in LEADERS:
+            speaker = name_key(LEADERS["A"][0]).split()
+            cands = [c for c in by_last.get(speaker[-1], []) if c[0] == speaker[0]]
+        cache[short] = cands[0][1] if len(cands) == 1 else None
+        return cache[short]
+    return resolve
 
 
 def parties(session, recs):
@@ -566,6 +632,18 @@ def main():
             return sidx[x]
 
         party_of = parties(session, recs) if session == current else {}
+        resolve = assembly_resolver(session)
+
+        def member_id(m):
+            house, who = m
+            if house == "S":
+                return f"S:{who}"
+            d = resolve(who)
+            return f"A:{d}" if d else f"A?{who}"
+
+        def enc_votes(votes):
+            return [[h, kind, S(comm), date.replace("-", ""), y, n, [[S(member_id(m)), code] for m, code in ny]]
+                    for h, kind, comm, date, y, n, ny in votes]
         rows = []
         for i, r in enumerate(recs):
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
@@ -578,7 +656,7 @@ def main():
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
                          S(r["program"]), S(r["law"]), vers, int((r["first"] or str(session))[:4]), h,
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
-                         bill_parties(r, party_of)])
+                         bill_parties(r, party_of), enc_votes(r["votes"])])
 
         data = {
             "session": session,
