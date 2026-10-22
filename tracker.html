@@ -1016,7 +1016,7 @@ const govItem = (ask) => `<li class="key"><span class="contact"><span class="sta
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
-const lastName = (n) => (n || "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
+const lastName = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
 
 // Collects the people to contact about a bill, one entry each, with every role they play.
 function contactBook(b, canMove = true, oppose = false) {
@@ -1628,6 +1628,13 @@ function renderOutcomes() {
 }
 
 // A legislator's numbers next to the typical member of their party in their house.
+// A legislator's name as a link to their own page (GitHub Pages only), as bills spell it.
+function legLink(house, name) {
+  const same = LEGS.filter((x) => x.house === house && lastName(x.name) === lastName(name));
+  const L = LEGS.find((x) => x.house === house && x.apiName === name) || (same.length === 1 ? same[0] : null);
+  return L && ROOT && L.slug ? `<a href="${esc(ROOT + L.slug)}/">${esc(name)}</a>` : esc(name);
+}
+
 // A legislator's own numbers, next to the typical (median) member of their party in their house.
 function renderPersonStats(L) {
   const me = DATA.profiles?.[L.id];
@@ -1661,7 +1668,7 @@ function renderPersonStats(L) {
   const cos = new Map();
   for (const b of mine) for (const v of b.vers) if (v.p[0] === L.house && v.sponsor === L.apiName) for (const n of v.cosponsors) cos.set(n, (cos.get(n) || 0) + 1);
   const top = [...cos].sort((a, b) => b[1] - a[1]).slice(0, 10);
-  const cosRows = top.map(([n, c]) => vrow(esc(n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
+  const cosRows = top.map(([n, c]) => vrow(legLink(L.house, n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
 
   // Partners in the other house: who sponsors the matching version of their bills there.
   const other = L.house === "S" ? "A" : "S", otherName = HOUSE[other];
@@ -1669,7 +1676,7 @@ function renderPersonStats(L) {
   for (const b of mine) for (const n of new Set(b.vers.filter((v) => v.p[0] === other && v.sponsor).map((v) => v.sponsor))) partners.set(n, (partners.get(n) || 0) + 1);
   const withTwin = mine.filter((b) => b.vers.some((v) => v.p[0] === other && v.sponsor)).length;
   const partnerRows = [...partners].sort((a, b) => b[1] - a[1]).slice(0, 10)
-    .map(([n, c]) => vrow(esc(n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
+    .map(([n, c]) => vrow(legLink(other, n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
 
   // Past sessions.
   const hist = (me.history || []).slice().sort((a, b) => b[0] - a[0]);
