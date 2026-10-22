@@ -511,7 +511,7 @@ table.oc th { vertical-align: bottom; }
           <tr><td>In committee</td><td>The chair sets the agenda</td><td>Chair, members, sponsors</td></tr>
           <tr><td>Awaiting a floor vote</td><td>House leaders</td><td>Your legislators, sponsors</td></tr>
           <tr><td>Passed one house</td><td>The other house</td><td>Its committee chair and sponsor</td></tr>
-          <tr><td>Passed both, not yet sent</td><td>Governor's office, any day through December</td><td>Governor's office, sponsors</td></tr>
+          <tr><td>Passed both, not yet requested</td><td>Governor's office, any day through December</td><td>Governor's office, sponsors</td></tr>
           <tr><td>On the governor's desk</td><td>Governor, within 10 days (Sundays excluded)</td><td>Governor's office</td></tr>
         </tbody>
       </table></div>
@@ -549,13 +549,13 @@ table.oc th { vertical-align: bottom; }
 const STAGE_TEXT = {
   live: {
     pipe: ["In committee", "Awaiting a floor vote", "Passed one house", "Passed both houses", "On the governor's desk", "Signed into law", "Vetoed"],
-    long: ["In committee", "Awaiting a floor vote", "Passed one house", "Passed both houses, not yet sent to the governor", "On the governor's desk", "Signed into law", "Vetoed"],
-    chart: ["In committee", "Awaiting floor vote", "Passed one house", "Passed both, not sent", "Governor's desk", "Signed", "Vetoed"],
+    long: ["In committee", "Awaiting a floor vote", "Passed one house", "Passed both houses, not yet requested by the governor", "On the governor's desk", "Signed into law", "Vetoed"],
+    chart: ["In committee", "Awaiting floor vote", "Passed one house", "Passed both, not requested", "Governor's desk", "Signed", "Vetoed"],
   },
   final: {
     pipe: ["Died in committee", "Died awaiting a floor vote", "Passed one house only", "Passed both houses", "Sent to the governor", "Signed into law", "Vetoed"],
-    long: ["Died in committee", "Died awaiting a floor vote", "Passed one house only", "Passed both houses, never sent to the governor", "Sent to the governor, no action recorded", "Signed into law", "Vetoed"],
-    chart: ["Died in committee", "Died awaiting vote", "Passed one house", "Passed both, not sent", "Sent, no action", "Signed", "Vetoed"],
+    long: ["Died in committee", "Died awaiting a floor vote", "Passed one house only", "Passed both houses, never requested by the governor", "Sent to the governor, no action recorded", "Signed into law", "Vetoed"],
+    chart: ["Died in committee", "Died awaiting vote", "Passed one house", "Passed both, not requested", "Sent, no action", "Signed", "Vetoed"],
   },
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
@@ -685,7 +685,7 @@ function renderPipeline() {
   const subs = {
     1: "Approved by committee",
     2: `Senate ${num(oneHouse.Senate)} · Assembly ${num(oneHouse.Assembly)}`,
-    3: DATA.current ? "Not yet sent to the governor" : "Never sent to the governor",
+    3: DATA.current ? "Not yet requested by the governor" : "Never requested by the governor",
     4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No action recorded",
   };
   const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
@@ -739,7 +739,7 @@ function statusText(b) {
     small = fmtDate(b.passedIn === "Senate" ? D.passS : D.passA);
   } else if (b.stage === 3) {
     t = "Passed both houses";
-    small = `${live ? "Not yet sent" : "Never sent"} to the governor · passed ${fmtDate([D.passS, D.passA].sort().pop())}`;
+    small = `${live ? "Not yet requested" : "Never requested"} by the governor · passed ${fmtDate([D.passS, D.passA].sort().pop())}`;
   } else if (b.stage === 4) {
     t = live ? "On the governor's desk" : "Sent to the governor";
     small = live && b.due ? `Sent ${fmtDate(D.deliv)} · decision due ${fmtDate(b.due)} (est.)` : `Sent ${fmtDate(D.deliv)}`;
@@ -883,7 +883,7 @@ function renderOpenNow() {
   $("openNow").innerHTML = `<h2>Open for comment</h2>
     <h3>On the governor's desk (${num(desk.length)}), soonest deadline first</h3>
     <div class="list">${desk.map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
-    <h3>Passed both houses, not yet sent to her (${num(waiting.length)})</h3>
+    <h3>Passed both houses, not yet requested by her (${num(waiting.length)})</h3>
     <div class="list">${waiting.slice(0, openShown).map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
     ${more > 0 ? `<button class="more" type="button" data-more>Show ${num(Math.min(25, more))} more</button>` : ""}`;
 }
@@ -1324,7 +1324,7 @@ function sessionNotice(raw) {
   const quiet = lv ? (new Date(today) - new Date(lv)) / 864e5 > 21 : false;
   const waiting = BILLS.filter((b) => b.stage === 3).length, desk = BILLS.filter((b) => b.stage === 4).length;
   const governor = waiting + desk
-    ? `The governor has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} left: ${num(desk)} on her desk, ${num(waiting)} not yet sent.`
+    ? `The governor has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} left: ${num(desk)} on her desk, ${num(waiting)} not yet requested.`
     : "The governor has acted on every bill that passed both houses.";
   if (today > `${y2}-12-31`)
     return `The ${span(y1)} session ended December 31, ${y2}. Bills that didn't pass both houses died. ${governor}`;
