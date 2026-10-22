@@ -924,7 +924,7 @@ function sortBills(arr) {
   const by = {
     recent: (a, b) => recent(a, b) || b.stage - a.stage,
     stage: (a, b) => rankOf(b.stage) - rankOf(a.stage) || recent(a, b),
-    sessions: (a, b) => b.earlier.length - a.earlier.length || recent(a, b),
+    sessions: (a, b) => earlierSessions(b) - earlierSessions(a) || recent(a, b),
     num: (a, b) => a.sortKey - b.sortKey,
     cosp: (a, b) => b.cosp - a.cosp,
     due: (a, b) => (a.due || "9999").localeCompare(b.due || "9999") || recent(a, b),
@@ -1030,16 +1030,17 @@ function contactBook(b, canMove = true, oppose = false) {
     },
     reps(houses = ["S", "A"], ask) {
       for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) {
-        // Ask our legislators to sign on, unless they already sponsor or co-sponsor it.
-        const sponsors = b.vers.some((v) => v.p[0] === r.house && lastName(v.sponsor) === r.last);
-        const theirs = sponsors || b.vers.some((v) => v.p[0] === r.house && v.cosponsors.some((n) => lastName(n) === r.last));
+        // Nothing to ask our legislators if they already sponsor or co-sponsor it; otherwise the
+        // stage's ask, or to sign on.
+        const theirs = b.vers.some((v) => v.p[0] === r.house && (lastName(v.sponsor) === r.last || v.cosponsors.some((n) => lastName(n) === r.last)));
         add(r.name, r.house, r.house === "S" ? "your state senator" : "your Assembly member",
-          sponsors ? "" : ask || (theirs || !canMove || oppose ? "" : "sign on as a co-sponsor"));
+          theirs ? "" : ask || (!canMove || oppose ? "" : "sign on as a co-sponsor"));
       }
     },
-    entries() { return [...book.values()]; },
+    // Only people with something to do: sponsors already push for their own bills.
+    entries() { return [...book.values()].filter((p) => p.asks.length || p.star); },
     html(gov) {
-      const items = [...book.values()].map((p) => {
+      const items = this.entries().map((p) => {
         const people = DATA.contacts?.people || {};
         const info = people[p.name] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {};
         const title = p.house === "S" ? "Sen." : "Asm.";
@@ -1080,13 +1081,13 @@ function planFor(b, stance = "support") {
   if (b.stage === 0) {
     what = `<p class="when">Next: a committee vote.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
     inComm.forEach((v) => book.chair(v.p[0], v.committee, L(A("put it on the committee agenda", "keep it off the committee agenda")), live));
-    b.vers.forEach((v) => book.sponsor(v, live ? A("press the chair to put it on the agenda", "") : A("reintroduce it next session", "")));
+    if (!live) b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
     book.reps(["S", "A"], L(A("", "oppose it")));
   } else if (b.stage === 1) {
     const houses = b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => v.p[0]);
     what = `<p class="when">Next: a vote of the full ${houses.map((h) => HOUSE[h]).join(" and ") || "house"}.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
     houses.forEach((h) => book.leader(h, L(A("bring it to a floor vote", "keep it from coming to a floor vote")), live));
-    b.vers.forEach((v) => book.sponsor(v, live ? A("press leadership to bring it to a vote", "") : A("reintroduce it next session", "")));
+    if (!live) b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
     book.reps(houses.length ? houses : ["S", "A"], L(A("vote yes", "vote no")));
   } else if (b.stage === 2) {
     const other = b.passedIn === "Senate" ? "A" : "S";
@@ -1094,19 +1095,16 @@ function planFor(b, stance = "support") {
     what = `<p class="when">Next: the ${HOUSE[other]} has to pass it.${twin ? "" : ` It has no ${HOUSE[other]} version.`}</p>${stalled ? `<p>${stalled}</p>` : ""}`;
     if (twin && twin.committee) book.chair(other, twin.committee, L(A("put it on the committee agenda", "keep it off the committee agenda")), live);
     else book.leader(other, L(A("bring it to a floor vote", "keep it from coming to a floor vote")), live);
-    b.vers.filter((v) => v.p[0] === other).forEach((v) => book.sponsor(v, live ? A(`push for it in the ${HOUSE[other]}`, "") : A("reintroduce it next session", "")));
     book.reps([other], L(A("vote yes", "vote no")));
-    b.vers.filter((v) => v.p[0] !== other).forEach((v) => book.sponsor(v, live ? A(`press the ${HOUSE[other]} to take it up`, "") : A("reintroduce it next session", "")));
+    if (!live) b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
   } else if (b.stage === 3) {
     what = `<p class="when">Next: the governor's office requests it (any day through December), then she has 10 days to act.</p>`;
     gov = A("request the bill and sign it", "veto it");
-    b.vers.forEach((v) => book.sponsor(v, A("urge the governor's office to request it", "")));
     book.reps(["S", "A"], A("urge the governor to sign it", "urge the governor to veto it"));
   } else if (b.stage === 4) {
     due = b.due;
     what = `<p class="when">Next: the governor signs or vetoes it${b.due ? `, by about ${fmtDate(b.due)}` : ""}.</p>`;
     gov = A("sign it", "veto it") + (b.due ? ` by ${fmtDate(b.due)}` : "");
-    b.vers.forEach((v) => book.sponsor(v, A("urge the governor to sign it", "")));
     book.reps(["S", "A"], A("urge the governor to sign it", "urge the governor to veto it"));
   } else if (b.stage === 5) {
     what = `<p class="when">Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}.</p>`;
@@ -1252,7 +1250,9 @@ const inTen = (n, d) => (d ? Math.round((n / d) * 10) : 0);
 function persCard(n, title) {
   const b = BILLS.find((x) => x.nums.includes(n));
   const entries = new Map();
-  for (const e of b ? b.hist : []) if (e[0] < DATA.session) entries.set(e[0], e[2]);
+  // With two versions in one session, show the one that got furthest (vetoed ranks below signed).
+  const rank = (st) => (st === 6 ? 4.5 : st);
+  for (const e of b ? b.hist : []) if (e[0] < DATA.session && (!entries.has(e[0]) || rank(e[2]) > rank(entries.get(e[0])))) entries.set(e[0], e[2]);
   if (b) entries.set(DATA.session, b.stage);
   const first = Math.min(...entries.keys());
   const dots = [];
@@ -1527,11 +1527,15 @@ function keyDates(b) {
     `<li><time>${fmtDate(d)}</time><span class="${est ? "est" : ""}">${esc(l)}</span></li>`).join("")}</ol></div>`;
 }
 
+const earlierSessions = (b) => new Set(b.earlier.map((e) => e[0])).size;
 function historyTags(b) {
   const tags = [];
-  if (b.earlier.length) tags.push(`<span class="tag hist">${b.earlier.length} earlier session${b.earlier.length === 1 ? "" : "s"}</span>`);
-  const vetoed = b.earlier.filter((e) => e[2] === 6).map((e) => e[0]);
-  if (vetoed.length) tags.push(`<span class="tag veto">Vetoed in ${vetoed.join(", ")}</span>`);
+  // A session can hold more than one version of a bill (a new number the second year).
+  const n = earlierSessions(b);
+  if (n) tags.push(`<span class="tag hist">${n} earlier session${n === 1 ? "" : "s"}</span>`);
+  const vetoes = new Map();
+  for (const e of b.earlier) if (e[2] === 6) vetoes.set(e[0], (vetoes.get(e[0]) || 0) + 1);
+  if (vetoes.size) tags.push(`<span class="tag veto">Vetoed in ${[...vetoes].sort((x, y) => x[0] - y[0]).map(([s, c]) => span(s) + (c > 1 ? ` (${c === 2 ? "twice" : `${c} times`})` : "")).join(", ")}</span>`);
   const law = b.later.find((e) => e[2] === 5);
   if (law) tags.push(`<span class="tag law">Became law in ${span(law[0])}</span>`);
   else if (b.later.length) tags.push(`<span class="tag hist">Reintroduced ${b.later.map((e) => span(e[0])).join(", ")}</span>`);
