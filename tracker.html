@@ -302,21 +302,28 @@ table.oc th { vertical-align: bottom; }
 .vtrack i.l { background: var(--signed); }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
+.net svg { display: block; max-width: 900px; }
+.net line { stroke: var(--ink-2); stroke-opacity: .35; }
+.net circle { stroke: var(--paper); stroke-width: 1; cursor: pointer; fill: var(--ink-2); }
+.net circle.dem, .key .k-dem { fill: #3b6fd1; background: #3b6fd1; }
+.net circle.rep, .key .k-rep { fill: #c8423a; background: #c8423a; }
+.net text { font: 600 9px var(--body); fill: var(--ink); text-anchor: middle; pointer-events: none; opacity: 0; }
+.net text.mine { opacity: 1; }
+.net svg.focus circle:not(.on), .net svg.focus line:not(.on) { opacity: .15; }
+.net svg.focus text.on { opacity: 1; }
+.net svg.focus line.on { stroke-opacity: .9; }
 .vtrack .tick.p, .key .k-tick.p { background: var(--gold); }
-.mlist { display: grid; gap: 6px; margin: 6px 0 14px; }
-.mrow { display: grid; grid-template-columns: minmax(0, 230px) 360px; gap: 12px; align-items: end; }
-.mrow .lab b { display: block; font-weight: 600; font-size: 13px; line-height: 1.2; }
-.mrow .lab small { display: block; color: var(--ink-2); font-size: 11.5px; }
-.mcols { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; height: 40px; align-items: end; }
-.mcol { position: relative; height: 100%; display: flex; align-items: flex-end; background: var(--pip-off); border-radius: 1px; }
-.mcol i { display: block; width: 100%; background: var(--navy); border-radius: 1px; }
+.mcols { display: grid; gap: 1px; height: 32px; align-items: end; }
+.mcol { position: relative; height: 100%; background: var(--pip-off); border-radius: 1px; }
+.mcol i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 1px; }
+.mcol i.a { background: var(--navy); } .mcol i.l { background: var(--signed); } .mcol i.v { background: var(--veto); }
 .mcol b { position: absolute; left: -1px; right: -1px; height: 2px; margin-bottom: -1px; background: var(--gold); }
-.mcol.y2, .mcols.axis span.y2 { margin-left: 4px; }
-.mcols.axis { height: auto; font: 10px var(--mono, monospace); color: var(--ink-2); text-align: center; }
+.mcol.gap, .mcols.axis span.gap { margin-left: 4px; }
+.mcols.axis { height: auto; font: 9px var(--mono, monospace); color: var(--ink-2); text-align: center; }
 .myears { display: grid; grid-template-columns: 1fr 1fr; font-size: 11.5px; color: var(--ink-2); }
-.myears span + span { padding-left: 6px; }
+.myears span + span { padding-left: 4px; }
+.vtrack i.v { background: var(--veto); }
 .key .k-tick.now { background: var(--gold); width: 10px !important; height: 2px !important; box-shadow: none; }
-@media (max-width: 760px) { .mrow { grid-template-columns: minmax(0, 1fr); } .mrow > div:first-child:empty { display: none; } }
 .vtrack i.n, .vtrack .tick.n, .key .k-n, .key .k-tick.n { background: var(--ink-2); }
 .commctl { display: flex; gap: 20px; flex-wrap: wrap; }
 .vtrack .tick.l { background: var(--signed); }
@@ -425,8 +432,6 @@ table.st.months .track { position: relative; display: block; width: 160px; heigh
 table.st.months .track i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
 table.st.months .track .l { left: 0; background: var(--signed); }
 table.st.months .track .v { background: var(--veto); }
-.govcols { display: flex; flex-wrap: wrap; gap: 20px 40px; }
-.govcol h4 { margin: 0 0 4px; font: 600 13px var(--body); }
 .twobar .track.mid { width: 160px; }
 table.st tr.tot td { font-weight: 700; border-top: 1px solid var(--ink); }
 table.st.years { max-width: 560px; }
@@ -684,6 +689,7 @@ table.st col.c-m { width: 80px; }
       <button type="button" data-sec="statTiming">Timing</button>
       <button type="button" data-sec="statPersist">Repeat tries</button>
       <button type="button" data-sec="statCosp">Co-sponsors and party</button>
+      <button type="button" data-sec="statNet" id="statNetBtn" hidden>Who works with whom</button>
       <button type="button" data-sec="statSessions">By session</button>
     </nav>
     <div class="act-sec statsec" id="statOdds"></div>
@@ -691,6 +697,7 @@ table.st col.c-m { width: 80px; }
     <div class="act-sec statsec" id="statTiming" hidden></div>
     <div class="act-sec statsec" id="statPersist" hidden></div>
     <div class="act-sec statsec" id="statCosp" hidden></div>
+    <div class="act-sec statsec" id="statNet" hidden></div>
     <section class="act-sec statsec" id="statSessions" hidden aria-labelledby="ocHead">
       <h2 id="ocHead">Outcomes by session</h2>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
@@ -1229,24 +1236,21 @@ const twoBar = (appr, law) => `<div class="twobar"><span class="track"><i class=
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function govTiming(I) {
   const gm = I.govMonths || {};
-  const table = (who, label) => {
-    const rows = MONTHS.map((m, i) => { const [s, v] = gm[`${who}|${String(i + 1).padStart(2, "0")}`] || [0, 0]; return { m, s, v, n: s + v }; });
-    const maxN = Math.max(1, ...rows.map((r) => r.n));
+  const govRow = (who, label, sub) => {
+    const rows = MONTH_NAMES.map((m, i) => { const [s, v] = gm[`${who}|${String(i + 1).padStart(2, "0")}`] || [0, 0]; return { m, s, v, n: s + v }; });
+    const max = Math.max(1, ...rows.map((r) => r.n));
     const tot = rows.reduce((a, r) => [a[0] + r.s, a[1] + r.v], [0, 0]);
-    return `<div class="govcol"><h4>${label}</h4>
-      <table class="oc st months"><colgroup><col class="c-mo"><col class="c-mbar"><col class="c-mnum"><col class="c-mnum"></colgroup>
-      <thead><tr><th>Month</th><th></th><th>Decisions</th><th>Vetoed</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr><td>${r.m}</td><td class="bar"><span class="track mid"><i class="l" style="width:${(r.s / maxN) * 100}%"></i><i class="v" style="left:${(r.s / maxN) * 100}%;width:${(r.v / maxN) * 100}%"></i></span></td><td>${num(r.n)}</td><td>${r.n ? pctOf(r.v, r.n) + "%" : "–"}</td></tr>`).join("")}
-      <tr class="tot"><td>All</td><td></td><td>${num(tot[0] + tot[1])}</td><td>${pctOf(tot[1], tot[0] + tot[1])}%</td></tr></tbody></table></div>`;
+    const cols = rows.map((r) => ({ segs: [[(r.n / max) * 100, "v"], [(r.s / max) * 100, "l"]], title: `${r.m}: ${num(r.s)} signed, ${num(r.v)} vetoed` }));
+    return colRow(label, sub, cols, `<b class="big">${pctOf(tot[1], tot[0] + tot[1])}%</b> vetoed<small>${num(tot[0] + tot[1])} decisions</small>`);
   };
   const years = (I.govYears || []).filter(([y]) => y >= "2017");
+  const yearRows = years.map(([y, who, s, v]) => vrow(`${y}${+y === new Date().getFullYear() ? " (so far)" : ""} · ${who}`, "",
+    s + v ? [[100, "v"], [pctOf(s, s + v), "l"]] : [], `<b class="big">${pctOf(v, s + v)}%</b> vetoed · ${num(s)} signed · ${num(v)} vetoed`)).join("");
   return `<h3 class="sub">The governor's decisions by month</h3>
     <p class="key"><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span></p>
-    <div class="govcols">${table("Cuomo", "Gov. Cuomo, 2017 to Aug. 2021")}${table("Hochul", `Gov. Hochul, Aug. 2021 to ${(I.pastSessions[I.pastSessions.length - 1] || 2023) + 1}`)}</div>
+    <div class="vlist">${govRow("Cuomo", "Gov. Cuomo", "2017 to Aug. 2021")}${govRow("Hochul", "Gov. Hochul", `Aug. 2021 to ${(I.pastSessions[I.pastSessions.length - 1] || 2023) + 1}`)}${monthAxis(12)}</div>
     <h3 class="sub">By year</h3>
-    <div class="tablewrap"><table class="oc st years"><colgroup><col class="c-m"><col class="c-gov"><col class="c-num"><col class="c-num"><col class="c-num"></colgroup>
-      <thead><tr><th>Year</th><th>Governor</th><th>Signed</th><th>Vetoed</th><th>Share signed</th></tr></thead>
-      <tbody>${years.map(([y, who, s, v]) => `<tr><td>${y}${+y === new Date().getFullYear() ? " (so far)" : ""}</td><td>${who}</td><td>${num(s)}</td><td>${num(v)}</td><td>${s + v ? pctOf(s, s + v) + "%" : "–"}</td></tr>`).join("")}</tbody></table></div>
+    <div class="vlist">${yearRows}</div>
     <p class="note">2020: short COVID session. 2021: Cuomo resigned in August, before year-end vetoes.</p>`;
 }
 
@@ -1256,6 +1260,110 @@ function showStatSec(id) {
   for (const s of document.querySelectorAll(".statsec")) s.hidden = s.id !== id;
   for (const b of document.querySelectorAll("#statTabs button")) b.setAttribute("aria-pressed", b.dataset.sec === id);
   try { localStorage.setItem("abt:statsec", id); } catch (e) {}
+  if (id === "statNet") renderNet();
+}
+
+// ---- Who works with whom: a co-sponsorship network for one house, this session ----
+let netHouse = "S";
+let d3Loading = null;
+function loadD3() {
+  if (window.d3) return Promise.resolve();
+  d3Loading = d3Loading || new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js";
+    s.onload = ok; s.onerror = fail;
+    document.head.appendChild(s);
+  });
+  return d3Loading;
+}
+// Two members are linked when one signs on to a large share of the other's bills. Each member
+// keeps their strongest few links, so the picture shows who works most closely together.
+function netData(house, t) {
+  const legs = LEGS.filter((L) => L.house === house);
+  const byName = new Map(legs.map((L) => [L.apiName, L]));
+  const spons = new Map(), w = new Map();
+  for (const b of BILLS) {
+    if (t !== "all" && !b.topics.includes(t)) continue;
+    for (const v of b.vers) {
+      if (v.p[0] !== house) continue;
+      const s = byName.get(v.sponsor);
+      if (!s) continue;
+      spons.set(s, (spons.get(s) || 0) + 1);
+      for (const c of v.cosponsors) {
+        const cL = byName.get(c);
+        if (!cL || cL === s) continue;
+        const key = `${cL.id}|${s.id}`;
+        w.set(key, (w.get(key) || 0) + 1);
+      }
+    }
+  }
+  const nodes = legs.filter((L) => spons.get(L)).map((L) => ({ L, id: L.id, n: spons.get(L), party: /Democrat/.test(L.party || "") ? "D" : /Republican/.test(L.party || "") ? "R" : "" }));
+  const byId = new Map(nodes.map((x) => [x.id, x]));
+  const pair = new Map();
+  for (const [key, c] of w) {
+    const [a, s] = key.split("|");
+    if (!byId.has(a) || !byId.has(s) || c < 3) continue;
+    const share = c / byId.get(s).n;
+    const k = a < s ? `${a}|${s}` : `${s}|${a}`;
+    const p = pair.get(k) || { source: a < s ? a : s, target: a < s ? s : a, share: 0, count: 0 };
+    p.share = Math.max(p.share, share); p.count += c;
+    pair.set(k, p);
+  }
+  const all = [...pair.values()], keep = new Set();
+  for (const x of nodes) all.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.share - a.share).slice(0, 4).forEach((p) => keep.add(p));
+  return { nodes, links: [...keep].map((p) => ({ ...p })) };
+}
+function renderNet() {
+  const box = $("statNet");
+  if (!DATA.current || !LEGS.length) { box.innerHTML = ""; return; }
+  const t = $("statTopic").value || "all";
+  box.innerHTML = `<h2>Who works with whom</h2>
+    <div class="commctl"><label class="commsort">House <select data-nethouse><option value="S"${netHouse === "S" ? " selected" : ""}>Senate</option><option value="A"${netHouse === "A" ? " selected" : ""}>Assembly</option></select></label></div>
+    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span><span>Bigger dot: more bills sponsored</span></p>
+    <div class="net" id="netBox"><p class="muted">Loading…</p></div>
+    <p class="note">${t === "all" ? "All bills" : `${esc(TOPICS[t])} bills`} this session. A line joins two members when one co-sponsors a large share of the other's bills; each member shows their four strongest. Hover for names; click to see a member's bills.</p>`;
+  loadD3().then(() => drawNet(netData(netHouse, t))).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
+}
+function drawNet({ nodes, links }) {
+  const el = $("netBox");
+  if (!el) return;
+  if (!nodes.length) { el.innerHTML = `<p class="muted">No bills to show.</p>`; return; }
+  const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * 0.6);
+  const mine = new Set((DATA.contacts?.reps || []).map((r) => `${r.house}:${r.last}`));
+  const r = (x) => 3 + Math.sqrt(x.n) * 0.55;
+  const sim = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).id((x) => x.id).distance((l) => 30 + 60 * (1 - Math.min(1, l.share))).strength((l) => 0.2 + 0.6 * Math.min(1, l.share)))
+    .force("charge", d3.forceManyBody().strength(-38))
+    .force("x", d3.forceX(W / 2).strength(0.06)).force("y", d3.forceY(H / 2).strength(0.09))
+    .force("collide", d3.forceCollide((x) => r(x) + 1.5)).stop();
+  for (let i = 0; i < 320; i++) sim.tick();
+  // Stretch the finished layout to fill the box, keeping its shape.
+  const pad = 16, xs = nodes.map((x) => x.x), ys = nodes.map((x) => x.y);
+  const x0 = Math.min(...xs), y0 = Math.min(...ys), k = Math.min((W - 2 * pad) / Math.max(1, Math.max(...xs) - x0), (H - 2 * pad) / Math.max(1, Math.max(...ys) - y0));
+  const dx = (W - k * (Math.max(...xs) - x0)) / 2, dy = (H - k * (Math.max(...ys) - y0)) / 2;
+  for (const x of nodes) { x.x = dx + k * (x.x - x0); x.y = dy + k * (x.y - y0); }
+  const nb = new Map(nodes.map((x) => [x.id, new Set([x.id])]));
+  for (const l of links) { nb.get(l.source.id).add(l.target.id); nb.get(l.target.id).add(l.source.id); }
+  const last = (x) => x.L.name.split(" ").pop();
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Co-sponsorship network">
+    <g class="links">${links.map((l) => `<line data-a="${l.source.id}" data-b="${l.target.id}" x1="${l.source.x.toFixed(1)}" y1="${l.source.y.toFixed(1)}" x2="${l.target.x.toFixed(1)}" y2="${l.target.y.toFixed(1)}" stroke-width="${(0.5 + 2.5 * Math.min(1, l.share)).toFixed(2)}"></line>`).join("")}</g>
+    <g class="nodes">${nodes.map((x) => `<circle data-id="${x.id}" class="${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${r(x).toFixed(1)}"><title>${esc(x.L.label)}: ${num(x.n)} bills</title></circle>`).join("")}</g>
+    <g class="labels">${nodes.map((x) => `<text data-id="${x.id}" class="${mine.has(`${x.L.house}:${lastName(x.L.name)}`) ? "mine" : ""}" x="${x.x.toFixed(1)}" y="${(x.y - r(x) - 3).toFixed(1)}">${esc(last(x))}</text>`).join("")}</g></svg>`;
+  const svg = el.querySelector("svg");
+  const focus = (id) => {
+    svg.classList.toggle("focus", !!id);
+    const keep = id ? nb.get(id) : null;
+    for (const c of svg.querySelectorAll("circle, text")) c.classList.toggle("on", !!keep && keep.has(c.dataset.id));
+    for (const l of svg.querySelectorAll("line")) l.classList.toggle("on", !!id && (l.dataset.a === id || l.dataset.b === id));
+  };
+  svg.addEventListener("mouseover", (e) => { const c = e.target.closest("circle"); focus(c ? c.dataset.id : null); });
+  svg.addEventListener("mouseleave", () => focus(null));
+  svg.addEventListener("click", (e) => {
+    const c = e.target.closest("circle"); if (!c) return;
+    const L = LEG_BY_ID[c.dataset.id]; if (!L) return;
+    if (ROOT && L.slug) { location.href = `${ROOT}${L.slug}/`; return; }
+    Object.assign(state, blank()); state.who = L.id; syncControls(); showView("bills"); render();
+  });
 }
 
 const inTen = (n, d) => (d ? Math.round((n / d) * 10) : 0);
@@ -1301,6 +1409,14 @@ const vrow = (label, sub, segs, right, ticks) => `<div class="vrow"><div class="
   <div class="vtrack">${segs.map(([w, cls]) => `<i class="${cls}" style="width:${Math.max(0, Math.min(100, w))}%"></i>`).join("")}${(ticks || []).map(([w, cls, what]) => `<span class="tick ${cls}" style="left:${Math.max(0, Math.min(100, w))}%" title="${what}"></span>`).join("")}</div>
   <div class="val">${right}</div></div>`;
 
+// A row of small columns (months), laid out like a bar row: label | columns | numbers.
+// cols: [{ segs: [[height %, class]], tick: height % or null, title }]; a gap before index `split`.
+const colRow = (label, sub, cols, right, split) => `<div class="vrow"><div class="lab">${label ? `<b>${label}</b>` : ""}${sub ? `<small>${sub}</small>` : ""}</div>
+  <div class="mcols" style="grid-template-columns: repeat(${cols.length}, 1fr)">${cols.map((c, m) => `<span class="mcol${m === split ? " gap" : ""}"${c.title ? ` title="${c.title}"` : ""}>${c.segs.map(([h, cls]) => `<i class="${cls}" style="height:${Math.max(0, Math.min(100, h))}%"></i>`).join("")}${c.tick != null ? `<b style="bottom:${Math.min(100, c.tick)}%"></b>` : ""}</span>`).join("")}</div>
+  <div class="val">${right}</div></div>`;
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthAxis = (n, split) => `<div class="vrow"><div class="lab"></div><div class="mcols axis" style="grid-template-columns: repeat(${n}, 1fr)">${Array.from({ length: n }, (_, m) => `<span class="${m === split ? "gap" : ""}">${"JFMAMJJASOND"[m % 12]}</span>`).join("")}</div><div></div></div>`;
+
 // When things happen across the two-year session: one row of 24 monthly columns per event.
 const MONTH_ROWS = [["intro", "Introduced"], ["comm", "Approved by a committee"], ["passS", "Passed the Senate"], ["passA", "Passed the Assembly"]];
 function monthChart(I, t) {
@@ -1308,21 +1424,17 @@ function monthChart(I, t) {
   if (!past) return "";
   const n = (I.pastSessions || []).length || 1;
   const live = DATA.current && now;
-  const M = "JFMAMJJASOND";
-  const NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const rows = MONTH_ROWS.map(([k, label]) => {
     const avg = past[k].map((x) => x / n), cur = live ? now[k] : null;
     const max = Math.max(1, ...avg, ...(cur || []));
-    const cols = avg.map((x, m) => `<span class="mcol${m === 12 ? " y2" : ""}" title="${NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}">
-      <i style="height:${(x / max) * 100}%"></i>${cur && cur[m] ? `<b style="bottom:${(cur[m] / max) * 100}%"></b>` : ""}</span>`).join("");
-    const total = Math.round(avg.reduce((a, b) => a + b, 0));
-    return `<div class="mrow"><div class="lab"><b>${label}</b><small>about ${num(total)} a session</small></div><div class="mcols">${cols}</div></div>`;
+    const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, "a"]], tick: cur && cur[m] ? (cur[m] / max) * 100 : null,
+      title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
+    return colRow(label, "", cols, `<b class="big">${num(Math.round(avg.reduce((a, b) => a + b, 0)))}</b> a session`, 12);
   }).join("");
-  const axis = [...M + M].map((c, m) => `<span class="${m === 12 ? "y2" : ""}">${c}</span>`).join("");
   return `<h3 class="sub">Through the session, by month</h3>
     <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
-    <div class="mlist">${rows}<div class="mrow"><div></div><div class="mcols axis">${axis}</div></div>
-    <div class="mrow"><div></div><div class="myears"><span>First year</span><span>Second year</span></div></div></div>`;
+    <div class="vlist">${rows}${monthAxis(24, 12)}
+    <div class="vrow"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 
 function renderStats() {
@@ -1394,7 +1506,7 @@ function renderStats() {
   const [late, signed] = I.lateSigning;
   $("statTiming").innerHTML = `<h2>Timing</h2>
     ${monthChart(I, t)}
-    <h3 class="sub">End of session and the governor</h3>
+    <h3 class="sub">End of session</h3>
     <div class="vlist">${vrow("Floor votes in the session's last 3 weeks", `${years[0].year}–${years[years.length - 1].year}, except 2020`, [[mid, "a"]], `<b class="big">${mid}%</b> in a typical year<small>Range ${Math.min(...shares)}–${Math.max(...shares)}%</small>`)}
     ${vrow("Laws signed in Oct.–Dec.", `${num(signed)} laws`, [[pctOf(late, signed), "l"]], `<b class="big">${pctOf(late, signed)}%</b>`)}</div>
     ${govTiming(I)}`;
@@ -1442,6 +1554,7 @@ function renderStats() {
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. “Both parties”: at least one sponsor or co-sponsor from each party on either version. Party from Open States.</p>`;
 
   renderOutcomes();
+  if (statSec === "statNet") renderNet();
 }
 
 function renderOutcomes() {
@@ -2004,6 +2117,7 @@ function wire() {
   $("statTopic").addEventListener("change", renderStats);
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
+  $("statNet").addEventListener("change", (e) => { if (e.target.matches("[data-nethouse]")) { netHouse = e.target.value; renderNet(); } });
   $("statComm").addEventListener("change", (e) => {
     if (e.target.matches("[data-commsort]")) {
       commSort = e.target.value;
@@ -2225,7 +2339,9 @@ function hydrate(raw) {
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
   renderOpenNow();
-  try { const s = localStorage.getItem("abt:statsec"); if (s && $(s)) statSec = s; } catch (e) {}
+  // The network needs co-sponsor names, which only the current session's page carries.
+  $("statNetBtn").hidden = !(DATA.current && LEGS.length);
+  try { const s = localStorage.getItem("abt:statsec"); if (s && $(s) && !(s === "statNet" && $("statNetBtn").hidden)) statSec = s; } catch (e) {}
   showStatSec(statSec);
   const one = openFromHash();
   if (one) showView("bills");
