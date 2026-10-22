@@ -294,7 +294,13 @@ table.oc th { vertical-align: bottom; }
 .stattopic { max-width: 300px; }
 table.st { min-width: 0; }
 table.st td:first-child { font-family: var(--body); font-weight: 600; }
-table.st td.bar { width: 40%; }
+table.st td.bar { width: 220px; }
+table.st th.barh { text-align: left; }
+table.st th.grp { text-align: center; border-bottom: 1px solid var(--rule); }
+table.st.comm { min-width: 720px; }
+table.st { width: auto; }
+table.st td, table.st th { padding-left: 14px; padding-right: 14px; }
+.sharebar i { max-width: 140px; }
 .tablewrap.tall { max-height: 520px; overflow-y: auto; }
 .odds { margin: 0; font-size: 13px; color: var(--ink-2); }
 .peers summary { cursor: pointer; font: 600 13.5px var(--body); color: var(--navy); }
@@ -1049,7 +1055,7 @@ function oddsLine(b) {
   const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
   const [n, law] = odds[point] || [0, 0];
   if (!n) return "";
-  const label = { intro: "were introduced", floor: "got out of committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
+  const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
   return `Of bills that ${label} in ${pastSpan()}, ${pctOf(law, n)}% became law.`;
 }
 
@@ -1064,18 +1070,24 @@ function renderStats() {
   const odds = I.odds[t] || {};
   $("statOdds").innerHTML = `<h2>What usually happens next</h2>
     <p class="note">Of ${topicName} that reached each point in ${pastSpan()}, the share that became law.</p>
-    <div class="tablewrap"><table class="oc st"><thead><tr><th>Got as far as</th><th>Bills</th><th>Became law</th></tr></thead><tbody>
+    <div class="tablewrap"><table class="oc st"><thead><tr><th>Got as far as</th><th>Bills</th><th class="barh">Became law</th></tr></thead><tbody>
     ${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0]; return `<tr><td>${l}</td><td>${num(n)}</td><td class="bar">${bar(pctOf(law, n))}</td></tr>`; }).join("")}
     </tbody></table></div>`;
 
   // Where bills die
+  const nPast = (I.pastSessions || []).length || 1;
   const past = I.committees.past[t] || {}, cur = I.committees.current[t] || {};
-  const rows = Object.entries(past).map(([k, [n, out, law]]) => ({ k, n, out: pctOf(out, n), law: pctOf(law, n), now: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null }))
-    .sort((a, b) => a.out - b.out || b.n - a.n);
+  const rows = Object.entries(past).map(([k, [n, out, law]]) => ({
+    k, perSession: Math.round(n / nPast), out: pctOf(out, n), law: pctOf(law, n),
+    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null,
+  })).sort((a, b) => a.out - b.out || b.perSession - a.perSession);
   $("statComm").innerHTML = `<h2>Where bills die</h2>
-    <p class="note">Each committee's share of ${topicName} it let out (to the floor or to another committee), ${pastSpan()}. Committees with few bills are left out. S = Senate, A = Assembly.</p>
-    <div class="tablewrap tall"><table class="oc st"><thead><tr><th>Committee</th><th>Bills</th><th>Got out</th><th>Became law</th><th>This session, got out</th></tr></thead><tbody>
-    ${rows.map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.n)}</td><td class="bar">${bar(r.out)}</td><td>${r.law}%</td><td>${r.now == null ? "–" : r.now + "%"}</td></tr>`).join("")}
+    <p class="note">How often each committee approved ${topicName} referred to it, averaged over ${pastSpan()} (${nPast} sessions). “Approved” means sent on to the floor or to another committee. Committees with few bills are left out. S = Senate, A = Assembly.</p>
+    <div class="tablewrap tall"><table class="oc st comm"><thead>
+      <tr><th rowspan="2">Committee</th><th colspan="3" class="grp">Past sessions, ${pastSpan()}</th><th colspan="2" class="grp">This session so far</th></tr>
+      <tr><th>Bills a session</th><th class="barh">Approved by committee</th><th>Became law</th><th>Bills</th><th>Approved</th></tr>
+    </thead><tbody>
+    ${rows.map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.perSession)}</td><td class="bar">${bar(r.out)}</td><td>${r.law}%</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
     </tbody></table></div>`;
 
   // Timing
