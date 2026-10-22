@@ -951,6 +951,93 @@ def person_history(loaded, current, legs):
     return dict(out)
 
 
+def net_counts(recs, key):
+    """Co-sponsorship counts for the network chart. key(house, sponsor name) gives a node id or
+    None. Returns bills sponsored per node, co-sponsor -> sponsor counts (same house), and
+    Senate sponsor -> Assembly sponsor counts for bills both carried."""
+    spons, w, cross = Counter(), Counter(), Counter()
+    for r in recs:
+        carriers = {"S": set(), "A": set()}
+        for v in r["vers"]:
+            h = v["p"][0]
+            s = key(h, v["sponsor"]) if v["sponsor"] else None
+            if not s:
+                continue
+            spons[s] += 1
+            carriers[h].add(s)
+            for c in v.get("cosponsors", []):
+                ck = key(h, c)
+                if ck and ck != s:
+                    w[(ck, s)] += 1
+        for a in carriers["S"]:
+            for z in carriers["A"]:
+                cross[(a, z)] += 1
+    return spons, w, cross
+
+
+def net_views(spons, w, cross, info):
+    """The network for the Senate, the Assembly and both houses, as the page draws it:
+    {view: {"nodes": [[id, label, party, bills]], "links": [[a, b, share, kind]]}}. Each member
+    keeps their strongest few ties; the same rules as the live chart on the current page."""
+    out = {}
+    for sel in ("S", "A", "B"):
+        houses = ("S", "A") if sel == "B" else (sel,)
+        ids = [k for k in spons if info.get(k) and k[0] in houses]
+        idset = set(ids)
+
+        def pairs(m, kind, directed):
+            res = {}
+            for (a, s), c in m.items():
+                if a not in idset or s not in idset or c < 3:
+                    continue
+                share = c / spons[s] if directed else c / min(spons[a], spons[s])
+                k = tuple(sorted((a, s)))
+                p = res.setdefault(k, [k[0], k[1], 0.0, kind])
+                p[2] = max(p[2], share)
+            return list(res.values())
+        keep = {}
+        groups = [(pairs(w, "co", True), 3 if sel == "B" else 4)]
+        if sel == "B":
+            groups.append((pairs(cross, "x", False), 3))
+        for lst, n in groups:
+            for x in ids:
+                mine = sorted((p for p in lst if x in p[:2]), key=lambda p: -p[2])[:n]
+                for p in mine:
+                    keep[(p[0], p[1], p[3])] = p
+        tied = {i for p in keep.values() for i in p[:2]}
+        out[sel] = {"nodes": [[k, info[k][0], info[k][1], spons[k]] for k in ids if k in tied],
+                    "loose": [info[k][0] for k in ids if k not in tied],
+                    "links": [[a, b, round(s, 3), kind] for a, b, s, kind in keep.values()]}
+    return out
+
+
+def session_network(s, recs):
+    """One session's network, with members named as that session's bills name them."""
+    party_of = parties(s, recs)
+    key = lambda h, n: f"{h}:{n}" if party_of.get((h, n)) else None
+    info = {f"{h}:{n}": [f"{'Sen.' if h == 'S' else 'Asm.'} {n}", p] for (h, n), p in party_of.items()}
+    return net_views(*net_counts(recs, key), info)
+
+
+def network_since(loaded, legs):
+    """Today's members, with ties added up over every loaded session they served together."""
+    by_name = {(L["id"][0], name_key(L["name"])): L for L in legs}
+    key = lambda h, n: by_name[(h, name_key(n))]["id"] if (h, name_key(n)) in by_name else None
+    spons, w, cross = Counter(), Counter(), Counter()
+    for s in sorted(loaded):
+        a, b2, c = net_counts(loaded[s][0], key)
+        spons += a
+        w += b2
+        cross += c
+    info = {}
+    for L in legs:
+        p = L.get("party") or ""
+        code = "D" if "Democrat" in p else "R" if "Republican" in p else None
+        if code:
+            info[L["id"]] = [f"{L['title']} {L['name']}", code]
+    return net_views(spons, w, cross, info)
+
+
 def outcomes(recs):
     """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
     out = defaultdict(lambda: [0, 0, 0, 0, 0])
@@ -1069,6 +1156,8 @@ def main():
             "sessions": [{"session": s, "url": urls.get(str(s))} for s in SESSIONS],
             "outcomes": {str(s): summary[s] for s in SESSIONS},
             "insights": insight,
+            # Past pages don't carry co-sponsor names, so their network is worked out here.
+            "network": session_network(session, recs) if session != current else None,
             # Date of the last floor vote in either house this session.
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
@@ -1078,6 +1167,7 @@ def main():
             data["contacts"] = contacts_for(session, recs, names)
             data["legislators"] = legislators(session)
             data["profiles"], data["peers"] = profiles(session, recs, data["legislators"], party_of)
+            data["networkSince"] = network_since(loaded, data["legislators"])
             for seat, rows in person_history(loaded, current, data["legislators"]).items():
                 if seat in data["profiles"]:
                     data["profiles"][seat]["history"] = rows

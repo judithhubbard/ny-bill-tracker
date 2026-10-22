@@ -1329,21 +1329,33 @@ function netData(sel, t) {
   return { nodes: nodes.filter((x) => tied.has(x.id)), loose: nodes.filter((x) => !tied.has(x.id)), links: [...keep].map((p) => ({ ...p })) };
 }
 let netPinned = null;
+let netPeriod = "now";
+// A network worked out by the build (past sessions, or since 2017), in the shape drawNet takes.
+function savedNet(v) {
+  if (!v) return { nodes: [], links: [], loose: [] };
+  const nodes = v.nodes.map(([id, label, party, n]) => ({ id, n, party, L: { id, label, house: id[0], name: label.replace(/^(Sen|Asm)\. /, "") } }));
+  return { nodes, links: v.links.map(([source, target, share, kind]) => ({ source, target, share, kind })), loose: v.loose.map((label) => ({ L: { label } })) };
+}
 function renderNet() {
   const box = $("statNet");
-  if (!DATA.current || !LEGS.length) { box.innerHTML = ""; return; }
+  const live = DATA.current && LEGS.length && netPeriod === "now";
+  const saved = DATA.current ? DATA.networkSince : DATA.network;
+  if (!live && !saved) { box.innerHTML = ""; return; }
   const t = $("statTopic").value || "all";
   const both = netHouse === "B";
-  const names = LEGS.filter((L) => both || L.house === netHouse).map((L) => L.label).sort((a, b) => lastName(a).localeCompare(lastName(b)));
+  const data = live ? netData(netHouse, t) : savedNet(saved[netHouse]);
+  const names = data.nodes.map((x) => x.L.label).sort((a, b) => lastName(a).localeCompare(lastName(b)));
+  const span_ = DATA.current ? (live ? "this session" : `${DATA.sessions[0].session}–${String(DATA.session + 1).slice(2)}, today's members`) : `the ${span(DATA.session)} session`;
   box.innerHTML = `<h2>Who works with whom</h2>
-    <div class="commctl"><label class="commsort">Show <select data-nethouse>${[["S", "Senate"], ["A", "Assembly"], ["B", "Both houses"]].map(([k, l]) => `<option value="${k}"${netHouse === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+    <div class="commctl">${DATA.current && DATA.networkSince ? `<label class="commsort">Period <select data-netperiod><option value="now"${netPeriod === "now" ? " selected" : ""}>This session</option><option value="since"${netPeriod === "since" ? " selected" : ""}>Since ${DATA.sessions[0].session}</option></select></label>` : ""}
+    <label class="commsort">Show <select data-nethouse>${[["S", "Senate"], ["A", "Assembly"], ["B", "Both houses"]].map(([k, l]) => `<option value="${k}"${netHouse === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <label class="commsort">Find <input type="search" id="netFind" list="netNames" placeholder="Type a name" autocomplete="off"></label>
     <datalist id="netNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
     <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
     <p class="note" id="netLoose"></p>
-    <p class="note">${t === "all" ? "All bills" : `${esc(TOPICS[t])} bills`} this session. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member shows only their strongest ties. Hover or find a name to highlight; click to see a member's bills.</p>`;
-  loadD3().then(() => drawNet(netData(netHouse, t))).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
+    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member shows only their strongest ties. Hover or find a name to highlight; click to see a member's bills.</p>`;
+  loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
 function drawNet({ nodes, links, loose }) {
   const el = $("netBox");
@@ -1351,7 +1363,9 @@ function drawNet({ nodes, links, loose }) {
   $("netLoose").textContent = loose.length ? `Not shown, no strong co-sponsor ties: ${loose.map((x) => x.L.label).join(", ")}.` : "";
   if (!nodes.length) { el.innerHTML = `<p class="muted">No bills to show.</p>`; return; }
   const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * (netHouse === "B" ? 0.75 : 0.6));
-  const r = (x) => 3 + Math.sqrt(x.n) * 0.55;
+  // Dot size relative to the busiest sponsor in view, so one session and many sessions read alike.
+  const maxN = Math.max(1, ...nodes.map((x) => x.n));
+  const r = (x) => 3 + 9 * Math.sqrt(x.n / maxN);
   // Start each party on its own side so loosely tied members don't settle in a stray spot;
   // the forces still pull members with strong cross-party ties toward the other side.
   nodes.forEach((x, i) => { x.x = W / 2 + (x.party === "R" ? 1 : -1) * W * 0.2 + Math.cos(i * 2.4) * 40; x.y = H / 2 + Math.sin(i * 2.4) * 60 + (x.L.house === "S" && netHouse === "B" ? -20 : 0); });
@@ -1403,7 +1417,8 @@ function drawNet({ nodes, links, loose }) {
     focus(netPinned);
   };
   find.addEventListener("input", pin);
-  if (netPinned && nodes.some((x) => x.id === netPinned)) { find.value = LEG_BY_ID[netPinned].label; focus(netPinned); } else netPinned = null;
+  const pinned = nodes.find((x) => x.id === netPinned);
+  if (pinned) { find.value = pinned.L.label; focus(netPinned); } else netPinned = null;
 }
 
 const inTen = (n, d) => (d ? Math.round((n / d) * 10) : 0);
@@ -2169,7 +2184,12 @@ function wire() {
   $("statTopic").addEventListener("change", renderStats);
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
-  $("statNet").addEventListener("change", (e) => { if (e.target.matches("[data-nethouse]")) { netHouse = e.target.value; renderNet(); } });
+  $("statNet").addEventListener("change", (e) => {
+    if (e.target.matches("[data-nethouse]")) netHouse = e.target.value;
+    else if (e.target.matches("[data-netperiod]")) netPeriod = e.target.value;
+    else return;
+    renderNet();
+  });
   $("statComm").addEventListener("change", (e) => {
     if (e.target.matches("[data-commsort]")) {
       commSort = e.target.value;
@@ -2391,8 +2411,8 @@ function hydrate(raw) {
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
   renderOpenNow();
-  // The network needs co-sponsor names, which only the current session's page carries.
-  $("statNetBtn").hidden = !(DATA.current && LEGS.length);
+  // The current page draws its network live; past pages carry one worked out by the build.
+  $("statNetBtn").hidden = !((DATA.current && LEGS.length) || DATA.network);
   try { const s = localStorage.getItem("abt:statsec"); if (s && $(s) && !(s === "statNet" && $("statNetBtn").hidden)) statSec = s; } catch (e) {}
   showStatSec(statSec);
   const one = openFromHash();
