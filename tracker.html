@@ -1222,11 +1222,12 @@ function renderWatchView() {
   const card = $("wl");
   if (SHARED) {
     card.innerHTML = `<h2>Shared watchlist</h2><p>${num(list.length)} bill${list.length === 1 ? "" : "s"} someone shared with you.</p>
-      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
+      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button>${PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : ""}</p>`;
   } else {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
+    const back = PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : "";
     card.innerHTML = `<h2>My watchlist</h2>
-      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."} Saved in this browser only.</p>
+      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."} Saved in this browser only.${back}</p>
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>` : ""}`;
   }
 
@@ -1630,6 +1631,8 @@ function hydrate(raw) {
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
   if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (PRESET?.watch || SHARED) view = "watch";
+  // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
+  if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
   renderOpenNow();
   const one = openFromHash();
