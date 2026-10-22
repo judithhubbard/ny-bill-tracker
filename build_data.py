@@ -1044,7 +1044,7 @@ def net_counts(recs, key):
     return spons, w, cross
 
 
-def net_views(spons, w, cross, info):
+def net_views(spons, w, cross, info, minimum=3):
     """The network for the Senate, the Assembly and both houses, as the page draws it:
     {view: {"nodes": [[id, label, party, bills]], "links": [[a, b, share, kind]]}}. Each member
     keeps their strongest few ties; the same rules as the live chart on the current page."""
@@ -1057,7 +1057,7 @@ def net_views(spons, w, cross, info):
         def pairs(m, kind, directed):
             res = {}
             for (a, s), c in m.items():
-                if a not in idset or s not in idset or c < 3:
+                if a not in idset or s not in idset or c < minimum:
                     continue
                 share = c / spons[s] if directed else c / min(spons[a], spons[s])
                 k = tuple(sorted((a, s)))
@@ -1080,29 +1080,35 @@ def net_views(spons, w, cross, info):
 
 
 def session_network(s, recs):
-    """One session's network, with members named as that session's bills name them."""
+    """One session's network, with members named as that session's bills name them: from all
+    bills, and from laws only (fewer bills, so 2 shared laws make a tie)."""
     party_of = parties(s, recs)
     key = lambda h, n, d=None: f"{h}:{n}" if party_of.get((h, n)) else None
     info = {f"{h}:{n}": [f"{'Sen.' if h == 'S' else 'Asm.'} {n}", p] for (h, n), p in party_of.items()}
-    return net_views(*net_counts(recs, key), info)
+    laws = [r for r in recs if r["stage"] == 5]
+    return {"all": net_views(*net_counts(recs, key), info), "law": net_views(*net_counts(laws, key), info, minimum=2)}
 
 
 def network_since(loaded, legs):
     """Today's members, with ties added up over every loaded session they served together."""
     key = member_matcher(legs)
-    spons, w, cross = Counter(), Counter(), Counter()
-    for s in sorted(loaded):
-        a, b2, c = net_counts(loaded[s][0], key)
-        spons += a
-        w += b2
-        cross += c
+    out = {}
+    for kind in ("all", "law"):
+        spons, w, cross = Counter(), Counter(), Counter()
+        for s in sorted(loaded):
+            recs = loaded[s][0] if kind == "all" else [r for r in loaded[s][0] if r["stage"] == 5]
+            a, b2, c = net_counts(recs, key)
+            spons += a
+            w += b2
+            cross += c
+        out[kind] = (spons, w, cross)
     info = {}
     for L in legs:
         p = L.get("party") or ""
         code = "D" if "Democrat" in p else "R" if "Republican" in p else None
         if code:
             info[L["id"]] = [f"{L['title']} {L['name']}", code]
-    return net_views(spons, w, cross, info)
+    return {kind: net_views(*counts, info) for kind, counts in out.items()}
 
 
 def outcomes(recs):

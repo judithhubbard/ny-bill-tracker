@@ -1438,7 +1438,7 @@ function loadD3() {
 // Two members are linked when one signs on to a large share of the other's bills (same house),
 // or when they carry the two houses' versions of the same bills (across houses). Each member
 // keeps their strongest few links of each kind, so the picture shows who works most closely.
-function netData(sel, t) {
+function netData(sel, t, lawOnly) {
   const houses = sel === "B" ? ["S", "A"] : [sel];
   const legs = LEGS.filter((L) => houses.includes(L.house));
   const byName = new Map(legs.map((L) => [`${L.house}:${L.apiName}`, L]));
@@ -1446,6 +1446,7 @@ function netData(sel, t) {
   const bump = (m, k) => m.set(k, (m.get(k) || 0) + 1);
   for (const b of BILLS) {
     if (t !== "all" && !b.topics.includes(t)) continue;
+    if (lawOnly && b.stage !== 5) continue;
     const carriers = { S: new Set(), A: new Set() };
     for (const v of b.vers) {
       const h = v.p[0];
@@ -1467,7 +1468,8 @@ function netData(sel, t) {
     const out = new Map();
     for (const [key, c] of m) {
       const [a, s] = key.split("|");
-      if (!byId.has(a) || !byId.has(s) || c < 3) continue;
+      // Laws are fewer than bills, so 2 shared laws make a tie.
+      if (!byId.has(a) || !byId.has(s) || c < (lawOnly ? 2 : 3)) continue;
       // Share of the smaller member's bills this tie accounts for.
       const share = directed ? c / byId.get(s).n : c / Math.min(byId.get(a).n, byId.get(s).n);
       const k = a < s ? `${a}|${s}` : `${s}|${a}`;
@@ -1485,6 +1487,7 @@ function netData(sel, t) {
 }
 let netPinned = null;
 let netPeriod = "now";
+let netBills = "all";
 // A network worked out by the build (past sessions, or since 2017), in the shape drawNet takes.
 function savedNet(v) {
   if (!v) return { nodes: [], links: [] };
@@ -1498,18 +1501,21 @@ function renderNet() {
   if (!live && !saved) { box.innerHTML = ""; return; }
   const t = $("statTopic").value || "all";
   const both = netHouse === "B";
-  const data = live ? netData(netHouse, t) : savedNet(saved[netHouse]);
+  const law = netBills === "law";
+  const data = live ? netData(netHouse, t, law) : savedNet((saved[netBills] || saved)[netHouse]);
   const names = data.nodes.map((x) => x.L.label).sort((a, b) => lastName(a).localeCompare(lastName(b)));
   const span_ = DATA.current ? (live ? "this session" : `${DATA.sessions[0].session}–${String(DATA.session + 1).slice(2)}, today's members`) : `the ${span(DATA.session)} session`;
   box.innerHTML = `<h2>Who works with whom</h2>
     <div class="commctl">${DATA.current && DATA.networkSince ? `<label class="commsort">Period <select data-netperiod><option value="now"${netPeriod === "now" ? " selected" : ""}>This session</option><option value="since"${netPeriod === "since" ? " selected" : ""}>Since ${DATA.sessions[0].session}</option></select></label>` : ""}
+    <label class="commsort">Bills <select data-netbills><option value="all"${!law ? " selected" : ""}>All bills</option><option value="law"${law ? " selected" : ""}>Became law</option></select></label>
     <label class="commsort">Show <select data-nethouse>${[["S", "Senate"], ["A", "Assembly"], ["B", "Both houses"]].map(([k, l]) => `<option value="${k}"${netHouse === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <label class="commsort">Find <input type="search" id="netFind" list="netNames" placeholder="Type a name" autocomplete="off"></label>
     <datalist id="netNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
-    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
+    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same ${law ? "laws" : "bills"} in the two houses</span>` : ""}<span>Bigger: more ${law ? "laws" : "bills"} sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
     <p class="netsel" id="netSel"></p>
-    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gray lines: one co-sponsors many of the other's bills. Gold lines: they carry the same bills in the two houses." : "Lines join members when one co-sponsors many of the other's bills (each member's strongest ties, of 3 or more bills)."} Members close together work together often; directions mean nothing. Tap or click a member to highlight them.</p>`;
+    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} ${law ? "laws" : "bills"}` : law ? "Bills that became law" : "All bills"}, ${span_}. ${(() => { const w = law ? "laws" : "bills", min = law && (live || !DATA.current) ? 2 : 3;
+      return both ? `Gray lines: one co-sponsors many of the other's ${w}. Gold lines: they carry the same ${w} in the two houses.` : `Lines join members when one co-sponsors many of the other's ${w} (each member's strongest ties, of ${min} or more ${w}).`; })()} Members close together work together often; directions mean nothing. Tap or click a member to highlight them.</p>`;
   loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
 function drawNet({ nodes, links }) {
@@ -1853,6 +1859,16 @@ function renderPersonStats(L) {
   const partners = new Map();
   for (const b of mine) for (const n of new Set(b.vers.filter((v) => v.p[0] === other && v.sponsor).map((v) => v.sponsor))) partners.set(n, (partners.get(n) || 0) + 1);
   const withTwin = mine.filter((b) => b.vers.some((v) => v.p[0] === other && v.sponsor)).length;
+  // The same, for their bills that became law: who they actually pass laws with.
+  const lawBills = mine.filter((b) => b.stage === 5);
+  const lawPartners = new Map(), lawCos = new Map();
+  for (const b of lawBills) {
+    for (const n of new Set(b.vers.filter((v) => v.p[0] === other && v.sponsor).map((v) => v.sponsor))) lawPartners.set(n, (lawPartners.get(n) || 0) + 1);
+    for (const v of b.vers) if (v.p[0] === L.house && v.sponsor === L.apiName) for (const n of v.cosponsors) lawCos.set(n, (lawCos.get(n) || 0) + 1);
+  }
+  const lawRows = (m, house) => [...m].sort((a, b) => b[1] - a[1]).slice(0, 6)
+    .map(([n, c]) => vrow(legLink(house, n), "", [[pctOf(c, lawBills.length), "l"]], `on <b class="big">${num(c)}</b> of ${num(lawBills.length)} laws`)).join("");
+  const lawPartnerRows = lawRows(lawPartners, other), lawCosRows = lawRows(lawCos, L.house);
   const partnerRows = [...partners].sort((a, b) => b[1] - a[1]).slice(0, 10)
     .map(([n, c]) => vrow(legLink(other, n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
 
@@ -1887,6 +1903,10 @@ function renderPersonStats(L) {
     ${commRows ? `<h3 class="sub">Committees their bills go to first</h3>
     <p class="key"><span><i class="k-n"></i>Referred</span><span><i class="k-appr"></i>Approved</span><span><i class="k-law"></i>Became law</span></p>
     <div class="vlist">${commRows}</div>` : ""}
+    ${lawPartnerRows || lawCosRows ? `<h3 class="sub">Who they pass laws with</h3>
+    ${lawPartnerRows ? `<p class="key"><span>Carried their laws in the ${otherName}</span></p><div class="vlist">${lawPartnerRows}</div>` : ""}
+    ${lawCosRows ? `<p class="key"><span>Co-sponsored their laws in the ${HOUSE[L.house]}</span></p><div class="vlist">${lawCosRows}</div>` : ""}
+    <p class="note">Their ${num(lawBills.length)} bills that became law this session.</p>` : ""}
     ${partnerRows ? `<h3 class="sub">Who carries their bills in the ${otherName}</h3><div class="vlist">${partnerRows}</div>
     <p class="note">${num(withTwin)} of their ${num(mine.length)} bills have a ${otherName} version; a bill needs one to pass both houses.</p>` : ""}
     ${cosRows ? `<h3 class="sub">Most frequent co-sponsors in the ${HOUSE[L.house]}</h3><div class="vlist">${cosRows}</div>
@@ -2412,6 +2432,7 @@ function wire() {
   $("statNet").addEventListener("change", (e) => {
     if (e.target.matches("[data-nethouse]")) netHouse = e.target.value;
     else if (e.target.matches("[data-netperiod]")) netPeriod = e.target.value;
+    else if (e.target.matches("[data-netbills]")) netBills = e.target.value;
     else return;
     renderNet();
   });
