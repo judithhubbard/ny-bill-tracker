@@ -214,9 +214,10 @@ table.oc th { vertical-align: bottom; }
 .mast { display: grid; gap: 10px; }
 .mast-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 10px 24px; }
 .mast .sessions { margin-top: 0; }
-.views { display: flex; gap: 4px; border-bottom: 2px solid var(--ink); }
+.views { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 2px solid var(--ink); }
 .view-tab { appearance: none; border: 0; background: none; padding: 8px 14px; font: 700 16px var(--display); font-stretch: 85%; color: var(--ink-2); cursor: pointer; border-radius: 5px 5px 0 0; }
 .view-tab:hover { color: var(--ink); background: var(--chip); }
+.view-tab-end { margin-left: auto; }
 .view-tab[aria-selected="true"] { background: var(--ink); color: var(--paper); }
 .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 32px; align-items: start; }
 .side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding: 4px 22px 16px 0; border-right: 1px solid var(--rule); }
@@ -338,8 +339,8 @@ table.oc th { vertical-align: bottom; }
   <nav class="views" role="tablist" aria-label="Page sections">
     <button class="view-tab" role="tab" type="button" data-view="bills" aria-selected="true">Bills</button>
     <button class="view-tab" role="tab" type="button" data-view="act" aria-selected="false">Weigh in</button>
-    <button class="view-tab" role="tab" type="button" data-view="how" aria-selected="false">How it works</button>
     <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
+    <button class="view-tab view-tab-end" role="tab" type="button" data-view="how" aria-selected="false">How a bill becomes law in New York</button>
   </nav>
 
   <!-- Bills and Statistics share the filter sidebar -->
@@ -365,9 +366,9 @@ table.oc th { vertical-align: bottom; }
           <datalist id="whoOptions"></datalist>
           <label class="inline" for="whoCos"><input type="checkbox" id="whoCos"> Include bills they co-sponsored</label>
         </div>
-        <div class="toggles" id="sponsorBoxes">
-          <label id="senBox"><input type="checkbox" id="sen"> <span id="senLabel">Sponsored by our senator</span></label>
-          <label id="asmBox"><input type="checkbox" id="asm"> <span id="asmLabel">Sponsored by our Assembly member</span></label>
+        <div class="field" id="partyField">
+          <label for="party">Party of sponsors and co-sponsors</label>
+          <select id="party"><option value="">Any</option></select>
         </div>
         <div class="group">
           <div class="group-h">More filters</div>
@@ -499,7 +500,7 @@ table.oc th { vertical-align: bottom; }
 
   <!-- How it works -->
   <section class="howview" id="view-how" hidden>
-    <h2>How a bill becomes law in New York</h2>
+    <h2>The steps</h2>
     <ol class="steps">
       <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee there. Most bills never get out of committee.</li>
       <li><b>Floor.</b> When a committee approves a bill (“reports” it), the bill goes on that house's calendar (“third reading”) to wait for a vote of the full house. Party leaders decide which bills come up for a vote, and floor calendars are published the day of the vote.</li>
@@ -515,7 +516,7 @@ table.oc th { vertical-align: bottom; }
       <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
       <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays.</p>
-      <p>The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office.</p>
+      <p>Party filter: a bill counts as “both parties” if either version has at least one sponsor or co-sponsor from each party. Party is from Open States and covers sitting members only, so the filter is available for the current session.</p>
     </div>
   </section>
 </div>
@@ -538,8 +539,8 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "sen", "asm", "who", "whoCos"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", sen: false, asm: false, who: "", whoCos: false, shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", shown: PAGE });
 let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
@@ -607,6 +608,7 @@ const PROGRESS = {
   never: { label: "Never passed either house", test: (b) => !b.passedS && !b.passedA },
 };
 const HOUSES = { both: "Both houses", S: "Senate only", A: "Assembly only" };
+const PARTIES = { D: "Democrats only", R: "Republicans only", DR: "Both parties" };
 
 // A legislator sponsored a bill if a version from their house names them as sponsor
 // (matched on the name the bill data uses for them); co-sponsors are matched the same way.
@@ -627,8 +629,7 @@ function matches(b, skip) {
   if (state.who && !sponsoredBy(b, LEG_BY_ID[state.who], state.whoCos)) return false;
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
-  // Checking both sponsor boxes shows bills carried by either one.
-  if ((state.sen || state.asm) && !((state.sen && b.sen) || (state.asm && b.asm))) return false;
+  if (state.party && b.parties !== state.party) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     for (const w of words) if (!b._hay.includes(w)) return false;
@@ -1039,8 +1040,7 @@ function activeFilters() {
   if (state.q) out.push(["q", null, "Search", `“${state.q}”`]);
   if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
   for (const t of state.topics) out.push(["topics", t, "Topic", TOPICS[t]]);
-  if (state.sen) out.push(["sen", null, "Sponsor", $("senLabel").textContent.replace("Sponsored by ", "")]);
-  if (state.asm) out.push(["asm", null, "Sponsor", $("asmLabel").textContent.replace("Sponsored by ", "")]);
+  if (state.party) out.push(["party", null, "Party", PARTIES[state.party]]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
   if (state.law) out.push(["law", null, "Law", `contains “${state.law}”`]);
   if (state.who && LEG_BY_ID[state.who]) out.push(["who", null, state.whoCos ? "Sponsor or co-sponsor" : "Sponsor", LEG_BY_ID[state.who].label]);
@@ -1103,8 +1103,8 @@ function showView(v) {
 
 function syncControls() {
   $("q").value = state.q;
-  for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort"]) $(id).value = state[id];
-  for (const id of ["sen", "asm", "whoCos"]) $(id).checked = state[id];
+  for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).value = state[id];
+  for (const id of ["whoCos"]) $(id).checked = state[id];
   $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
 
@@ -1119,7 +1119,7 @@ function wire() {
   });
   let timer;
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
-  for (const id of ["comm", "progress", "house", "hist", "intro", "sort"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
+  for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
   // The law box matches any law whose name contains the typed text (3+ characters),
   // so "cannabis" finds the Cannabis Law and "conservation" the Environmental Conservation Law.
   let lawTimer;
@@ -1131,7 +1131,7 @@ function wire() {
       if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
     }, 200);
   });
-  for (const id of ["sen", "asm", "whoCos"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  for (const id of ["whoCos"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
   $("who").addEventListener("input", (e) => {
     const text = e.target.value.trim().toLowerCase();
     const hit = LEGS.find((L) => L.label.toLowerCase() === text);
@@ -1171,7 +1171,7 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties] = r;
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -1181,7 +1181,7 @@ function decode(raw) {
       actions: acts.map(([dt, t]) => [day(dt), T[t]]),
     }));
     return {
-      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates,
+      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates, parties: parties || "",
       due: raw.current && stage === 4 ? deadline(dates.deliv) : null,
       earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
       laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
@@ -1302,6 +1302,11 @@ function hydrate(raw) {
   $("lawOptions").innerHTML = raw.lawList.map(([l, n]) => `<option value="${esc(l)}">${num(n)} bill${n === 1 ? "" : "s"}</option>`).join("");
   $("progress").innerHTML = `<option value="">Any</option>` + Object.entries(PROGRESS)
     .map(([k, p]) => `<option value="${k}">${esc(p.label)} (${num(BILLS.filter(p.test).length)})</option>`).join("");
+  // Party data covers sitting members only, so the filter appears for the current session.
+  $("partyField").hidden = !raw.current;
+  if (!raw.current) state.party = "";
+  $("party").innerHTML = `<option value="">Any</option>` + Object.entries(PARTIES)
+    .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.parties === k).length)})</option>`).join("");
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.house === k).length)})</option>`).join("");
   $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => opt(c, n)).join("");
@@ -1312,13 +1317,6 @@ function hydrate(raw) {
   $("intro").innerHTML = `<option value="">Either year</option>` + years.map((y) =>
     `<option value="${y}">${y}${y === raw.session ? " (first year)" : " (second year)"} (${num(BILLS.filter((b) => b.intro === y).length)})</option>`).join("");
 
-  const names = raw.delegation || {};
-  const join = (title, list) => list.map((n) => `${title} ${n}`).join(" or ");
-  $("senLabel").textContent = `Sponsored by ${join("Sen.", names.SENATE || [])}`;
-  $("asmLabel").textContent = `Sponsored by ${join("Asm.", names.ASSEMBLY || [])}`;
-  $("senBox").hidden = !names.SENATE?.length;
-  $("asmBox").hidden = !names.ASSEMBLY?.length;
-
   setupLegislators(raw);
   const saved = recall("filters");
   if (saved) {
@@ -1326,8 +1324,6 @@ function hydrate(raw) {
     if (state.hist && !(state.hist in HIST_FILTERS)) state.hist = "";
     if (state.progress && !(state.progress in PROGRESS)) state.progress = "";
     if (state.sort === "due" && !raw.current) state.sort = "recent";
-    if (!names.SENATE?.length) state.sen = false;
-    if (!names.ASSEMBLY?.length) state.asm = false;
     syncControls();
   }
   if (PRESET) {

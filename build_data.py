@@ -335,6 +335,36 @@ def github_page(html):
             + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
 
 
+def parties(session, recs):
+    """Party ("D" or "R") for each legislator name as the bill data spells it, keyed by
+    (house, name). Names are tied to parties through the seat each sponsor holds."""
+    path = os.path.join(HERE, "data", f"contacts_{session}.json")
+    if not os.path.exists(path):
+        return {}
+    seats = json.load(open(path)).get("people", {})
+    out = {}
+    for r in recs:
+        for v in r["vers"]:
+            seat = seats.get(f"{v['p'][0]}:{v.get('district')}")
+            if v["sponsor"] and seat and seat["key"].split()[-1] == name_key(v["sponsor"]).split()[-1]:
+                p = seat.get("party") or ""
+                code = "D" if "Democrat" in p else "R" if "Republican" in p else None
+                if code:
+                    out[(v["p"][0], v["sponsor"])] = code
+    return out
+
+
+def bill_parties(r, party_of):
+    """Which parties have a sponsor or co-sponsor on either version: "D", "R", "DR" or ""."""
+    found = set()
+    for v in r["vers"]:
+        for n in [v["sponsor"]] + v.get("cosponsors", []):
+            p = party_of.get((v["p"][0], n))
+            if p:
+                found.add(p)
+    return "".join(sorted(found))
+
+
 def legislators(session):
     """Current legislators with a short page address each: last name, or first-last when shared."""
     path = os.path.join(HERE, "data", f"contacts_{session}.json")
@@ -525,6 +555,7 @@ def main():
                 strings.append(x)
             return sidx[x]
 
+        party_of = parties(session, recs) if session == current else {}
         rows = []
         for i, r in enumerate(recs):
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
@@ -536,7 +567,8 @@ def main():
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
                          S(r["program"]), S(r["law"]), vers, int((r["first"] or str(session))[:4]), h,
-                         [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]]])
+                         [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
+                         bill_parties(r, party_of)])
 
         data = {
             "session": session,
