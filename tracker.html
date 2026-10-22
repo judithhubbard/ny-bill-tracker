@@ -1648,17 +1648,22 @@ function monthChart(I, t) {
       title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
     return colRow(label, "", cols, `<b class="big">${num(Math.round(avg.reduce((a, b) => a + b, 0)))}</b> a session`, 12);
   }).join("");
-  // The governor's decisions on the same timeline: signed (green) and vetoed (red) stacked.
+  // The governor's decisions on the same timeline: one row for signed, one for vetoed, each
+  // with this session's count as a gold line.
   let gov = "";
   if (past.signed) {
-    const s = past.signed.map((x) => x / n), v = past.vetoed.map((x) => x / n);
-    const curS = live ? now.signed : null, curV = live ? now.vetoed : null;
-    const max = Math.max(1, ...s.map((x, m) => x + v[m]), ...(curS ? curS.map((x, m) => x + curV[m]) : []));
-    const cols = s.map((x, m) => ({ segs: [[((x + v[m]) / max) * 100, "v"], [(x / max) * 100, "l"]], tick: curS && curS[m] + curV[m] ? ((curS[m] + curV[m]) / max) * 100 : null,
-      title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} signed, ${num(Math.round(v[m]))} vetoed a session${curS ? `; this session ${num(curS[m])} signed, ${num(curV[m])} vetoed` : ""}` }));
-    const ts = s.reduce((a, b) => a + b, 0), tv = v.reduce((a, b) => a + b, 0);
-    gov = colRow("Signed or vetoed", "", cols, `<b class="big">${num(Math.round(ts + tv))}</b> a session<small>${pctOf(tv, ts + tv)}% vetoed</small>`, 12);
+    const sv = { signed: past.signed.map((x) => x / n), vetoed: past.vetoed.map((x) => x / n) };
+    const total = sv.signed.reduce((a, b) => a + b, 0) + sv.vetoed.reduce((a, b) => a + b, 0);
+    gov = [["signed", "Signed", "l"], ["vetoed", "Vetoed", "v"]].map(([k, label, cls]) => {
+      const avg = sv[k], cur = live ? now[k] : null;
+      const max = Math.max(1, ...avg, ...(cur || []));
+      const cols = avg.map((x, m) => ({ segs: [[(x / max) * 100, cls]], tick: cur && cur[m] ? (cur[m] / max) * 100 : null,
+        title: `${MONTH_NAMES[m % 12]}, ${m < 12 ? "first" : "second"} year: about ${num(Math.round(x))} ${k} a session${cur ? `; this session ${num(cur[m])}` : ""}` }));
+      const sum = avg.reduce((a, b) => a + b, 0);
+      return colRow(label, "", cols, `<b class="big">${num(Math.round(sum))}</b> a session${k === "vetoed" ? `<small>${pctOf(sum, total)}% of decisions</small>` : ""}`, 12);
+    }).join("");
   }
+
   return `<h3 class="sub">Through the session, by month</h3>
     <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
     <div class="vlist">${rows}${gov}${monthAxis(24, 12)}
