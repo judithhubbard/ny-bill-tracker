@@ -1354,7 +1354,7 @@ function renderNet() {
     <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
     <p class="note" id="netLoose"></p>
-    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member shows only their strongest ties. Hover or find a name to highlight; click to see a member's bills.</p>`;
+    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member's ${both ? "three" : "four"} strongest ties${both ? " in each kind" : ""} are drawn (counting only ties of 3 or more bills), so members who are many colleagues' closest partners have more lines. Hover or find a name to highlight; click to see a member's bills.</p>`;
   loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
 function drawNet({ nodes, links, loose }) {
