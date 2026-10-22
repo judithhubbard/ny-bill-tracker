@@ -324,14 +324,16 @@ table.oc th { vertical-align: bottom; }
 .net svg.focus text.on { opacity: 1; }
 .net svg.focus line.on { stroke-opacity: .9; }
 .vtrack .tick.p, .key .k-tick.p { background: var(--gold); }
-.mcols { display: grid; gap: 1px; height: 32px; align-items: end; }
+.mcols { display: grid; gap: 2px; height: 46px; align-items: end; }
+/* Month charts get more room than a single bar: 24 columns need it. */
+.vrow.wide { grid-template-columns: minmax(0, 230px) minmax(0, 480px) minmax(0, 200px); }
 .mcol { position: relative; height: 100%; background: var(--pip-off); border-radius: 1px; }
 .mcol i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 1px; }
 .mcol i.a { background: var(--navy); } .mcol i.l { background: var(--signed); } .mcol i.v { background: var(--veto); }
 .mcol b { position: absolute; left: -1px; right: -1px; height: 2px; margin-bottom: -1px; background: var(--gold); }
 .mcol.gap, .mcols.axis span.gap { margin-left: 4px; }
-.mcols.axis { height: auto; font: 9px var(--mono, monospace); color: var(--ink-2); text-align: center; }
-.myears { display: grid; grid-template-columns: 1fr 1fr; font-size: 11.5px; color: var(--ink-2); }
+.mcols.axis { height: auto; font: 11px var(--mono, monospace); color: var(--ink-2); text-align: center; }
+.myears { display: grid; grid-template-columns: 1fr 1fr; font-size: 12.5px; color: var(--ink-2); }
 .myears span + span { padding-left: 4px; }
 .vtrack i.v { background: var(--veto); }
 .key .k-tick.now { background: var(--gold); width: 10px !important; height: 2px !important; box-shadow: none; }
@@ -371,7 +373,7 @@ table.oc th { vertical-align: bottom; }
 .key.track-key i.dot { width: 12px; height: 12px; border-radius: 50%; }
 .key.track-key i.dot.s-1 { background: none; border: 2px solid var(--ink-2); }
 @media (max-width: 760px) {
-  .vrow { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .vrow, .vrow.wide { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .vtrack { max-width: 100%; }
 }
 @media (max-width: 900px) { .glance { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1626,11 +1628,11 @@ const vrow = (label, sub, segs, right, ticks) => `<div class="vrow"><div class="
 
 // A row of small columns (months), laid out like a bar row: label | columns | numbers.
 // cols: [{ segs: [[height %, class]], tick: height % or null, title }]; a gap before index `split`.
-const colRow = (label, sub, cols, right, split) => `<div class="vrow"><div class="lab">${label ? `<b>${label}</b>` : ""}${sub ? `<small>${sub}</small>` : ""}</div>
+const colRow = (label, sub, cols, right, split) => `<div class="vrow wide"><div class="lab">${label ? `<b>${label}</b>` : ""}${sub ? `<small>${sub}</small>` : ""}</div>
   <div class="mcols" style="grid-template-columns: repeat(${cols.length}, 1fr)">${cols.map((c, m) => `<span class="mcol${m === split ? " gap" : ""}"${c.title ? ` title="${c.title}"` : ""}>${c.segs.map(([h, cls]) => `<i class="${cls}" style="height:${Math.max(0, Math.min(100, h))}%"></i>`).join("")}${c.tick != null ? `<b style="bottom:${Math.min(100, c.tick)}%"></b>` : ""}</span>`).join("")}</div>
   <div class="val">${right}</div></div>`;
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const monthAxis = (n, split) => `<div class="vrow"><div class="lab"></div><div class="mcols axis" style="grid-template-columns: repeat(${n}, 1fr)">${Array.from({ length: n }, (_, m) => `<span class="${m === split ? "gap" : ""}">${"JFMAMJJASOND"[m % 12]}</span>`).join("")}</div><div></div></div>`;
+const monthAxis = (n, split) => `<div class="vrow wide"><div class="lab"></div><div class="mcols axis" style="grid-template-columns: repeat(${n}, 1fr)">${Array.from({ length: n }, (_, m) => `<span class="${m === split ? "gap" : ""}">${"JFMAMJJASOND"[m % 12]}</span>`).join("")}</div><div></div></div>`;
 
 // When things happen across the two-year session: one row of 24 monthly columns per event.
 const MONTH_ROWS = [["intro", "Introduced"], ["comm", "Approved by a committee"], ["passS", "Passed the Senate"], ["passA", "Passed the Assembly"]];
@@ -1660,7 +1662,7 @@ function monthChart(I, t) {
   return `<h3 class="sub">Through the session, by month</h3>
     <p class="key"><span><i class="k-appr"></i>Average, ${pastSpan()}</span><span><i class="k-law"></i>Signed</span><span><i class="k-veto"></i>Vetoed</span>${live ? `<span><i class="k-tick now"></i>This session</span>` : ""}</p>
     <div class="vlist">${rows}${gov}${monthAxis(24, 12)}
-    <div class="vrow"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
+    <div class="vrow wide"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 
 function renderStats() {
