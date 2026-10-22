@@ -287,7 +287,16 @@ table.oc th { vertical-align: bottom; }
 .stance.oppose { color: var(--veto); border-color: var(--veto); }
 .stance.fixed { cursor: default; background: none; }
 .watchview { display: grid; gap: 20px; }
-.statsview { display: grid; gap: 26px; }
+.statsview { display: grid; gap: 18px; }
+.glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.fact { appearance: none; text-align: left; cursor: pointer; align-content: start; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; color: var(--ink); font: inherit; }
+.fact:hover { border-color: var(--navy); }
+.fact b { font: 700 26px/1 var(--display); font-stretch: 85%; color: var(--navy); }
+.fact span { font-size: 13px; color: var(--ink-2); line-height: 1.35; }
+.subtabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+.subtabs button { appearance: none; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink-2); border-radius: 999px; padding: 5px 12px; font: 600 13px var(--body); cursor: pointer; }
+.subtabs button:hover { color: var(--ink); border-color: var(--navy); }
+.subtabs button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--sheet); }
 .statsview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .statsview p { margin: 0; max-width: 80ch; font-size: 14.5px; }
 .statsview .act-btn { justify-self: start; }
@@ -581,11 +590,19 @@ table.st col.c-m { width: 80px; }
       <label for="statTopic">Topic</label>
       <select id="statTopic"><option value="all">All bills</option></select>
     </div>
-    <div class="act-sec" id="statOdds"></div>
-    <div class="act-sec" id="statComm"></div>
-    <div class="act-sec" id="statTiming"></div>
-    <div class="act-sec" id="statPersist"></div>
-    <section class="act-sec" aria-labelledby="ocHead">
+    <div class="glance" id="statGlance"></div>
+    <nav class="subtabs" id="statTabs" aria-label="Statistics sections">
+      <button type="button" data-sec="statOdds">What happens next</button>
+      <button type="button" data-sec="statComm">Committees</button>
+      <button type="button" data-sec="statTiming">Timing and the governor</button>
+      <button type="button" data-sec="statPersist">Persistence</button>
+      <button type="button" data-sec="statSessions">By session</button>
+    </nav>
+    <div class="act-sec statsec" id="statOdds"></div>
+    <div class="act-sec statsec" id="statComm" hidden></div>
+    <div class="act-sec statsec" id="statTiming" hidden></div>
+    <div class="act-sec statsec" id="statPersist" hidden></div>
+    <section class="act-sec statsec" id="statSessions" hidden aria-labelledby="ocHead">
       <h2 id="ocHead">Outcomes by session</h2>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
       <p class="note">“Passed both houses” includes bills later signed or vetoed. “Became law” is bills signed out of all bills introduced. “Governor signed” is bills signed out of bills she signed or vetoed. The current session's numbers change until December 31.</p>
@@ -1134,6 +1151,36 @@ function govTiming(I) {
     <p class="note">2020 was a short COVID-year session. Gov. Cuomo resigned in August 2021, before the end-of-year vetoes. The current year's vetoes mostly come in November and December.</p>`;
 }
 
+let statSec = "statOdds";
+function showStatSec(id) {
+  statSec = id;
+  for (const s of document.querySelectorAll(".statsec")) s.hidden = s.id !== id;
+  for (const b of document.querySelectorAll("#statTabs button")) b.setAttribute("aria-pressed", b.dataset.sec === id);
+  try { localStorage.setItem("abt:statsec", id); } catch (e) {}
+}
+
+// Headline facts for the chosen topic; each opens the section behind it.
+function renderGlance(I, t) {
+  const odds = I.odds[t] || {};
+  const [n0, l0] = odds.intro || [0, 0], [n3, l3] = odds.both || [0, 0];
+  const past = I.committees.past[t] || {};
+  const worst = Object.entries(past).filter(([, v]) => v[0] >= (t === "all" ? 200 : 40)).sort((a, b) => a[1][1] / a[1][0] - b[1][1] / b[1][0])[0];
+  const years = I.timing.filter((y) => y.year !== 2020).map((y) => pctOf(y.final3wk, y.votes)).sort((a, b) => a - b);
+  const mid = years[Math.floor(years.length / 2)];
+  const gm = I.govMonths || {};
+  let nd = [0, 0], all = [0, 0];
+  for (const [k, [s, v]] of Object.entries(gm)) { all[0] += s; all[1] += v; if (/\|1[12]$/.test(k)) { nd[0] += s; nd[1] += v; } }
+  const [p0, , , , total] = I.persistence[t] || [0, 0, 0, 0, 0];
+  const cards = [
+    ["statOdds", `${pctOf(l0, n0)}%`, `of ${t === "all" ? "bills" : TOPICS[t] + " bills"} introduced become law; ${pctOf(l3, n3)}% once they pass both houses`],
+    worst && ["statComm", `${pctOf(worst[1][1], worst[1][0])}%`, `of bills sent to ${commLabel(worst[0]).replace(/^A · /, "Assembly ").replace(/^S · /, "Senate ")} are approved by the committee, the lowest of any large committee`],
+    ["statTiming", `${mid}%`, "of floor votes come in the last three weeks of the session"],
+    ["statTiming", `${pctOf(nd[1], all[1])}%`, "of vetoes come in November and December"],
+    ["statPersist", `${pctOf(total - p0, total)}%`, "of laws had been introduced in an earlier session"],
+  ].filter(Boolean);
+  $("statGlance").innerHTML = cards.map(([sec, big, text]) => `<button type="button" class="fact" data-sec="${sec}"><b>${big}</b><span>${esc(text)}</span></button>`).join("");
+}
+
 let commAll = false;
 // Plain names for committees whose official names don't explain themselves.
 const COMM_LABELS = { "S · Cities 1": "S · Cities 1 (New York City)", "S · Cities 2": "S · Cities 2 (other cities)" };
@@ -1142,6 +1189,7 @@ function renderStats() {
   const I = DATA.insights;
   if (!I) return;
   const t = $("statTopic").value || "all";
+  renderGlance(I, t);
   const topicName = t === "all" ? "all bills" : `${TOPICS[t]} bills`;
   const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
 
@@ -1707,6 +1755,7 @@ function wire() {
     openShown += 25; renderOpenNow();
   });
   $("statTopic").addEventListener("change", renderStats);
+  for (const id of ["statTabs", "statGlance"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
 }
 
@@ -1913,6 +1962,8 @@ function hydrate(raw) {
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
   renderOpenNow();
+  try { const s = localStorage.getItem("abt:statsec"); if (s && $(s)) statSec = s; } catch (e) {}
+  showStatSec(statSec);
   const one = openFromHash();
   if (one) showView("bills");
   render();
