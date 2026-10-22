@@ -293,7 +293,7 @@ table.oc th { vertical-align: bottom; }
 
 /* Statistics visuals */
 .vlist { display: grid; gap: 4px; }
-.vrow { display: grid; grid-template-columns: minmax(0, 230px) 200px minmax(0, 300px); gap: 12px; align-items: center; justify-content: start; }
+.vrow { display: grid; grid-template-columns: minmax(0, 230px) 200px minmax(0, 340px); gap: 12px; align-items: center; justify-content: start; }
 .vrow .lab b { display: block; font-weight: 600; font-size: 13px; line-height: 1.2; }
 .vrow .lab small, .vrow .val small { display: block; color: var(--ink-2); font-size: 11.5px; line-height: 1.25; }
 .vtrack { position: relative; height: 7px; background: var(--pip-off); border-radius: 2px; }
@@ -302,6 +302,8 @@ table.oc th { vertical-align: bottom; }
 .vtrack i.l { background: var(--signed); }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
+.vtrack i.n, .vtrack .tick.n, .key .k-n, .key .k-tick.n { background: var(--ink-2); }
+.commctl { display: flex; gap: 20px; flex-wrap: wrap; }
 .vtrack .tick.l { background: var(--signed); }
 .vrow .val { font-size: 12.5px; line-height: 1.25; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .vrow .val b.big { font: 700 14px var(--display); font-stretch: 85%; color: var(--ink); }
@@ -382,6 +384,8 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .twobar em { font-style: normal; color: var(--signed); font-weight: 600; }
 .commsort { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
 .commsort select { width: auto; padding: 4px 8px; font-size: 13px; }
+.key > span { white-space: nowrap; }
+.key { flex-wrap: wrap; }
 .key { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-2); margin: 0; }
 .key span { display: inline-flex; align-items: center; gap: 6px; }
 .key i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
@@ -1249,6 +1253,9 @@ function persCard(n, title) {
 let commAll = false;
 let commSort = "bills";
 try { commSort = localStorage.getItem("abt:commsort") || "bills"; } catch (e) {}
+let commMode = "share";
+try { commMode = localStorage.getItem("abt:commmode") || "share"; } catch (e) {}
+const COMM_MODES = { share: "Share approved", count: "Number of bills" };
 const COMM_SORTS = { bills: "Most bills", low: "Lowest approval", high: "Highest approval", name: "Name" };
 // Plain names for committees whose official names don't explain themselves.
 const COMM_LABELS = {
@@ -1286,7 +1293,8 @@ function renderStats() {
   const past = I.committees.past[t] || {}, cur = I.committees.current[t] || {};
   const rows = Object.entries(past).map(([k, [n, out, law]]) => ({
     k, perSession: Math.round(n / nPast), out: pctOf(out, n), law: pctOf(law, n),
-    nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null, nowLaw: cur[k] ? pctOf(cur[k][2], cur[k][0]) : null,
+    outN: Math.round(out / nPast), lawN: Math.round(law / nPast),
+    nowN: cur[k] ? cur[k][0] : 0, nowOutN: cur[k] ? cur[k][1] : 0, nowLawN: cur[k] ? cur[k][2] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null, nowLaw: cur[k] ? pctOf(cur[k][2], cur[k][0]) : null,
   }));
   const bySort = {
     bills: (a, b) => b.perSession - a.perSession,
@@ -1295,21 +1303,29 @@ function renderStats() {
     name: (a, b) => commLabel(a.k).localeCompare(commLabel(b.k)),
   };
   rows.sort(bySort[commSort] || bySort.bills);
-  const scale = Math.max(1, ...rows.map((r) => Math.max(r.out, r.nowOut || 0)));
+  const counts = commMode === "count";
+  const scale = Math.max(1, ...rows.map((r) => counts ? Math.max(r.perSession, r.nowN) : Math.max(r.out, r.nowOut || 0)));
+  const pos = (x) => (x / scale) * 100;
+  const shareRow = (r) => [
+    [[pos(r.out), "a"], [pos(r.law), "l"]],
+    `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
+    r.nowOut != null ? [[pos(r.nowOut), "a", `${r.nowOut}% approved`], [pos(r.nowLaw), "l", `${r.nowLaw}% law`]] : null];
+  const countRow = (r) => [
+    [[pos(r.perSession), "n"], [pos(r.outN), "a"], [pos(r.lawN), "l"]],
+    `<b class="big">${num(r.perSession)}</b> bills · ${num(r.outN)} approved · ${num(r.lawN)} law${r.nowN ? `<small>This session so far: ${num(r.nowN)} bills · ${num(r.nowOutN)} approved · ${num(r.nowLawN)} law</small>` : ""}`,
+    null];
   const houseList = (h, title) => {
     const hr = rows.filter((r) => r.k.startsWith(h + " "));
     if (!hr.length) return "";
     return `<div class="house"><h3 class="sub">${title}</h3><div class="vlist">${hr.slice(0, commAll ? hr.length : 8).map((r) =>
-      vrow(esc(commLabel(r.k).replace(/^[AS] · /, "")), `about ${num(r.perSession)} bills a session`,
-        [[(r.out / scale) * 100, "a"], [(r.law / scale) * 100, "l"]],
-        `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
-        r.nowOut != null ? [[(r.nowOut / scale) * 100, "a", `${r.nowOut}% approved`], [(r.nowLaw / scale) * 100, "l", `${r.nowLaw}% law`]] : null)).join("")}</div>
+      vrow(esc(commLabel(r.k).replace(/^[AS] · /, "")), counts ? "" : `about ${num(r.perSession)} bills a session`, ...(counts ? countRow(r) : shareRow(r)))).join("")}</div>
       ${hr.length > 8 && !commAll ? `<p class="muted">${hr.length - 8} more</p>` : ""}</div>`;
   };
   $("statComm").innerHTML = `<h2>Committees</h2>
-    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span><span>This session so far:</span><span><i class="k-tick a"></i>approved</span><span><i class="k-tick l"></i>law</span></p>
-    <p class="note">Share of ${topicName} referred to each committee, ${pastSpan()}. Committees with few bills left out.</p>
-    <label class="commsort">Sort by <select data-commsort>${Object.entries(COMM_SORTS).map(([k, l]) => `<option value="${k}"${k === commSort ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+    <div class="commctl"><label class="commsort">Show <select data-commmode>${Object.entries(COMM_MODES).map(([k, l]) => `<option value="${k}"${k === commMode ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+    <label class="commsort">Sort by <select data-commsort>${Object.entries(COMM_SORTS).map(([k, l]) => `<option value="${k}"${k === commSort ? " selected" : ""}>${l}</option>`).join("")}</select></label></div>
+    <p class="key">${counts ? `<span><i class="k-n"></i>Referred</span>` : ""}<span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span>${counts ? "" : `<span>This session so far:</span><span><i class="k-tick a"></i>approved</span><span><i class="k-tick l"></i>law</span>`}</p>
+    <p class="note">${counts ? `Average bills a session for ${topicName}` : `Share of ${topicName} referred to each committee`}, ${pastSpan()}. Committees with few bills left out.</p>
     <div class="houses">${houseList("A", "Assembly committees")}${houseList("S", "Senate committees")}</div>
     ${rows.length > 16 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
 
@@ -1884,9 +1900,13 @@ function wire() {
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
   $("statComm").addEventListener("change", (e) => {
-    if (!e.target.matches("[data-commsort]")) return;
-    commSort = e.target.value;
-    try { localStorage.setItem("abt:commsort", commSort); } catch (err) {}
+    if (e.target.matches("[data-commsort]")) {
+      commSort = e.target.value;
+      try { localStorage.setItem("abt:commsort", commSort); } catch (err) {}
+    } else if (e.target.matches("[data-commmode]")) {
+      commMode = e.target.value;
+      try { localStorage.setItem("abt:commmode", commMode); } catch (err) {}
+    } else return;
     renderStats();
   });
 }
