@@ -216,7 +216,8 @@ def first_committees(live):
     """For each version: the first committee in its own house, and whether the bill got out of it."""
     out = []
     for b in live:
-        own = [c for c in b["pastCommittees"] if c["chamber"] == b["chamber"]]
+        # The API lists committees by name, not date; the first referral is the earliest.
+        own = sorted((c for c in b["pastCommittees"] if c["chamber"] == b["chamber"]), key=lambda c: c.get("date") or "")
         if not own:
             continue
         name = COMMITTEE_RENAMES.get(norm_comm(own[0]["name"]), norm_comm(own[0]["name"]))
@@ -225,6 +226,15 @@ def first_committees(live):
         left = any(a["chamber"] == b["chamber"] and a["text"].startswith(LEFT_COMMITTEE) for a in b["actions"])
         out.append((b["chamber"][0], name, left))
     return out
+
+
+TITLE_STOP = set("the a an of to and or for in on by with relates relating certain provides requires establishes authorizes".split())
+
+
+def title_overlap(a, b):
+    """Share of the shorter title's words that the other title also uses."""
+    wa, wb = ({w for w in re.findall(r"[a-z]+", (x or "").lower()) if w not in TITLE_STOP and len(w) > 2} for x in (a, b))
+    return len(wa & wb) / max(1, min(len(wa), len(wb)))
 
 
 def load_session(session):
@@ -252,8 +262,14 @@ def load_session(session):
         if a in parent and b in parent:
             parent[find(a)] = find(b)
 
+    # The API occasionally points a bill at an unrelated "same as" (S10006 -> A11368, a
+    # physical therapy bill). Skip a link when it only goes one way and the titles share
+    # almost no words; one-way links between matching titles are ordinary reintroductions.
     for b in bills.values():
         for s in b["sameAs"]:
+            back = bills[s]["sameAs"] if s in bills else []
+            if back and b["printNo"] not in back and title_overlap(b["title"], bills[s]["title"]) < 0.25:
+                continue
             union(b["printNo"], s)
         if b["substitutedBy"]:
             union(b["printNo"], b["substitutedBy"])
@@ -288,7 +304,7 @@ def load_session(session):
                 m = re.match(r"SIGNED CHAP\.(\d+)", a["text"])
                 if m:
                     chapter = int(m.group(1))
-                m = re.match(r"VETOED MEMO\.(\d+)", a["text"])
+                m = re.match(r"(?:VETOED MEMO\.|POCKET VETO - VETO\.)(\d+)", a["text"])
                 if m:
                     veto = int(m.group(1))
 
@@ -322,7 +338,7 @@ def load_session(session):
             when(lambda t: t.startswith("DIED IN")),
             when(lambda t: t == "DELIVERED TO GOVERNOR"),
             when(lambda t: t.startswith("SIGNED CHAP")),
-            when(lambda t: t.startswith("VETOED MEMO")),
+            when(lambda t: t.startswith(("VETOED MEMO", "POCKET VETO"))),
         ]
         first = min(dates + [b["publishDate"] for b in live if b["publishDate"]], default=None)
         last = max(dates, default=lead["status"]["actionDate"])
@@ -499,17 +515,22 @@ def legislators(session):
         house = seat[0]
         src = raw.get("senateCommittees" if house == "S" else "assemblyCommittees", {})
         def same(n):
+            # Committee lists spell names their own way ("Patrick J. Carroll"); match on the
+            # last name when it's unique in the house, else last name and first initial.
             k = name_key(n)
-            return bool(k) and (k == p["key"] or (k.split()[-1] == last(p) and counts[last(p)] == 1))
+            if not k or k.split()[-1] != last(p):
+                return False
+            return k == p["key"] or house_counts[(house, last(p))] == 1 or k[0] == p["key"][0]
         found = [(c["name"], same(c.get("chair") or "")) for c in src.values() if any(same(m) for m in c.get("members", []))]
         return [{"name": n.replace(" And ", " and "), "chair": ch} for n, ch in sorted(found, key=lambda x: (not x[1], x[0]))]
     counts = Counter(last(p) for p in seats.values())
+    house_counts = Counter((seat[0], last(p)) for seat, p in seats.items())
     out = []
     for seat, p in sorted(seats.items(), key=lambda kv: kv[1]["key"].split()[-1]):
         house, district = seat.split(":")
         slug = last(p) if counts[last(p)] == 1 else p["key"].replace(" ", "-")
         out.append({"id": seat, "slug": slug, "name": p["name"], "title": "Sen." if house == "S" else "Asm.",
-                    "house": house, "district": int(district), "email": p.get("email"), "phone": p.get("phone"),
+                    "house": house, "district": int(district), "email": p.get("email"), "phone": p.get("phone"), "phones": p.get("phones"),
                     "url": p.get("url"), "party": p.get("party"), "image": p.get("image"),
                     "since": since.get(seat), "committees": committees_of(seat, p)})
     return out
@@ -538,7 +559,7 @@ def contacts_for(session, recs, delegation_names):
                 hits = [v for k, v in seats.items() if k[0] == house and v["key"].split()[-1] == key.split()[-1]]
             p = hits[0] if len(hits) == 1 else None
         if p:
-            return {"url": p["url"], "email": p["email"], "phone": p["phone"]}
+            return {"url": p["url"], "email": p["email"], "phone": p["phone"], "phones": p.get("phones")}
         if house == "S":
             return {"url": senate_url(name)}
         m = asm_members.get(key) or {}
@@ -630,7 +651,8 @@ def reached(r):
         "floor": bool(k[0]) or passed_s or passed_a,
         "passS": passed_s,
         "passA": passed_a,
-        "both": r["stage"] >= 3 or (passed_s and passed_a),
+        # Each house passing its own version, or passing in different years, isn't passing both.
+        "both": r["stage"] >= 3,
         "law": r["stage"] == 5,
     }
 
@@ -799,8 +821,11 @@ def insights(loaded, hist, current):
                 k = r["keyDates"]
                 when = {"intro": r["first"] or "", "comm": k[0], "passS": k[1].split(";")[0], "passA": k[2].split(";")[0]}
                 for key, d in when.items():
-                    if len(d) < 7 or not str(s) <= d[:4] <= str(s + 1):
+                    if len(d) < 7 or d[:4] > str(s + 1):
                         continue
+                    # Bills prefiled in late fall count as introduced when the session opens.
+                    if d[:4] < str(s):
+                        d = f"{s}-01"
                     m = (int(d[:4]) - s) * 12 + int(d[5:7]) - 1
                     for t in topics:
                         if has(r, t):
@@ -857,6 +882,7 @@ def profiles(session, recs, legs, party_of):
     last_of = {L["id"]: name_key(L["name"]).split()[-1] for L in legs}
     stats = {L["id"]: {"sponsored": 0, "floor": 0, "passedHouse": 0, "both": 0, "laws": 0, "lawsLocal": 0,
                        "otherParty": 0, "floorVotes": 0, "missed": 0, "comms": {}} for L in legs}
+    first_bill, votes_seen = {}, []
     for r in recs:
         got = reached(r)
         local = bool(CEREMONIAL.search(r["title"] or ""))
@@ -883,6 +909,10 @@ def profiles(session, recs, legs, party_of):
             mine = "D" if "Democrat" in (by_seat[seat].get("party") or "") else "R" if "Republican" in (by_seat[seat].get("party") or "") else None
             others = {party_of.get((vv["p"][0], n)) for vv in r["vers"] for n in [vv["sponsor"]] + vv.get("cosponsors", [])}
             st["otherParty"] += bool(mine and (others - {mine, None}))
+        for v in r["vers"]:
+            seat = f"{v['p'][0]}:{v.get('district')}"
+            if seat in stats and v["actions"] and name_key(v["sponsor"] or "").split()[-1:] == [last_of[seat]]:
+                first_bill[seat] = min(first_bill.get(seat, "9999"), v["actions"][0][0])
         for h, kind, comm, date, y, n, ny in r["votes"]:
             if kind != "F":
                 continue
@@ -892,10 +922,17 @@ def profiles(session, recs, legs, party_of):
                     d = who if mh == "S" else resolve(who)
                     if d:
                         absent.add(f"{mh}:{d}")
-            for seat in stats:
-                if seat[0] == h:
-                    stats[seat]["floorVotes"] += 1
-                    stats[seat]["missed"] += seat in absent
+            votes_seen.append((h, date, absent))
+    # Members who joined during the session: count only votes from their first bill on.
+    late = f"{session}-03-01"
+    for seat, d in first_bill.items():
+        if d >= late:
+            stats[seat]["start"] = d
+    for h, date, absent in votes_seen:
+        for seat in stats:
+            if seat[0] == h and (first_bill.get(seat, "") < late or date >= first_bill[seat]):
+                stats[seat]["floorVotes"] += 1
+                stats[seat]["missed"] += seat in absent
     groups = defaultdict(list)
     for seat, st in stats.items():
         p = by_seat[seat].get("party") or ""
@@ -925,14 +962,18 @@ def person_history(loaded, current, legs):
         xs = sorted(xs)
         return xs[len(xs) // 2] if len(xs) % 2 else (xs[len(xs) // 2 - 1] + xs[len(xs) // 2]) / 2
 
-    want = {name_key(L["name"]): L["id"] for L in legs}
+    match = member_matcher(legs)
     out = defaultdict(list)
     for s in sorted(loaded):
         recs = loaded[s][0]
         party_of = parties(s, recs)
         counts = defaultdict(lambda: [0, 0, 0])  # (house, sponsor) -> [bills, both, laws]
+        district = {}
         for r in recs:
             got = reached(r)
+            for v in r["vers"]:
+                if v["sponsor"] and v.get("district"):
+                    district[(v["p"][0], v["sponsor"])] = v["district"]
             for who in {(v["p"][0], v["sponsor"]) for v in r["vers"] if v["sponsor"]}:
                 c = counts[who]
                 c[0] += 1
@@ -944,11 +985,38 @@ def person_history(loaded, current, legs):
                 groups[(who[0], party_of[who])].append(c)
         typical = {g: [median([c[i] for c in cs]) for i in range(3)] for g, cs in groups.items()}
         for (house, name), c in counts.items():
-            seat = want.get(name_key(name))
+            seat = match(house, name, district.get((house, name)))
             if seat:
                 ty = typical.get((house, party_of.get((house, name))), [0, 0, 0])
                 out[seat].append([s, house] + c + ty)
     return dict(out)
+
+
+def member_matcher(legs):
+    """Matches a name as bills or committee lists spell it ("Joseph P. Addabbo Jr.") to a
+    current legislator listed under another form ("Joe Addabbo"): by seat when the district is
+    known, else by last name within the house, else last name plus first initial."""
+    by_seat = {L["id"]: L for L in legs}
+    by_last = defaultdict(list)
+    for L in legs:
+        k = name_key(L["name"])
+        if k:
+            by_last[(L["id"][0], k.split()[-1])].append(L)
+
+    def match(house, name, district=None):
+        k = name_key(name or "")
+        if not k:
+            return None
+        last = k.split()[-1]
+        L = by_seat.get(f"{house}:{district}") if district else None
+        if L and name_key(L["name"]).split()[-1:] == [last]:
+            return L["id"]
+        cands = by_last.get((house, last), [])
+        for pick in (cands, [c for c in cands if name_key(c["name"]) == k], [c for c in cands if name_key(c["name"])[0] == k[0]]):
+            if len(pick) == 1:
+                return pick[0]["id"]
+        return None
+    return match
 
 
 def net_counts(recs, key):
@@ -960,7 +1028,7 @@ def net_counts(recs, key):
         carriers = {"S": set(), "A": set()}
         for v in r["vers"]:
             h = v["p"][0]
-            s = key(h, v["sponsor"]) if v["sponsor"] else None
+            s = key(h, v["sponsor"], v.get("district")) if v["sponsor"] else None
             if not s:
                 continue
             spons[s] += 1
@@ -1013,15 +1081,14 @@ def net_views(spons, w, cross, info):
 def session_network(s, recs):
     """One session's network, with members named as that session's bills name them."""
     party_of = parties(s, recs)
-    key = lambda h, n: f"{h}:{n}" if party_of.get((h, n)) else None
+    key = lambda h, n, d=None: f"{h}:{n}" if party_of.get((h, n)) else None
     info = {f"{h}:{n}": [f"{'Sen.' if h == 'S' else 'Asm.'} {n}", p] for (h, n), p in party_of.items()}
     return net_views(*net_counts(recs, key), info)
 
 
 def network_since(loaded, legs):
     """Today's members, with ties added up over every loaded session they served together."""
-    by_name = {(L["id"][0], name_key(L["name"])): L for L in legs}
-    key = lambda h, n: by_name[(h, name_key(n))]["id"] if (h, name_key(n)) in by_name else None
+    key = member_matcher(legs)
     spons, w, cross = Counter(), Counter(), Counter()
     for s in sorted(loaded):
         a, b2, c = net_counts(loaded[s][0], key)
@@ -1140,7 +1207,7 @@ def main():
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
-                         S(r["program"]), S(r["law"]), vers, int((r["first"] or str(session))[:4]), h,
+                         S(r["program"]), S(r["law"]), vers, max(session, int((r["first"] or str(session))[:4])), h,
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"])])
 
@@ -1167,6 +1234,10 @@ def main():
             data["legislators"] = legislators(session)
             data["profiles"], data["peers"] = profiles(session, recs, data["legislators"], party_of)
             data["networkSince"] = network_since(loaded, data["legislators"])
+            # Without legislators the site would lose every legislator page and contact; stop
+            # so yesterday's site stays up rather than publishing a broken one.
+            if GITHUB and not data["legislators"]:
+                raise SystemExit("No legislators in the contacts file; not building")
             for seat, rows in person_history(loaded, current, data["legislators"]).items():
                 if seat in data["profiles"]:
                     data["profiles"][seat]["history"] = rows
@@ -1215,6 +1286,12 @@ def main():
                 print(f"   {len(data.get('legislators', []))} legislator pages")
         else:
             out = os.path.join(SITE, f"{session}.html")
+            # A Claude artifact page can't be larger than 16 MB.
+            size = len(html.encode("utf-8"))
+            if size > 16_000_000:
+                raise SystemExit(f"{out} is {size / 1e6:.1f} MB, over the 16 MB page limit")
+            if size > 15_300_000:
+                print(f"   warning: {out} is {size / 1e6:.1f} MB, close to the 16 MB page limit")
         os.makedirs(os.path.dirname(out), exist_ok=True)
         with open(out, "w") as f:
             f.write(html)

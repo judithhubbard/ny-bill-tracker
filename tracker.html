@@ -382,6 +382,7 @@ table.oc th { vertical-align: bottom; }
 .stattopic { max-width: 300px; }
 table.st { min-width: 0; }
 /* A legislator's tables: as wide as their content, not the page. */
+#personStats, #view-person { min-width: 0; }
 #personStats table.oc { width: auto; }
 #personStats h3.sub { margin: 24px 0 6px; }
 #personStats .key { margin-bottom: 8px; }
@@ -782,7 +783,7 @@ table.st col.c-m { width: 80px; }
       <li><b>Floor.</b> When a committee approves a bill (“reports” it), the bill goes on that house's calendar (“third reading”) to wait for a vote of the full house. Party leaders decide which bills come up for a vote, and floor calendars are published the day of the vote.</li>
       <li><b>The other house.</b> A bill that passes one house goes to the other. Most bills have a matching (“same as”) bill in the other house. When the passed bill arrives, the other house usually swaps it in for its own version and votes on it. Both houses have to pass identical text.</li>
       <li><b>Waiting to be sent.</b> A bill that has passed both houses stays with the Legislature until the governor's office asks for it. Her office requests bills in batches through the rest of the year, and nothing is required of her until then.</li>
-      <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
+      <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. For bills delivered at the very end of the year, after the Legislature adjourns, she has 30 days, and a bill she doesn't sign is vetoed (a “pocket veto”). In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
       <li><b>The two-year session.</b> Bills carry over from the first year to the second. In January of the second year, bills that passed only one house are sent back to committee in their original house and have to pass again. Any bill that hasn't passed both houses by December 31 of the second year dies and has to be reintroduced with a new number.</li>
     </ol>
     <h2>About this data</h2>
@@ -791,7 +792,7 @@ table.st col.c-m { width: 80px; }
       <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
       <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
-      <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays.</p>
+      <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays, or about 30 days for bills delivered in the last days of the year.</p>
       <p>Party filter: a bill counts as “both parties” if either version has at least one sponsor or co-sponsor from each party. Party is from Open States, including former members.</p>
     </div>
   </section>
@@ -832,14 +833,21 @@ const num = (n) => n.toLocaleString("en-US");
 const fmtMonth = (d) => (d ? new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "");
 const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 
-// The governor has 10 days, Sundays excepted, after delivery (NY Constitution, Art. IV, sec. 7).
+// The governor has 10 days, Sundays excepted, after delivery; after the Legislature's final
+// adjournment, 30 days (NY Constitution, Art. IV, sec. 7).
 function deadline(iso) {
   if (!iso) return null;
   const [y, m, d] = iso.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
   for (let n = 0; n < 10;) { dt.setDate(dt.getDate() + 1); if (dt.getDay() !== 0) n++; }
+  // After the Legislature's year ends, the governor has 30 days instead; unsigned bills are
+  // pocket-vetoed. Estimated from December 31.
+  if (dt.getFullYear() > y) return `${y + 1}-01-30`;
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 }
+// District office phones with their towns ("Ithaca 607-277-8030 · Cortland 607-208-2024").
+const phonesHtml = (p) => (p.phones && p.phones.length ? p.phones : p.phone ? [["", p.phone]] : [])
+  .map(([town, n]) => `${town ? `${esc(town)} ` : ""}<span class="phone">${esc(n)}</span>`).join(" · ");
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
 const storeKey = (k) => `abt:${DATA.session}:${PRESET?.who ? "who:" + PRESET.who + ":" : ""}${k}`;
@@ -1021,28 +1029,37 @@ const lastName = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "
 // Collects the people to contact about a bill, one entry each, with every role they play.
 function contactBook(b, canMove = true, oppose = false) {
   const book = new Map();
-  // Keyed by house and last name, so "Anna Kelles" and "Anna R. Kelles" are one person.
+  // Keyed by house, first initial and last name, so "Anna Kelles" and "Anna R. Kelles" are
+  // one person but Robert and Pat Carroll are two.
+  const who = (name, house) => {
+    const last = lastName(name);
+    const shared = LEGS.filter((L) => L.house === house && lastName(L.name) === last).length > 1;
+    return shared ? `${(name || "").trim().charAt(0).toLowerCase()}:${last}` : last;
+  };
   const add = (name, house, role, ask, star) => {
     if (!name) return;
-    const key = `${house}:${lastName(name)}`;
+    const key = `${house}:${who(name, house)}`;
     if (!book.has(key)) book.set(key, { name, house, roles: [], asks: [], star: false });
     const p = book.get(key);
     if (role && !p.roles.includes(role)) p.roles.push(role);
     if (ask && !p.asks.includes(ask)) p.asks.push(ask);
     if (star) p.star = true;
   };
-  const cos = (house) => b.vers.filter((v) => v.p[0] === house).flatMap((v) => v.cosponsors.map(lastName));
+  const cos = (house) => b.vers.filter((v) => v.p[0] === house).flatMap((v) => v.cosponsors.map((n) => who(n, house)));
+  // Sponsors and co-sponsors already back the bill; there's nothing to ask them to do for it.
+  const backs = (name, house) => b.vers.some((v) => v.p[0] === house && (who(v.sponsor, house) === who(name, house) || v.cosponsors.some((n) => who(n, house) === who(name, house))));
   return {
     sponsor(v, ask) { add(v.sponsor, v.p[0], `sponsor of ${v.p}`, ask); },
     chair(house, cname, ask, star) {
       const c = (DATA.contacts?.committees || {})[`${house}:${commKey(cname)}`];
       if (!c || !c.chair) return;
-      add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`, ask, star);
-      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, canMove ? (oppose ? "vote no in committee" : "vote yes in committee") : ""); }
+      const mine = backs(c.chair, house) && !oppose;
+      add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`, mine ? "" : ask, star && !mine);
+      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, canMove && !backs(r.name, house) ? (oppose ? "vote no in committee" : "vote yes in committee") : ""); }
     },
     leader(house, ask, star) {
       const L = (DATA.contacts?.leaders || {})[house];
-      if (L) add(L.name, house, L.role.charAt(0).toLowerCase() + L.role.slice(1) + ", decides which bills come to the floor", ask, star);
+      if (L && !(backs(L.name, house) && !oppose)) add(L.name, house, L.role.charAt(0).toLowerCase() + L.role.slice(1) + ", decides which bills come to the floor", ask, star);
     },
     reps(houses = ["S", "A"], ask) {
       for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) {
@@ -1058,14 +1075,14 @@ function contactBook(b, canMove = true, oppose = false) {
     html(gov) {
       const items = this.entries().map((p) => {
         const people = DATA.contacts?.people || {};
-        const info = people[p.name] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {};
+        const info = people[p.name] || Object.entries(people).find(([n]) => who(n, p.house) === who(p.name, p.house))?.[1] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {};
         const title = p.house === "S" ? "Sen." : "Asm.";
         const isSponsor = p.roles.some((r) => r.startsWith("sponsor"));
-        const signed = !isSponsor && cos(p.house).includes(lastName(p.name));
+        const signed = !isSponsor && cos(p.house).includes(who(p.name, p.house));
         const ours = p.roles.some((r) => r.startsWith("your "));
         const status = signed ? ` <span class="ours">co-sponsor</span>` : ours && !isSponsor ? ` <span class="muted">not a sponsor or co-sponsor</span>` : "";
         const name = info.url ? `<a href="${esc(info.url)}" target="_blank" rel="noopener">${title} ${esc(p.name)}</a>` : `${title} ${esc(p.name)}`;
-        const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, info.phone && `<span class="phone">${esc(info.phone)}</span>`].filter(Boolean).join(" · ");
+        const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, phonesHtml(info)].filter(Boolean).join(" · ");
         const roles = p.roles.join("; ");
         const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
         return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${p.star ? `<span class="star" title="Decides the next step">★</span> ` : ""}${name}${status}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
@@ -1150,8 +1167,8 @@ function nextSteps(b) {
   if (!plan) return "";
   let what = plan.what;
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
-  if (plan.actionable) what += `<p class="hint">★ decides the next step. ${plan.opp ? "Asks assume you oppose this bill (set on your watchlist)." : "Asks assume you support the bill; to oppose it, star it and choose Oppose."}</p>`;
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
+  if (plan.actionable && who) what += `<p class="hint">★ decides the next step. ${plan.opp ? "Asks assume you oppose this bill (set on your watchlist)." : "Asks assume you support the bill; to oppose it, star it and choose Oppose."}</p>`;
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
 
@@ -1181,6 +1198,9 @@ function renderOpenNow() {
 const VOTE_WORDS = { N: "No", E: "Excused", A: "Absent", B: "Abstained" };
 function voteOf(v, L) {
   if (!L || v.house !== L.house) return null;
+  // Members who joined mid-session didn't cast votes taken before they arrived.
+  const start = DATA.profiles?.[L.id]?.start;
+  if (start && v.date < start) return null;
   // Only committee members vote in committee.
   if (v.kind === "C" && !(L.committees || []).some((c) => commKey(c.name) === commKey(v.committee))) return null;
   const code = v.notYes.get(L.id);
@@ -1684,7 +1704,7 @@ function renderPersonStats(L) {
   // Floor votes.
   let fv = 0, no = 0, away = 0;
   for (const b of BILLS) for (const v of b.votes) if (v.kind === "F" && v.house === L.house) {
-    const x = voteOf(v, L); fv++; if (x === "No") no++; else if (x !== "Yes") away++;
+    const x = voteOf(v, L); if (!x) continue; fv++; if (x === "No") no++; else if (x === "Excused" || x === "Absent") away++;
   }
 
   $("personStats").innerHTML = `<h2>${esc(L.label)}: their numbers</h2>
@@ -1720,7 +1740,7 @@ function keyDates(b) {
     [D.signed, `Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}`],
     [D.vetoed, `Vetoed${b.veto ? `, Memo ${b.veto}` : ""}`],
   ].filter(([d]) => d).sort((x, y) => x[0].localeCompare(y[0]));
-  if (DATA.current && b.stage === 4 && b.due) items.push([b.due, "Governor's decision due (estimated: 10 days after delivery, not counting Sundays)", true]);
+  if (DATA.current && b.stage === 4 && b.due) items.push([b.due, b.due.endsWith("-01-30") ? "Governor's decision due (estimated: 30 days after the Legislature's year ends)" : "Governor's decision due (estimated: 10 days after delivery, not counting Sundays)", true]);
   return `<div class="keydates"><h4>Key dates</h4><ol>${items.map(([d, l, est]) =>
     `<li><time>${fmtDate(d)}</time><span class="${est ? "est" : ""}">${esc(l)}</span></li>`).join("")}</ol></div>`;
 }
@@ -1938,7 +1958,7 @@ const titleOf = (p) => (p.gov ? "Governor's office" : `${p.house === "S" ? "Sen.
 function reachOf(p) {
   if (p.gov) return `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`;
   const i = p.info || {};
-  return [i.email && `<span class="phone">${esc(i.email)}</span>`, i.phone && `<span class="phone">${esc(i.phone)}</span>`,
+  return [i.email && `<span class="phone">${esc(i.email)}</span>`, phonesHtml(i),
     i.url && `<a href="${esc(i.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
 }
 
@@ -2072,7 +2092,8 @@ function showView(v) {
   for (const id of ["bills", "watch", "stats", "how", "act", "person"]) $("view-" + id).hidden = id !== v;
   if (v === "watch") renderWatchView();
   $("filtered").hidden = v !== "bills";
-  try { localStorage.setItem("abt:view", v); } catch (err) {}
+  // Only the main page remembers its tab; the watchlist and legislator pages have their own.
+  if (!PRESET) try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
 
 function syncControls() {
@@ -2140,7 +2161,7 @@ function wire() {
     const input = btn.previousElementSibling;
     try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
   });
-  window.addEventListener("hashchange", () => { if (openFromHash()) { render(); openOne(); } });
+  window.addEventListener("hashchange", () => { if (openFromHash()) { showView("bills"); render(); openOne(); } });
   // Copy an email: one bill (button on its card) or several bills for the same person.
   const copyText = async (btn, text) => {
     try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
@@ -2288,7 +2309,7 @@ function setupLegislators(raw) {
 function floorVotes(L) {
   let n = 0, no = 0, away = 0;
   for (const b of BILLS) for (const v of b.votes) if (v.kind === "F" && v.house === L.house) {
-    const x = voteOf(v, L); n++; if (x === "No") no++; else if (x !== "Yes") away++;
+    const x = voteOf(v, L); if (!x) continue; n++; if (x === "No") no++; else if (x === "Excused" || x === "Absent") away++;
   }
   return n ? ` Floor votes: ${num(n)}, voted no on ${num(no)}${away ? `, didn't vote on ${num(away)}` : ""}.` : "";
 }
@@ -2306,7 +2327,7 @@ function renderPerson(L) {
   const signed = mine.filter((b) => b.stage === 5).length;
   const chairs = (L.committees || []).filter((c) => c.chair).map((c) => c.name);
   const member = (L.committees || []).filter((c) => !c.chair).map((c) => c.name);
-  const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, L.phone && `<span class="phone">${esc(L.phone)}</span>`,
+  const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, phonesHtml(L),
     L.url && `<a href="${esc(L.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
   $("person").innerHTML = `
     ${L.image ? `<img class="photo" src="${esc(L.image)}" alt="" loading="lazy" onerror="this.remove()">` : ""}

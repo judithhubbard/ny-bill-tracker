@@ -8,9 +8,9 @@ addresses, are read from nyassembly.gov. Senators' pages on nysenate.gov can't b
 by a script, so their addresses come from SENATE_SLUGS below (checked October 2026), with a
 name-based guess for anyone not listed.
 
-Email addresses, district office phones and official page links for every current legislator
-come from Open States (https://data.openstates.org/people/current/ny.csv), keyed by house and
-district.
+Email addresses and official page links for every current legislator come from Open States
+(https://data.openstates.org/people/current/ny.csv), keyed by house and district; district
+office phones come from the Open States person files, which list every office.
 
 If a source can't be reached, the previous contacts file is kept as is.
 
@@ -150,20 +150,72 @@ def assembly():
     return committees, members
 
 
+def district_offices():
+    """Every district office with a phone, main office first: {"S:52": [["Binghamton",
+    "607-773-8771"], ["Ithaca", "607-878-7025"]]}. From the Open States person files, which
+    list all offices (the spreadsheet has only one phone). Empty if they can't be read."""
+    import subprocess, tempfile
+    root = tempfile.mkdtemp()
+    try:
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "--filter=blob:none", "--sparse",
+                        "https://github.com/openstates/people.git", root], check=True, timeout=300)
+        subprocess.run(["git", "-C", root, "sparse-checkout", "set", "data/ny/legislature"], check=True, timeout=300)
+    except Exception as e:
+        print(f"Open States offices: {e}", file=sys.stderr)
+        return {}
+    out = {}
+    folder = os.path.join(root, "data", "ny", "legislature")
+    for fn in os.listdir(folder):
+        section, item, items, seat, last_key = None, None, {"roles": [], "offices": []}, None, None
+        for line in open(os.path.join(folder, fn), encoding="utf-8"):
+            line = line.rstrip("\n")
+            m = re.match(r"^(\w+):", line)
+            if m:
+                section, item = m.group(1), None
+                continue
+            m = re.match(r"^(- |  )(\w+):\s*(.*)$", line)
+            if m and section in items:
+                if m.group(1) == "- ":
+                    item = {}
+                    items[section].append(item)
+                item[m.group(2)] = m.group(3).strip("'\"")
+                last_key = m.group(2)
+            elif item is not None and line.startswith("    ") and last_key:
+                item[last_key] += " " + line.strip()  # a long value wrapped onto the next line
+        role = next((r for r in items["roles"] if not r.get("end_date") and r.get("district", "").isdigit()), None)
+        if not role or role.get("type") not in ("upper", "lower"):
+            continue
+        seat = ("S" if role["type"] == "upper" else "A") + ":" + str(int(role["district"]))
+        phones = []
+        for o in items["offices"]:
+            if o.get("classification") == "district" and o.get("voice"):
+                city = re.search(r",\s*([^,]+?),\s*NY\b", o.get("address", ""))
+                phones.append([city.group(1).strip() if city else "", o["voice"]])
+        if phones:
+            out[seat] = phones
+    return out
+
+
 def people():
     """Every current legislator: {"S:52": {...}, "A:125": {...}} from Open States."""
     text = get("https://data.openstates.org/people/current/ny.csv")
+    offices = district_offices()
     out = {}
     for r in csv.DictReader(io.StringIO(text)):
         house = {"upper": "S", "lower": "A"}.get(r["current_chamber"])
         if not house or not r["current_district"].isdigit():
             continue
         links = [l for l in r["links"].split(";") if re.search(r"nysenate\.gov/senators/|nyassembly\.gov/mem/", l)]
-        out[f"{house}:{int(r['current_district'])}"] = {
+        seat = f"{house}:{int(r['current_district'])}"
+        phone = r["district_voice"] or r["capitol_voice"] or None
+        phones = offices.get(seat) or ([["", phone]] if phone else [])
+        out[seat] = {
             "name": r["name"],
             "key": name_key(r["name"]),
             "email": r["email"] or None,
-            "phone": r["district_voice"] or r["capitol_voice"] or None,
+            # The main district office first; "phones" lists every district office.
+            "phone": phones[0][1] if phones else None,
+            "phones": phones,
             "url": links[0] if links else None,
             "party": r["current_party"] or None,
             "image": r["image"] or None,

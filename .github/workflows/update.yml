@@ -31,20 +31,24 @@ jobs:
           Y=$(TZ=America/New_York date +%Y)
           echo "CURRENT_SESSION=$(( Y % 2 == 0 ? Y - 1 : Y ))" >> "$GITHUB_ENV"
 
-      # The first time a new session is current, download the one that just ended a final
-      # time and commit it (gzipped), since past sessions are never re-downloaded.
-      - name: Store the previous session if it's missing
+      # When a new session starts, download the one that just ended and commit it (gzipped).
+      # Repeat daily through January 15, since governor actions from the last days of December
+      # can reach the API late; after that, past sessions are never re-downloaded.
+      - name: Store the previous session
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: |
           PREV=$(( CURRENT_SESSION - 2 ))
-          if [ ! -f "data/bills_$PREV.json.gz" ]; then
+          MD=$(TZ=America/New_York date +%m%d)
+          if [ ! -f "data/bills_$PREV.json.gz" ] || [ "$MD" -le "0115" ]; then
             python3 fetch_bills.py "$PREV"
-            gzip -9 -k -f "data/bills_$PREV.json"
+            gzip -9 -k -f -n "data/bills_$PREV.json"
             git add "data/bills_$PREV.json.gz"
-            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "Store final data for the $PREV session"
-            git push
+            if ! git diff --cached --quiet; then
+              git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit -m "Store final data for the $PREV session"
+              git push
+            fi
           fi
 
       - name: Download current session from Open Legislation
@@ -69,7 +73,13 @@ jobs:
       - name: Refresh contacts
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
-        run: python3 fetch_contacts.py "$CURRENT_SESSION" || echo "Contacts refresh failed; using the committed file"
+        run: |
+          python3 fetch_contacts.py "$CURRENT_SESSION" || echo "Contacts refresh failed; using the committed file"
+          if [ -n "$(git status --porcelain data/contacts_*.json)" ]; then
+            git add data/contacts_*.json
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Update contacts" && git push || echo "Couldn't save contacts"
+          fi
 
       - name: Build pages
         run: python3 build_data.py --github _site
