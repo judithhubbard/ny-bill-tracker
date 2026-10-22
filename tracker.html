@@ -1586,11 +1586,13 @@ function renderPersonStats(L) {
   // Their bills this session: how far they got.
   const PATH = [["sponsored", "Sponsored"], ["floor", "Approved by a committee"], ["passedHouse", `Passed the ${L.house === "S" ? "Senate" : "Assembly"}`], ["both", "Passed both houses"], ["law", "Became law"]];
   const val = (o, k) => (k === "law" ? o.laws + o.lawsLocal : o[k] || 0);
+  // Bars and the typical member's marker share one scale (bill counts), so 20 vs 5 looks like 4 to 1.
+  const scale = Math.max(1, me.sponsored, peer ? peer.sponsored : 0);
   const path = PATH.map(([k, label]) => {
     const n = val(me, k), p = peer ? val(peer, k) : null;
-    return vrow(label, "", [[pctOf(n, me.sponsored), "a"]],
+    return vrow(label, "", [[(n / scale) * 100, "a"]],
       `<b class="big">${num(n)}</b>${k === "sponsored" ? "" : ` (${pctOf(n, me.sponsored)}%)`}${p != null ? `<small>Typical: ${num(Math.round(p))}${k === "sponsored" ? "" : ` (${pctOf(p, peer.sponsored)}%)`}</small>` : ""}`,
-      p != null && k !== "sponsored" ? [[pctOf(p, peer.sponsored), "p", `Typical: ${pctOf(p, peer.sponsored)}%`]] : null);
+      p != null ? [[(p / scale) * 100, "p", `Typical: ${num(Math.round(p))}`]] : null);
   }).join("");
 
   // Where their bills go first.
@@ -1621,7 +1623,7 @@ function renderPersonStats(L) {
     <h3 class="sub">Their bills this session</h3>
     ${peer ? `<p class="key"><span><i class="k-appr"></i>${last}</span><span><i class="k-tick p"></i>${typical}</span></p>` : ""}
     <div class="vlist">${path}</div>
-    <p class="note">Share of the bills they sponsor.${peer ? ` “Typical” is the median of the ${peer.members} ${typical.replace("Typical ", "").replace(" in the", "s in the")}.` : ""} Laws include local and naming bills.</p>
+    <p class="note">Bill counts; percentages are shares of the bills each sponsors.${peer ? ` “Typical” is the median of the ${peer.members} ${typical.replace("Typical ", "").replace(" in the", "s in the")}.` : ""} Laws include local and naming bills.</p>
     ${hist.length > 1 ? `<h3 class="sub">By session</h3>
     <div class="tablewrap"><table class="oc st"><thead><tr><th>Session</th><th>House</th><th>Bills sponsored</th><th>Passed both houses</th><th>Became law</th></tr></thead><tbody>${histRows}</tbody></table></div>
     <p class="note">In parentheses: the typical member of their party in that house that session.</p>` : ""}
