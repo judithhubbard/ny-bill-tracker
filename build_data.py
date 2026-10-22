@@ -340,8 +340,19 @@ def legislators(session):
     path = os.path.join(HERE, "data", f"contacts_{session}.json")
     if not os.path.exists(path):
         return []
-    seats = json.load(open(path)).get("people", {})
+    raw = json.load(open(path))
+    seats = raw.get("people", {})
+    since = raw.get("since", {})
     last = lambda p: p["key"].split()[-1]
+
+    def committees_of(seat, p):
+        house = seat[0]
+        src = raw.get("senateCommittees" if house == "S" else "assemblyCommittees", {})
+        def same(n):
+            k = name_key(n)
+            return bool(k) and (k == p["key"] or (k.split()[-1] == last(p) and counts[last(p)] == 1))
+        found = [(c["name"], same(c.get("chair") or "")) for c in src.values() if any(same(m) for m in c.get("members", []))]
+        return [{"name": n.replace(" And ", " and "), "chair": ch} for n, ch in sorted(found, key=lambda x: (not x[1], x[0]))]
     counts = Counter(last(p) for p in seats.values())
     out = []
     for seat, p in sorted(seats.items(), key=lambda kv: kv[1]["key"].split()[-1]):
@@ -349,7 +360,8 @@ def legislators(session):
         slug = last(p) if counts[last(p)] == 1 else p["key"].replace(" ", "-")
         out.append({"id": seat, "slug": slug, "name": p["name"], "title": "Sen." if house == "S" else "Asm.",
                     "house": house, "district": int(district), "email": p.get("email"), "phone": p.get("phone"),
-                    "url": p.get("url")})
+                    "url": p.get("url"), "party": p.get("party"), "image": p.get("image"),
+                    "since": since.get(seat), "committees": committees_of(seat, p)})
     return out
 
 

@@ -2403,1485 +2403,1909 @@
  "people": {
   "A:1": {
    "email": "schiavonitj@nyassembly.gov",
+   "image": "https://www.southamptontownny.gov/ImageRepository/Document?documentID=19829",
    "key": "tommy schiavoni",
    "name": "Tommy John Schiavoni",
+   "party": "Democratic/Working Families",
    "phone": "631-537-2583",
    "url": "https://nyassembly.gov/mem/Tommy-John-Schiavoni"
   },
   "A:10": {
    "email": "sterns@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/010/headshot/010.jpg?hst=1660072786",
    "key": "steve stern",
    "name": "Steve Stern",
+   "party": "Democratic",
    "phone": "631-271-8025",
    "url": "https://nyassembly.gov/mem/Steve-Stern"
   },
   "A:100": {
    "email": "kayp@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/Rebecca_Gatto_20240808_100808.jpg",
    "key": "paula kay",
    "name": "Paula Kay",
+   "party": "Democratic",
    "phone": "845-342-9304",
    "url": "https://nyassembly.gov/mem/Paula-Elaine-Kay"
   },
   "A:101": {
    "email": "maherb@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/101/headshot/101.jpg?hst=1672566660",
    "key": "brian maher",
    "name": "Brian Maher",
+   "party": "Republican/Conservative",
    "phone": "845-379-5001",
    "url": "https://nyassembly.gov/mem/Brian-Maher"
   },
   "A:102": {
    "email": "taguec@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/102/headshot/102.jpg?hst=1660074360",
    "key": "chris tague",
    "name": "Chris Tague",
+   "party": "Republican",
    "phone": "518-943-1371",
    "url": "https://nyassembly.gov/mem/Chris-Tague/"
   },
   "A:103": {
    "email": "shresthas@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/103/headshot/103.jpg?hst=1672577142",
    "key": "sarahana shrestha",
    "name": "Sarahana Shrestha",
+   "party": "Democratic/Working Families",
    "phone": "845-338-9610",
    "url": "https://nyassembly.gov/mem/Sarahana-Shrestha"
   },
   "A:104": {
    "email": "jacobsonj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/104/headshot/104.jpg?hst=1660074380",
    "key": "jonathan jacobson",
    "name": "Jonathan Jacobson",
+   "party": "Democratic",
    "phone": "845-763-7011",
    "url": "https://nyassembly.gov/mem/Jonathan-G-Jacobson"
   },
   "A:105": {
    "email": "beephana@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/105/headshot/105.jpg?hst=1672566071",
    "key": "anil beephan",
    "name": "Anil Beephan",
+   "party": "Republican/Conservative",
    "phone": "845-221-2202",
    "url": "https://nyassembly.gov/mem/Anil-Beephan-Jr"
   },
   "A:106": {
    "email": "barrettd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/106/headshot/106.jpg?hst=1660074414",
    "key": "didi barrett",
    "name": "Didi Barrett",
+   "party": "Democratic",
    "phone": "518-828-1961",
    "url": "https://nyassembly.gov/mem/didi-barrett"
   },
   "A:107": {
    "email": "bendetts@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/107/headshot/107.jpg?hst=1672572327",
    "key": "scott bendett",
    "name": "Scott Bendett",
+   "party": "Republican/Conservative",
    "phone": "518-272-6149",
    "url": "https://nyassembly.gov/mem/Scott-Bendett"
   },
   "A:108": {
    "email": "mcdonaldj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/108/headshot/108.jpg?hst=1660074489",
    "key": "john mcdonald",
    "name": "John McDonald",
+   "party": "Democratic",
    "phone": null,
    "url": "https://nyassembly.gov/mem/John-T-McDonald-III"
   },
   "A:109": {
    "email": "romerog@nyassembly.gov",
+   "image": "https://albanyny.gov/ImageRepository/Document?documentID=6737",
    "key": "gabriella romero",
    "name": "Gabriella Romero",
+   "party": "Democratic/Working Families",
    "phone": null,
    "url": "https://nyassembly.gov/mem/Gabriella-A-Romero"
   },
   "A:11": {
    "email": "opharrk@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/Byron__McCray__20240808_092347.jpeg",
    "key": "kwani opharrow",
    "name": "Kwani O'Pharrow",
+   "party": "Democratic",
    "phone": "631-957-2087",
    "url": "https://nyassembly.gov/mem/Kwani-B-O'Pharrow"
   },
   "A:110": {
    "email": "steckp@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/110/headshot/110.jpg?hst=1660074591",
    "key": "phil steck",
    "name": "Phil Steck",
+   "party": "Democratic",
    "phone": "518-377-0902",
    "url": "https://nyassembly.gov/mem/Phil-Steck"
   },
   "A:111": {
    "email": "santabarbaraa@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/111/headshot/111.jpg?hst=1660074600",
    "key": "angelo santabarbara",
    "name": "Angelo Santabarbara",
+   "party": "Democratic",
    "phone": "518-843-0227",
    "url": "https://nyassembly.gov/mem/Angelo-Santabarbara/"
   },
   "A:112": {
    "email": "walshm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/112/headshot/112.jpg?hst=1660074618",
    "key": "mary walsh",
    "name": "Mary Beth Walsh",
+   "party": "Republican",
    "phone": "518-884-8010",
    "url": "https://nyassembly.gov/mem/Mary-Beth-Walsh"
   },
   "A:113": {
    "email": "woernerc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/113/headshot/113.jpg?hst=1660074635",
    "key": "carrie woerner",
    "name": "Carrie Woerner",
+   "party": "Democratic",
    "phone": "518-584-5493",
    "url": "https://nyassembly.gov/mem/Carrie-Woerner"
   },
   "A:114": {
    "email": "simpsonm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/114/headshot/114.jpg?hst=1660074645",
    "key": "matt simpson",
    "name": "Matt Simpson",
+   "party": "Republican/Conservative/Independence",
    "phone": "518-792-4546",
    "url": "https://nyassembly.gov/mem/Matthew-Simpson"
   },
   "A:115": {
    "email": "cashmanm@nyassembly.gov",
+   "image": "https://nyassembly.gov/write/upload/member_files/115/headshot/115.jpg?hst=1770151964",
    "key": "michael cashman",
    "name": "Michael Cashman",
+   "party": "Democratic",
    "phone": "518-562-1986",
    "url": null
   },
   "A:116": {
    "email": "grays@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/116/headshot/116.jpg?hst=1672565401",
    "key": "scott gray",
    "name": "Scott Gray",
+   "party": "Republican",
    "phone": "315-786-0284",
    "url": "https://nyassembly.gov/mem/Scott-Gray"
   },
   "A:117": {
    "email": "blankenbushk@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/117/headshot/117.jpg?hst=1660074678",
    "key": "ken blankenbush",
    "name": "Ken Blankenbush",
+   "party": "Republican",
    "phone": "315-493-3909",
    "url": "https://nyassembly.gov/mem/ken-blankenbush"
   },
   "A:118": {
    "email": "smullenr@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/118/headshot/118.jpg?hst=1660074686",
    "key": "robert smullen",
    "name": "Robert Smullen",
+   "party": "Republican",
    "phone": "518-762-1427",
    "url": "https://nyassembly.gov/mem/Robert-Smullen"
   },
   "A:119": {
    "email": "buttenschonm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/119/headshot/119.jpg?hst=1660074697",
    "key": "marianne buttenschon",
    "name": "Marianne Buttenschon",
+   "party": "Democratic",
    "phone": "315-732-1055",
    "url": "https://nyassembly.gov/mem/Marianne-Buttenschon"
   },
   "A:12": {
    "email": "brownk@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/012/headshot/012.jpg?hst=1660072856",
    "key": "keith brown",
    "name": "Keith Brown",
+   "party": "Republican/Conservative/Independence",
    "phone": "631-261-4151",
    "url": "https://nyassembly.gov/mem/Keith-P-Brown"
   },
   "A:120": {
    "email": "barclaw@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/120/headshot/120.jpg?hst=1660074706",
    "key": "will barclay",
    "name": "Will Barclay",
+   "party": "Republican",
    "phone": "315-598-5185",
    "url": "https://nyassembly.gov/mem/william-a-barclay"
   },
   "A:121": {
    "email": "angelinoj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/121/headshot/121.jpg?hst=1660074724",
    "key": "joe angelino",
    "name": "Joe Angelino",
+   "party": "Republican/Conservative/Independence",
    "phone": "607-648-6080",
    "url": "https://nyassembly.gov/mem/Joe-Angelino"
   },
   "A:122": {
    "email": "millerb@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/122/headshot/122.jpg?hst=1660074350",
    "key": "brian miller",
    "name": "Brian Miller",
+   "party": "Republican",
    "phone": "315-736-3879",
    "url": "https://nyassembly.gov/mem/Brian-D-Miller"
   },
   "A:123": {
    "email": "lupardod@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/123/headshot/123.jpg?hst=1674746628",
    "key": "donna lupardo",
    "name": "Donna Lupardo",
+   "party": "Democratic",
    "phone": "607-723-9047",
    "url": "https://nyassembly.gov/mem/donna-a-lupardo"
   },
   "A:124": {
    "email": "friendc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/124/headshot/124.jpg?hst=1660074744",
    "key": "chris friend",
    "name": "Chris Friend",
+   "party": "Republican",
    "phone": "607-562-3602",
    "url": "https://nyassembly.gov/mem/christopher-s-friend"
   },
   "A:125": {
    "email": "kellesa@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/125/headshot/125.jpg?hst=1660074752",
    "key": "anna kelles",
    "name": "Anna Kelles",
+   "party": "Democratic/Working Families",
    "phone": "607-208-2024",
    "url": "https://nyassembly.gov/mem/Anna-R-Kelles"
   },
   "A:126": {
    "email": "lemondesj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/126/headshot/126.jpg?hst=1660074773",
    "key": "john lemondes",
    "name": "John Lemondes",
+   "party": "Republican/Conservative/Independence",
    "phone": "315-255-3045",
    "url": "https://nyassembly.gov/mem/John-Lemondes"
   },
   "A:127": {
    "email": "stirpea@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/127/headshot/127.jpg?hst=1660074782",
    "key": "al stirpe",
    "name": "Al Stirpe",
+   "party": "Democratic",
    "phone": "315-452-1115",
    "url": "https://nyassembly.gov/mem/Al-Stirpe"
   },
   "A:128": {
    "email": "hunterp@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/128/headshot/128.jpg?hst=1660074792",
    "key": "pamela hunter",
    "name": "Pamela Hunter",
+   "party": "Democratic",
    "phone": "315-449-9536",
    "url": "https://nyassembly.gov/mem/Pamela-J-Hunter"
   },
   "A:129": {
    "email": "magnarw@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/129/headshot/129.jpg?hst=1660074804",
    "key": "bill magnarelli",
    "name": "Bill Magnarelli",
+   "party": "Democratic",
    "phone": "315-428-9651",
    "url": "https://nyassembly.gov/mem/william-b-magnarelli"
   },
   "A:13": {
    "email": "lavinec@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/013/headshot/013.jpg?hst=1660072879",
    "key": "charles lavine",
    "name": "Charles Lavine",
+   "party": "Democratic",
    "phone": "516-676-0050",
    "url": "https://nyassembly.gov/mem/charles-d-lavine"
   },
   "A:130": {
    "email": "manktelowb@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/130/headshot/130.jpg?hst=1660074813",
    "key": "brian manktelow",
    "name": "Brian Manktelow",
+   "party": "Republican",
    "phone": "315-946-5166",
    "url": "https://nyassembly.gov/mem/Brian-Manktelow"
   },
   "A:131": {
    "email": "gallahanj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/131/headshot/131.jpg?hst=1660074826",
    "key": "jeff gallahan",
    "name": "Jeff Gallahan",
+   "party": "Republican/Conservative",
    "phone": "315-497-0354",
    "url": "https://nyassembly.gov/mem/Jeff-Gallahan"
   },
   "A:132": {
    "email": "palmesanop@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/132/headshot/132.jpg?hst=1660074839",
    "key": "phil palmesano",
    "name": "Phil Palmesano",
+   "party": "Republican",
    "phone": "607-776-9691",
    "url": "https://nyassembly.gov/mem/philip-a-palmesano"
   },
   "A:133": {
    "email": "baileya@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/AndreaBailey24.png",
    "key": "andrea bailey",
    "name": "Andrea Bailey",
+   "party": "Republican/Conservative",
    "phone": "585-218-0038",
    "url": "https://nyassembly.gov/mem/Andrea-K-Bailey"
   },
   "A:134": {
    "email": "jensenj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/134/headshot/134.jpg?hst=1660074858",
    "key": "josh jensen",
    "name": "Josh Jensen",
+   "party": "Republican/Conservative/Independence",
    "phone": "585-225-4190",
    "url": "https://nyassembly.gov/mem/Josh-Jensen"
   },
   "A:135": {
    "email": "lunsfordj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/135/headshot/135.jpg?hst=1675087664",
    "key": "jen lunsford",
    "name": "Jen Lunsford",
+   "party": "Democratic/Working Families",
    "phone": "585-223-9130",
    "url": "https://nyassembly.gov/mem/Jennifer-Lunsford"
   },
   "A:136": {
    "email": "clarks@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/136/headshot/136.jpg?hst=1660074877",
    "key": "sarah clark",
    "name": "Sarah Clark",
+   "party": "Democratic/Working Families",
    "phone": "585-467-0410",
    "url": "https://nyassembly.gov/mem/Sarah-Clark/"
   },
   "A:137": {
    "email": "meeksd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/137/headshot/137.jpg?hst=1660074888",
    "key": "demond meeks",
    "name": "Demond Meeks",
+   "party": "Democratic/Working Families",
    "phone": "585-454-3670",
    "url": "https://nyassembly.gov/mem/Demond-Meeks"
   },
   "A:138": {
    "email": "bronsonh@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/138/headshot/138.jpg?hst=1660074897",
    "key": "harry bronson",
    "name": "Harry Bronson",
+   "party": "Democratic",
    "phone": "585-244-5255",
    "url": "https://nyassembly.gov/mem/harry-b-bronson"
   },
   "A:139": {
    "email": "hawleys@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/139/headshot/139.jpg?hst=1660074922",
    "key": "steve hawley",
    "name": "Steve Hawley",
+   "party": "Republican",
    "phone": "585-589-5780",
    "url": "https://nyassembly.gov/mem/stephen-hawley"
   },
   "A:14": {
    "email": "mcdonoughd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/014/headshot/014.jpg?hst=1660072904",
    "key": "dave mcdonough",
    "name": "Dave McDonough",
+   "party": "Republican",
    "phone": "516-409-2070",
    "url": "https://nyassembly.gov/mem/david-g-mcdonough"
   },
   "A:140": {
    "email": "conradw@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/140/headshot/140.jpg?hst=1660074930",
    "key": "bill conrad",
    "name": "Bill Conrad",
+   "party": "Democratic/Independence/Working Families",
    "phone": "716-873-2540",
    "url": "https://nyassembly.gov/mem/William-Conrad"
   },
   "A:141": {
    "email": "peoplec@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/141/headshot/141.jpg?hst=1660074942",
    "key": "crystal peoples-stokes",
    "name": "Crystal Peoples-Stokes",
+   "party": "Democratic",
    "phone": "716-897-9714",
    "url": "https://nyassembly.gov/mem/crystal-d-peoples-stokes"
   },
   "A:142": {
    "email": "burkep@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/142/headshot/142.jpg?hst=1660074954",
    "key": "pat burke",
    "name": "Pat Burke",
+   "party": "Democratic",
    "phone": "716-608-6099",
    "url": "https://nyassembly.gov/mem/Patrick-Burke"
   },
   "A:143": {
    "email": "chludzinskip@nyassembly.gov",
+   "image": "https://static.wixstatic.com/media/892f79_39baff731e7e42719b93232045f0f29e~mv2.jpg/v1/fill/w_580,h_868,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/892f79_39baff731e7e42719b93232045f0f29e~mv2.jpg",
    "key": "pat chludzinski",
    "name": "Pat Chludzinski",
+   "party": "Republican",
    "phone": "716-686-0080",
    "url": "https://nyassembly.gov/mem/Patrick-J-Chludzinski"
   },
   "A:144": {
    "email": "bolognap@nyassembly.gov",
+   "image": "https://nyassembly.gov/write/upload/member_files/144/headshot/144.jpg?hst=1747845755",
    "key": "paul bologna",
    "name": "Paul Bologna",
+   "party": "Republican/Conservative",
    "phone": "716-839-4691",
    "url": "https://nyassembly.gov/mem/Paul-A-Bologna"
   },
   "A:145": {
    "email": "morinelloa@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/145/headshot/145.jpg?hst=1660074985",
    "key": "angelo morinello",
    "name": "Angelo Morinello",
+   "party": "Republican",
    "phone": "716-282-6062",
    "url": "https://nyassembly.gov/mem/Angelo-J-Morinello"
   },
   "A:146": {
    "email": "mcmahonk@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/146/headshot/146.jpg?hst=1660074994",
    "key": "karen mcmahon",
    "name": "Karen McMahon",
+   "party": "Democratic",
    "phone": "716-634-1895",
    "url": "https://nyassembly.gov/mem/Karen-McMahon"
   },
   "A:147": {
    "email": "dipietrod@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/147/headshot/147.jpg?hst=1660075005",
    "key": "dave dipietro",
    "name": "Dave DiPietro",
+   "party": "Republican",
    "phone": "716-655-0951",
    "url": "https://nyassembly.gov/mem/David-DiPietro"
   },
   "A:148": {
    "email": "sempolinskij@nyassembly.gov",
+   "image": "https://storage.googleapis.com/enview-dev-public-general/legislative-people-photos/29175.jpg",
    "key": "joe sempolinski",
    "name": "Joe Sempolinski",
+   "party": "Republican/Conservative",
    "phone": "716-373-7103",
    "url": "https://nyassembly.gov/mem/Joe-Sempolinski"
   },
   "A:149": {
    "email": "riverajd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/149/headshot/149.jpg?hst=1660075024",
    "key": "jon rivera",
    "name": "Jon Rivera",
+   "party": "Democratic",
    "phone": "716-885-9630",
    "url": "https://nyassembly.gov/mem/Jonathan-Rivera"
   },
   "A:15": {
    "email": "blumencranzj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/015/headshot/015.jpg?hst=1671723761",
    "key": "jake blumencranz",
    "name": "Jake Blumencranz",
+   "party": "Republican/Conservative",
    "phone": "516-937-3571",
    "url": "https://nyassembly.gov/mem/Jake-Blumencranz"
   },
   "A:150": {
    "email": "molitora@nyassembly.gov",
+   "image": "https://ogden_images.s3.amazonaws.com/www.observertoday.com/images/2024/11/05231034/MOLITOR-copy-675x840.jpg",
    "key": "andrew molitor",
    "name": "Andrew Molitor",
+   "party": "Republican/Conservative",
    "phone": "716-664-7773",
    "url": "https://nyassembly.gov/mem/Andrew-M-Molitor"
   },
   "A:16": {
    "email": "norberd@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/dnorber2.jpg",
    "key": "danny norber",
    "name": "Danny Norber",
+   "party": "Republican/Conservative",
    "phone": "516-482-6966",
    "url": "https://nyassembly.gov/mem/Daniel-J-Norber"
   },
   "A:17": {
    "email": "mikulinj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/017/headshot/017.jpg?hst=1678734317",
    "key": "john mikulin",
    "name": "John Mikulin",
+   "party": "Republican",
    "phone": "516-228-4960",
    "url": "https://nyassembly.gov/mem/John-K-Mikulin"
   },
   "A:18": {
    "email": "burroughsn@nyassembly.gov",
+   "image": "https://www.villageofhempstead.org/ImageRepository/Document?documentID=14368",
    "key": "noah burroughs",
    "name": "Noah Burroughs",
+   "party": "Democratic/Working Families",
    "phone": "516-489-6610",
    "url": "https://nyassembly.gov/mem/Noah-Burroughs"
   },
   "A:19": {
    "email": "rae@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/019/headshot/019.jpg?hst=1660073018",
    "key": "ed ra",
    "name": "Ed Ra",
+   "party": "Republican",
    "phone": "516-535-4095",
    "url": "https://nyassembly.gov/mem/edward-p-ra"
   },
   "A:2": {
    "email": "giglioj2@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/002/headshot/002.jpg?hst=1668622850",
    "key": "jodi giglio",
    "name": "Jodi Giglio",
+   "party": "Republican/Conservative",
    "phone": "631-727-0204",
    "url": "https://nyassembly.gov/mem/Jodi-Giglio"
   },
   "A:20": {
    "email": "browna@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/020/headshot/020.jpg?hst=1660073031",
    "key": "ari brown",
    "name": "Ari Brown",
+   "party": "Republican",
    "phone": "516-431-0500",
    "url": "https://nyassembly.gov/mem/Ari-Brown"
   },
   "A:21": {
    "email": "griffij@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/021/headshot/021.jpg",
    "key": "judy griffin",
    "name": "Judy Griffin",
+   "party": "Democratic",
    "phone": "516-561-8216",
    "url": "https://nyassembly.gov/mem/Judy-Griffin"
   },
   "A:22": {
    "email": "solagesm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/022/headshot/022.jpg?hst=1660073080",
    "key": "michaelle solages",
    "name": "Michaelle Solages",
+   "party": "Democratic",
    "phone": "516-599-2972",
    "url": "https://nyassembly.gov/mem/Michaelle-C-Solages"
   },
   "A:23": {
    "email": "amatos@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/023/headshot/023.jpg?hst=1660073108",
    "key": "stacey amato",
    "name": "Stacey Pheffer Amato",
+   "party": "Democratic",
    "phone": "718-945-9550",
    "url": "https://nyassembly.gov/mem/Stacey-Pheffer-Amato"
   },
   "A:24": {
    "email": "weprind@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/024/headshot/024.jpg?hst=1660073135",
    "key": "david weprin",
    "name": "David Weprin",
+   "party": "Democratic",
    "phone": "718-805-2381",
    "url": "https://nyassembly.gov/mem/david-i-weprin"
   },
   "A:25": {
    "email": "rozicn@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/025/headshot/025.jpg?hst=1660073163",
    "key": "nily rozic",
    "name": "Nily Rozic",
+   "party": "Democratic",
    "phone": "718-820-0241",
    "url": "https://nyassembly.gov/mem/Nily-Rozic"
   },
   "A:26": {
    "email": "braunsteine@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/026/headshot/026.jpg?hst=1660073175",
    "key": "ed braunstein",
    "name": "Ed Braunstein",
+   "party": "Democratic",
    "phone": "718-357-3588",
    "url": "https://nyassembly.gov/mem/edward-c-braunstein"
   },
   "A:27": {
    "email": "bergers@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/027/headshot/027.jpg?hst=1695676852",
    "key": "sam berger",
    "name": "Sam Berger",
+   "party": "Democratic",
    "phone": "718-969-1508",
    "url": "https://nyassembly.gov/mem/Sam-Berger"
   },
   "A:28": {
    "email": "hevesia@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/028/headshot/028.jpg?hst=1660073205",
    "key": "andrew hevesi",
    "name": "Andrew Hevesi",
+   "party": "Democratic",
    "phone": "718-263-5595",
    "url": "https://nyassembly.gov/mem/andrew-hevesi"
   },
   "A:29": {
    "email": "hyndmana@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/029/headshot/029.jpg?hst=1660073230",
    "key": "alicia hyndman",
    "name": "Alicia Hyndman",
+   "party": "Democratic",
    "phone": "718-723-5412",
    "url": "https://nyassembly.gov/mem/Alicia-Hyndman"
   },
   "A:3": {
    "email": "destefanoj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/003/headshot/003.jpg?hst=1660072569",
    "key": "joe destefano",
    "name": "Joe DeStefano",
+   "party": "Republican/Conservative",
    "phone": "631-207-0073",
    "url": "https://nyassembly.gov/mem/Joe-DeStefano"
   },
   "A:30": {
    "email": "ragas@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/030/headshot/030.jpg?hst=1672571626",
    "key": "steven raga",
    "name": "Steven Raga",
+   "party": "Democratic",
    "phone": "718-651-3185",
    "url": "https://nyassembly.gov/mem/Steven-Raga"
   },
   "A:31": {
    "email": "andersonk@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/031/headshot/031.jpg?hst=1668023367",
    "key": "khaleel anderson",
    "name": "Khaleel Anderson",
+   "party": "Democratic/Working Families",
    "phone": "718-327-1845",
    "url": "https://nyassembly.gov/mem/Khaleel-M-Anderson"
   },
   "A:32": {
    "email": "cookv@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/032/headshot/032.jpg?hst=1660073288",
    "key": "vivian cook",
    "name": "Vivian Cook",
+   "party": "Democratic",
    "phone": "718-322-3975",
    "url": "https://nyassembly.gov/mem/vivian-e-cook"
   },
   "A:33": {
    "email": "vanelc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/033/headshot/033.jpg?hst=1660073302",
    "key": "clyde vanel",
    "name": "Clyde Vanel",
+   "party": "Democratic",
    "phone": "718-479-2333",
    "url": "https://nyassembly.gov/mem/Clyde-Vanel"
   },
   "A:34": {
    "email": "gonzalezrojasj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/034/headshot/034.jpg?hst=1660073319",
    "key": "jessica gonzalez-rojas",
    "name": "Jessica Gonz\u00e1lez-Rojas",
+   "party": "Democratic/Working Families",
    "phone": "718-457-0384",
    "url": "https://nyassembly.gov/mem/Jessica-Gonzalez-Rojas"
   },
   "A:35": {
    "email": "hooksl@nyassembly.gov",
+   "image": "https://static.wixstatic.com/media/d0a123_fb70d89e1f594b47bca75d33cd196327~mv2.jpg/v1/crop/x_2572,y_0,w_4148,h_4480/fill/w_284,h_308,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/1Q7A9414.jpg",
    "key": "larinda hooks",
    "name": "Larinda Hooks",
+   "party": "Democratic/Working Families",
    "phone": "718-457-3615",
    "url": "https://nyassembly.gov/mem/Larinda-C-Hooks"
   },
   "A:36": {
    "email": "morenod@nyassembly.gov",
+   "image": "https://nyassembly.gov/write/upload/member_files/036/headshot/036.jpg?hst=1770241970",
    "key": "diana moreno",
    "name": "Diana Moreno",
+   "party": "Democratic/Working Families",
    "phone": "718-545-3889",
    "url": "https://nyassembly.gov/mem/Diana-C-Moreno"
   },
   "A:37": {
    "email": "valdezc@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/Claire_Valdez_20240808_060205.jpeg",
    "key": "claire valdez",
    "name": "Claire Valdez",
+   "party": "Democratic/Working Families",
    "phone": "718-784-3194",
    "url": null
   },
   "A:38": {
    "email": "rajkumarj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/038/headshot/038.jpg?hst=1660073381",
    "key": "jenifer rajkumar",
    "name": "Jenifer Rajkumar",
+   "party": "Democratic",
    "phone": "718-805-0950",
    "url": "https://nyassembly.gov/mem/Jenifer-Rajkumar"
   },
   "A:39": {
    "email": "cruzc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/039/headshot/039.jpg?hst=1683131280",
    "key": "catalina cruz",
    "name": "Catalina Cruz",
+   "party": "Democratic",
    "phone": "718-458-5367",
    "url": "https://nyassembly.gov/mem/Catalina-Cruz"
   },
   "A:4": {
    "email": "kassayr@nyassembly.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/RebeccaKassay2024.jpg",
    "key": "rebecca kassay",
    "name": "Rebecca Kassay",
+   "party": "Democratic",
    "phone": "631-751-3094",
    "url": "https://nyassembly.gov/mem/Rebecca-Kassay"
   },
   "A:40": {
    "email": "kimr@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/040/headshot/040.jpg?hst=1660073405",
    "key": "ron kim",
    "name": "Ron Kim",
+   "party": "Democratic",
    "phone": "718-939-0195",
    "url": "https://nyassembly.gov/mem/Ron-Kim"
   },
   "A:41": {
    "email": "askkalman@nyassembly.gov",
+   "image": "https://raw.githubusercontent.com/NewYorkCityCouncil/districts/master/thumbnails/district-44.jpg",
    "key": "kalman yeger",
    "name": "Kalman Yeger",
+   "party": "Democratic",
    "phone": "718-648-4700",
    "url": "https://nyassembly.gov/mem/Kalman-Yeger"
   },
   "A:42": {
    "email": "bichotter@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/042/headshot/042.jpg?hst=1660073454",
    "key": "rodneyse hermelyn",
    "name": "Rodneyse Bichotte Hermelyn",
+   "party": "Democratic",
    "phone": "718-940-0428",
    "url": "https://nyassembly.gov/mem/Rodneyse-Bichotte-Hermelyn/"
   },
   "A:43": {
    "email": "cunninghamba@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/043/headshot/043.jpg?hst=1660073468",
    "key": "brian cunningham",
    "name": "Brian Cunningham",
+   "party": "Democratic",
    "phone": "718-771-3105",
    "url": "https://nyassembly.gov/mem/Brian-Cunningham"
   },
   "A:44": {
    "email": "carrollr@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/044/headshot/044.jpg?hst=1672953348",
    "key": "robert carroll",
    "name": "Robert Carroll",
+   "party": "Democratic",
    "phone": "718-788-7221",
    "url": "https://nyassembly.gov/mem/Robert-C-Carroll"
   },
   "A:45": {
    "email": "novakhovm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/045/headshot/045.jpg?hst=1672564058",
    "key": "misha novakhov",
    "name": "Misha Novakhov",
+   "party": "Republican/Conservative",
    "phone": "718-743-4078",
    "url": "https://nyassembly.gov/mem/Michael-Novakhov"
   },
   "A:46": {
    "email": "brook-krasnya@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/046/headshot/046.jpg?hst=1672572717",
    "key": "alec brook-krasny",
    "name": "Alec Brook-Krasny",
+   "party": "Republican/Conservative",
    "phone": "347-560-6302",
    "url": null
   },
   "A:47": {
    "email": "coltonw@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/047/headshot/047.jpg?hst=1660073520",
    "key": "william colton",
    "name": "William Colton",
+   "party": "Democratic",
    "phone": "718-236-1598",
    "url": "https://nyassembly.gov/mem/william-colton"
   },
   "A:48": {
    "email": "eichensteins@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/048/headshot/048.jpg?hst=1660073541",
    "key": "simcha eichenstein",
    "name": "Simcha Eichenstein",
+   "party": "Democratic",
    "phone": "718-853-9616",
    "url": "https://nyassembly.gov/mem/Simcha-Eichenstein"
   },
   "A:49": {
    "email": "changl@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/049/headshot/049.jpg?hst=1674060585",
    "key": "lester chang",
    "name": "Lester Chang",
+   "party": "Republican/Conservative",
    "phone": "718-236-1764",
    "url": "https://nyassembly.gov/mem/Lester-Chang"
   },
   "A:5": {
    "email": "smithd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/005/headshot/005.jpg?hst=1660072659",
    "key": "doug smith",
    "name": "Doug Smith",
+   "party": "Republican",
    "phone": "631-585-0230",
    "url": "https://nyassembly.gov/mem/Doug-Smith"
   },
   "A:50": {
    "email": "gallaghere@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/050/headshot/050.jpg?hst=1679601880",
    "key": "emily gallagher",
    "name": "Emily Gallagher",
+   "party": "Democratic",
    "phone": "718-383-7474",
    "url": "https://nyassembly.gov/mem/Emily-Gallagher"
   },
   "A:51": {
    "email": "mitaynesm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/051/headshot/051.jpg?hst=1660073582",
    "key": "marcela mitaynes",
    "name": "Marcela Mitaynes",
+   "party": "Democratic/Working Families",
    "phone": "718-492-6334",
    "url": "https://nyassembly.gov/mem/Marcela-Mitaynes"
   },
   "A:52": {
    "email": "simonj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/052/headshot/052.jpg?hst=1660073592",
    "key": "jo simon",
    "name": "Jo Anne Simon",
+   "party": "Democratic",
    "phone": "718-246-4889",
    "url": "https://nyassembly.gov/mem/Jo-Anne-Simon"
   },
   "A:53": {
    "email": "davilam@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/053/headshot/053.jpg?hst=1660073605",
    "key": "maritza davila",
    "name": "Maritza Davila",
+   "party": "Democratic",
    "phone": "718-443-1205",
    "url": "https://nyassembly.gov/mem/Maritza-Davila"
   },
   "A:54": {
    "email": "dilane@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/054/headshot/054.jpg?hst=1660073635",
    "key": "erik dilan",
    "name": "Erik Dilan",
+   "party": "Democratic",
    "phone": "718-386-4576",
    "url": "https://nyassembly.gov/mem/Erik-M-Dilan"
   },
   "A:55": {
    "email": "walkerl@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/055/headshot/055.jpg?hst=1660073650",
    "key": "latrice walker",
    "name": "Latrice Walker",
+   "party": "Democratic",
    "phone": "718-342-1256",
    "url": "https://nyassembly.gov/mem/Latrice-Walker"
   },
   "A:56": {
    "email": "zinermans@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/056/headshot/056.jpg?hst=1660073661",
    "key": "stefani zinerman",
    "name": "Stefani Zinerman",
+   "party": "Democratic",
    "phone": "718-399-7630",
    "url": "https://nyassembly.gov/mem/Stefani-Zinerman"
   },
   "A:57": {
    "email": "souffrantforrestp@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/057/headshot/057.jpg?hst=1660073678",
    "key": "phara forrest",
    "name": "Phara Souffrant Forrest",
+   "party": "Democratic",
    "phone": "718-596-0100",
    "url": "https://nyassembly.gov/mem/Phara-Souffrant-Forrest"
   },
   "A:58": {
    "email": "chandlerwatermanm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/058/headshot/058.jpg?hst=1660073695",
    "key": "monique chandler-waterman",
    "name": "Monique Chandler-Waterman",
+   "party": "Democratic",
    "phone": "718-385-3336",
    "url": "https://nyassembly.gov/mem/Monique-Chandler-Waterman"
   },
   "A:59": {
    "email": "williamsja@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/059/headshot/059.jpg?hst=1660073711",
    "key": "jaime williams",
    "name": "Jaime Williams",
+   "party": "Democratic",
    "phone": "718-252-2124",
    "url": "https://nyassembly.gov/mem/Jaime-R-Williams"
   },
   "A:6": {
    "email": "ramosp@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/006/headshot/006.jpg?hst=1660072681",
    "key": "phil ramos",
    "name": "Phil Ramos",
+   "party": "Democratic",
    "phone": "631-435-3214",
    "url": "https://nyassembly.gov/mem/phil-ramos"
   },
   "A:60": {
    "email": "lucasn@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/060/headshot/060.jpg?hst=1660073727",
    "key": "nikki lucas",
    "name": "Nikki Lucas",
+   "party": "Democratic",
    "phone": "718-257-5824",
    "url": "https://nyassembly.gov/mem/Nikki-Lucas"
   },
   "A:61": {
    "email": "fallc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/061/headshot/061.jpg?hst=1660073777",
    "key": "charles fall",
    "name": "Charles Fall",
+   "party": "Democratic",
    "phone": "718-442-9932",
    "url": "https://nyassembly.gov/mem/Charles-Fall"
   },
   "A:62": {
    "email": "reillym@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/062/headshot/062.jpg?hst=1660073788",
    "key": "mike reilly",
    "name": "Mike Reilly",
+   "party": "Republican",
    "phone": "718-967-5194",
    "url": "https://nyassembly.gov/mem/Michael-Reilly"
   },
   "A:63": {
    "email": "pirozzolos@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/063/headshot/063.jpg?hst=1672573792",
    "key": "sam pirozzolo",
    "name": "Sam Pirozzolo",
+   "party": "Republican/Conservative",
    "phone": "718-370-1384",
    "url": "https://nyassembly.gov/mem/Sam-Pirozzolo"
   },
   "A:64": {
    "email": "tannousism@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/064/headshot/064.jpg?hst=1660073815",
    "key": "mike tannousis",
    "name": "Mike Tannousis",
+   "party": "Republican/Conservative",
    "phone": "718-439-8090",
    "url": "https://nyassembly.gov/mem/Michael-Tannousis"
   },
   "A:65": {
    "email": "leeg@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/065/headshot/065.jpg?hst=1672563219",
    "key": "grace lee",
    "name": "Grace Lee",
+   "party": "Democratic",
    "phone": "212-312-1420",
    "url": "https://nyassembly.gov/mem/Grace-Lee"
   },
   "A:66": {
    "email": "glickd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/066/headshot/066.jpg?hst=1660073838",
    "key": "deborah glick",
    "name": "Deborah Glick",
+   "party": "Democratic",
    "phone": "212-674-5153",
    "url": "https://nyassembly.gov/mem/deborah-j-glick"
   },
   "A:67": {
    "email": "rosentl@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/067/headshot/067.jpg?hst=1660073851",
    "key": "linda rosenthal",
    "name": "Linda Rosenthal",
+   "party": "Democratic",
    "phone": "212-873-6368",
    "url": "https://nyassembly.gov/mem/linda-b-rosenthal"
   },
   "A:68": {
    "email": "gibbse@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/068/headshot/068.jpg?hst=1662988090",
    "key": "eddie gibbs",
    "name": "Eddie Gibbs",
+   "party": "Democratic",
    "phone": "212-828-3953",
    "url": "https://nyassembly.gov/mem/Edward-Gibbs"
   },
   "A:69": {
    "email": "lasherm@nyassembly.gov",
+   "image": "https://miro.medium.com/v2/resize:fit:2400/1*RmYHrIhRgeB_DrSfcfLOxw.jpeg",
    "key": "micah lasher",
    "name": "Micah Lasher",
+   "party": "Democratic",
    "phone": "212-866-3970",
    "url": "https://nyassembly.gov/mem/Micah-C-Lasher"
   },
   "A:7": {
    "email": "gandolfoj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/007/headshot/007.jpg?hst=1660072714",
    "key": "jarett gandolfo",
    "name": "Jarett Gandolfo",
+   "party": "Republican/Conservative/Independence",
    "phone": "631-589-0348",
    "url": "https://nyassembly.gov/mem/Jarett-Gandolfo"
   },
   "A:70": {
    "email": "wrightjj@nyassembly.gov",
+   "image": "https://static.wixstatic.com/media/de9c5c_2dc7bbf2df8248b58511913d9eb7f780~mv2.png/v1/fill/w_874,h_1023,al_c,q_90,usm_0.66_1.00_0.01,enc_avif,quality_auto/image4_edited.png",
    "key": "jordan wright",
    "name": "Jordan Wright",
+   "party": "Democratic",
    "phone": "212-866-5809",
    "url": "https://nyassembly.gov/mem/Jordan-J.G-Wright"
   },
   "A:71": {
    "email": "taylora@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/071/headshot/071.jpg?hst=1660073901",
    "key": "al taylor",
    "name": "Al Taylor",
+   "party": "Democratic",
    "phone": "212-234-1430",
    "url": "https://nyassembly.gov/mem/Al-Taylor"
   },
   "A:72": {
    "email": "delossm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/072/headshot/072.jpg?hst=1660073911",
    "key": "manny santos",
    "name": "Manny De Los Santos",
+   "party": "Democratic",
    "phone": "212-544-2278",
    "url": "https://nyassembly.gov/mem/Manny-De-Los-Santos"
   },
   "A:73": {
    "email": "boresa@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/073/headshot/073.jpg?hst=1672573990",
    "key": "alex bores",
    "name": "Alex Bores",
+   "party": "Democratic/Working Families",
    "phone": "212-605-0937",
    "url": "https://nyassembly.gov/mem/Alex-Bores"
   },
   "A:74": {
    "email": "powersk@nyassembly.gov",
+   "image": "https://nyassembly.gov/write/upload/member_files/074/headshot/074.jpg?hst=1770303450",
    "key": "keith powers",
    "name": "Keith Powers",
+   "party": "Democratic",
    "phone": "212-979-9696",
    "url": "https://nyassembly.gov/mem/Keith-Powers"
   },
   "A:75": {
    "email": "simonet@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/075/headshot/075.jpg?hst=1672577505",
    "key": "tony simone",
    "name": "Tony Simone",
+   "party": "Democratic",
    "phone": "212-807-7900",
    "url": "https://nyassembly.gov/mem/Tony-Simone"
   },
   "A:76": {
    "email": "seawrightr@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/076/headshot/076.jpg?hst=1660073966",
    "key": "rebecca seawright",
    "name": "Rebecca Seawright",
+   "party": "Democratic",
    "phone": "212-288-4607",
    "url": "https://nyassembly.gov/mem/Rebecca-A-Seawright"
   },
   "A:77": {
    "email": "daisl@nyassembly.gov",
+   "image": "https://storage.googleapis.com/enview-dev-public-general/legislative-people-photos/139590.jpg",
    "key": "landon dais",
    "name": "Landon Dais",
+   "party": "Democratic",
    "phone": "718-538-2000",
    "url": "https://nyassembly.gov/mem/Landon-C-Dais/"
   },
   "A:78": {
    "email": "alvarezg@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/078/headshot/078.jpg?hst=1672564700",
    "key": "george alvarez",
    "name": "George Alvarez",
+   "party": "Democratic",
    "phone": "718-933-2204",
    "url": "https://nyassembly.gov/mem/George-Alvarez"
   },
   "A:79": {
    "email": "jacksonc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/079/headshot/079.jpg?hst=1660074007",
    "key": "chantel jackson",
    "name": "Chantel Jackson",
+   "party": "Democratic",
    "phone": "718-538-3829",
    "url": "https://nyassembly.gov/mem/Chantel-Jackson"
   },
   "A:8": {
    "email": "fitzpatrickm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/008/headshot/008.jpg?hst=1660072739",
    "key": "mike fitzpatrick",
    "name": "Mike Fitzpatrick",
+   "party": "Republican",
    "phone": "631-724-2929",
    "url": "https://nyassembly.gov/mem/michael-j-fitzpatrick"
   },
   "A:80": {
    "email": "zaccaroj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/080/headshot/080.jpg?hst=1672563867",
    "key": "john zaccaro",
    "name": "John Zaccaro",
+   "party": "Democratic",
    "phone": "718-409-0109",
    "url": "https://nyassembly.gov/mem/John-Zaccaro-Jr"
   },
   "A:81": {
    "email": "dinowitzj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/081/headshot/081.jpg?hst=1660074041",
    "key": "jeffrey dinowitz",
    "name": "Jeffrey Dinowitz",
+   "party": "Democratic",
    "phone": "718-796-5345",
    "url": "https://nyassembly.gov/mem/jeffrey-dinowitz"
   },
   "A:82": {
    "email": "benedettom@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/082/headshot/082.jpg?hst=1660074060",
    "key": "michael benedetto",
    "name": "Michael Benedetto",
+   "party": "Democratic",
    "phone": "718-320-2220",
    "url": "https://nyassembly.gov/mem/michael-benedetto"
   },
   "A:83": {
    "email": "speaker@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/083/headshot/083.jpg?hst=1660074070",
    "key": "carl heastie",
    "name": "Carl Heastie",
+   "party": "Democratic",
    "phone": "212-312-1400",
    "url": "https://nyassembly.gov/mem/carl-e-heastie"
   },
   "A:84": {
    "email": "septimoa@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/084/headshot/084.jpg?hst=1660074086",
    "key": "amanda septimo",
    "name": "Amanda Septimo",
+   "party": "Democratic/Working Families",
    "phone": "718-292-2901",
    "url": "https://nyassembly.gov/mem/Amanda-Septimo"
   },
   "A:85": {
    "email": "torrese@nyassembly.gov",
+   "image": "https://storage.googleapis.com/enview-dev-public-general/legislative-people-photos/164656.jpg",
    "key": "emerita torres",
    "name": "Em\u00e9rita Torres",
+   "party": "Democratic",
    "phone": "718-893-0202",
    "url": "https://nyassembly.gov/mem/Emerita-Torres/"
   },
   "A:86": {
    "email": "tapiay@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/086/headshot/086.jpg?hst=1660074111",
    "key": "yudelka tapia",
    "name": "Yudelka Tapia",
+   "party": "Democratic",
    "phone": "718-933-6909",
    "url": "https://nyassembly.gov/mem/Yudelka-Tapia"
   },
   "A:87": {
    "email": "reyesk@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/087/headshot/087.jpg?hst=1660074160",
    "key": "karines reyes",
    "name": "Karines Reyes",
+   "party": "Democratic",
    "phone": "718-931-2620",
    "url": "https://nyassembly.gov/mem/Karines-Reyes"
   },
   "A:88": {
    "email": "paulina@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/088/headshot/088.jpg?hst=1673464404",
    "key": "amy paulin",
    "name": "Amy Paulin",
+   "party": "Democratic",
    "phone": "914-723-1115",
    "url": "https://nyassembly.gov/mem/amy-paulin"
   },
   "A:89": {
    "email": "pretloj@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/089/headshot/089.jpg?hst=1660074183",
    "key": "gary pretlow",
    "name": "Gary Pretlow",
+   "party": "Democratic",
    "phone": "914-667-0127",
    "url": "https://nyassembly.gov/mem/j-gary-pretlow"
   },
   "A:9": {
    "email": "dursom@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/009/headshot/009.jpg?hst=1660072763",
    "key": "michael durso",
    "name": "Michael Durso",
+   "party": "Republican/Conservative/Independence/Libertarian",
    "phone": "516-541-4598",
    "url": "https://nyassembly.gov/mem/Michael-Durso"
   },
   "A:90": {
    "email": "sayeghn@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/090/headshot/090.jpg?hst=1660074194",
    "key": "nader sayegh",
    "name": "Nader Sayegh",
+   "party": "Democratic",
    "phone": "914-779-8805",
    "url": "https://nyassembly.gov/mem/Nader-J-Sayegh"
   },
   "A:91": {
    "email": "otiss@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/091/headshot/091.jpg?hst=1661545963",
    "key": "steve otis",
    "name": "Steve Otis",
+   "party": "Democratic",
    "phone": "914-939-7028",
    "url": "https://nyassembly.gov/mem/Steven-Otis"
   },
   "A:92": {
    "email": "shimskym@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/092/headshot/092.jpg?hst=1672578886",
    "key": "maryjane shimsky",
    "name": "MaryJane Shimsky",
+   "party": "Democratic/Working Families",
    "phone": "914-631-1605",
    "url": "https://nyassembly.gov/mem/MaryJane-Shimsky"
   },
   "A:93": {
    "email": "burdickc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/093/headshot/093.jpg?hst=1660074244",
    "key": "chris burdick",
    "name": "Chris Burdick",
+   "party": "Democratic/Independence/Working Families",
    "phone": "914-244-4450",
    "url": "https://nyassembly.gov/mem/Chris-Burdick"
   },
   "A:94": {
    "email": "slaterm@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/094/headshot/094.jpg?hst=1672574790",
    "key": "matt slater",
    "name": "Matt Slater",
+   "party": "Republican/Conservative",
    "phone": "845-278-2923",
    "url": "https://nyassembly.gov/mem/Matt-Slater"
   },
   "A:95": {
    "email": "levenbergd@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/095/headshot/095.jpg?hst=1680123726",
    "key": "dana levenberg",
    "name": "Dana Levenberg",
+   "party": "Democratic/Working Families",
    "phone": "914-941-1111",
    "url": "https://nyassembly.gov/mem/Dana-Levenberg"
   },
   "A:96": {
    "email": "carrollp@nyassembly.gov",
+   "image": "https://www.clarkstown.gov/wp-content/uploads/2021/10/Patrick-Carroll.jpg",
    "key": "pat carroll",
    "name": "Pat Carroll",
+   "party": "Democratic/Working Families",
    "phone": "845-634-9791",
    "url": "https://nyassembly.gov/mem/Patrick-J-Carroll"
   },
   "A:97": {
    "email": "wiedera@nyassembly.gov",
+   "image": "https://monseyscoop.com/wp-content/uploads/2024/11/638525825463770000-scaled-e1719329897582-1068x716-1-1024x687.jpeg",
    "key": "aron wieder",
    "name": "Aron Wieder",
+   "party": "Democratic",
    "phone": "845-425-1734",
    "url": "https://nyassembly.gov/mem/Aron-Wieder"
   },
   "A:98": {
    "email": "brabeneck@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/098/headshot/098.jpg?hst=1660074303",
    "key": "karl brabenec",
    "name": "Karl Brabenec",
+   "party": "Republican",
    "phone": "845-544-7551",
    "url": "https://nyassembly.gov/mem/Karl-Brabenec"
   },
   "A:99": {
    "email": "eachusc@nyassembly.gov",
+   "image": "https://assembly.state.ny.us/write/upload/member_files/099/headshot/099.jpg?hst=1672570603",
    "key": "chris eachus",
    "name": "Chris Eachus",
+   "party": "Democratic",
    "phone": "845-469-6929",
    "url": "https://nyassembly.gov/mem/Chris-Eachus"
   },
   "S:1": {
    "email": "palumbo@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/palumbo2.jpg",
    "key": "tony palumbo",
    "name": "Tony Palumbo",
+   "party": "Republican",
    "phone": "631-461-9100",
    "url": "https://www.nysenate.gov/senators/anthony-h-palumbo"
   },
   "S:10": {
    "email": "sanders@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/01-16-1910-1-0133_0.jpg",
    "key": "james sanders",
    "name": "James Sanders",
+   "party": "Democratic",
    "phone": "718-327-7017",
    "url": "https://www.nysenate.gov/senators/james-sanders-jr"
   },
   "S:11": {
    "email": "stavisky@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/%2802-09-09%29%20Stavisky-HS-034-ret.jpg",
    "key": "toby stavisky",
    "name": "Toby Stavisky",
+   "party": "Democratic",
    "phone": "718-445-0004",
    "url": "https://www.nysenate.gov/senators/toby-ann-stavisky"
   },
   "S:13": {
    "email": "ramos@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2022-senator-jessica-ramos-sd13-680.jpg",
    "key": "jessica ramos",
    "name": "Jessica Ramos",
+   "party": "Democratic/Working Families",
    "phone": "718-205-3881",
    "url": "https://www.nysenate.gov/senators/jessica-ramos"
   },
   "S:14": {
    "email": "comrie@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2025/10/20/untitled-design-2.png",
    "key": "leroy comrie",
    "name": "Leroy Comrie",
+   "party": "Democratic",
    "phone": "718-765-6359",
    "url": "https://www.nysenate.gov/senators/leroy-comrie"
   },
   "S:15": {
    "email": "addabbo@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/01-04-23_300-01-461.jpg",
    "key": "joe addabbo",
    "name": "Joe Addabbo",
+   "party": "Democratic",
    "phone": "718-738-1111",
    "url": "https://www.nysenate.gov/senators/joseph-p-addabbo-jr"
   },
   "S:16": {
    "email": "liu@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2024/08/12/thumbnail_02-28-24-liu-headshot-017r.jpg",
    "key": "john liu",
    "name": "John Liu",
+   "party": "Democratic",
    "phone": "718-765-6675",
    "url": "https://www.nysenate.gov/senators/john-c-liu"
   },
   "S:17": {
    "email": "chan@nysenate.gov",
+   "image": "https://s3.amazonaws.com/ballotpedia-api4/files/thumbs/200/300/Steve_Chan.png",
    "key": "steve chan",
    "name": "Steve Chan",
+   "party": "Republican/Conservative",
    "phone": "718-333-0311",
    "url": "https://www.nysenate.gov/senators/stephen-t-chan"
   },
   "S:18": {
    "email": "salazar@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2023/07/27/hs-senator-julia-salazar.jpg",
    "key": "julia salazar",
    "name": "Julia Salazar",
+   "party": "Democratic/Working Families",
    "phone": "718-573-1726",
    "url": "https://www.nysenate.gov/senators/julia-salazar"
   },
   "S:19": {
    "email": "persaud@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/frontpage-newhs_sd19.jpg",
    "key": "roxanne persaud",
    "name": "Roxanne Persaud",
+   "party": "Democratic",
    "phone": "718-649-7653",
    "url": "https://www.nysenate.gov/senators/roxanne-j-persaud"
   },
   "S:2": {
    "email": "mattera@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/2026/04/08/2026-4.square-headshot.jpg",
    "key": "mario mattera",
    "name": "Mario Mattera",
+   "party": "Republican/Conservative",
    "phone": "631-361-2154",
    "url": "https://www.nysenate.gov/senators/mario-r-mattera"
   },
   "S:20": {
    "email": "myrie@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/officalsd20.jpg",
    "key": "zellnor myrie",
    "name": "Zellnor Myrie",
+   "party": "Democratic",
    "phone": "718-284-4700",
    "url": "https://www.nysenate.gov/senators/zellnor-myrie"
   },
   "S:21": {
    "email": "parker@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/sd21-kp-680-header-img-23.jpg",
    "key": "kevin parker",
    "name": "Kevin Parker",
+   "party": "Democratic/Working Families",
    "phone": "718-629-6401",
    "url": "https://www.nysenate.gov/senators/kevin-s-parker"
   },
   "S:22": {
    "email": "sutton@nysenate.gov",
+   "image": "https://cdn.cityandstateny.com/media/img/cd/2025/05/20/Sam_Sutton-1/860x394.jpg?1747765149",
    "key": "sam sutton",
    "name": "Sam Sutton",
+   "party": "Democratic",
    "phone": "718-253-2015",
    "url": "https://www.nysenate.gov/senators/sam-sutton"
   },
   "S:23": {
    "email": "spanton@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/01-05-23_s-spantonhs-official.jpg",
    "key": "jessica scarcella-spanton",
    "name": "Jessica Scarcella-Spanton",
+   "party": "Democratic",
    "phone": "718-727-9406",
    "url": "https://www.nysenate.gov/senators/jessica-scarcella-spanton"
   },
   "S:24": {
    "email": "lanza@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/hero_10.15.jpg",
    "key": "andrew lanza",
    "name": "Andrew Lanza",
+   "party": "Republican/Conservative/Independence/Reform",
    "phone": "718-984-4073",
    "url": "https://www.nysenate.gov/senators/andrew-j-lanza"
   },
   "S:25": {
    "email": "brisport@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/sd25jabarbrispormainpaget.jpg",
    "key": "jabari brisport",
    "name": "Jabari Brisport",
+   "party": "Democratic/Working Families",
    "phone": "718-643-6140",
    "url": "https://www.nysenate.gov/senators/jabari-brisport"
   },
   "S:26": {
    "email": "gounardes@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/sd22ag-680x510-headerphoto.jpg",
    "key": "andrew gounardes",
    "name": "Andrew Gounardes",
+   "party": "Democratic",
    "phone": "718-238-6044",
    "url": "https://www.nysenate.gov/senators/andrew-gounardes"
   },
   "S:27": {
    "email": "kavanagh@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/kavanagh-b-headshot.jpg",
    "key": "brian kavanagh",
    "name": "Brian Kavanagh",
+   "party": "Democratic",
    "phone": "212-298-5565",
    "url": "https://www.nysenate.gov/senators/brian-kavanagh"
   },
   "S:28": {
    "email": "lkrueger@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/%2805-27-15%29%20650-33-072.jpg",
    "key": "liz krueger",
    "name": "Liz Krueger",
+   "party": "Democratic/Working Families",
    "phone": "212-490-9535",
    "url": "https://www.nysenate.gov/senators/liz-krueger"
   },
   "S:29": {
    "email": "serrano@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2025/08/27/serrano-photo-1_1.jpg",
    "key": "jose serrano",
    "name": "Jose Serrano",
+   "party": "Democratic/Working Families",
    "phone": "212-828-5829",
    "url": "https://www.nysenate.gov/senators/jos%C3%A9-m-serrano/contact"
   },
   "S:3": {
    "email": "murray@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/sd3-dmurray-headshot-680.jpg",
    "key": "dean murray",
    "name": "Dean Murray",
+   "party": "Republican/Conservative",
    "phone": "631-360-3356",
    "url": "https://www.nysenate.gov/senators/dean-murray"
   },
   "S:30": {
    "email": "cleare@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2024/05/31/680.cleare-hs-014-1.jpg",
    "key": "cordell cleare",
    "name": "Cordell Cleare",
+   "party": "Democratic",
    "phone": "212-222-7315",
    "url": "https://www.nysenate.gov/senators/cordell-cleare"
   },
   "S:31": {
    "email": "jackson@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/frontpagesd31.jpg",
    "key": "robert jackson",
    "name": "Robert Jackson",
+   "party": "Democratic/Working Families",
    "phone": "212-544-0173",
    "url": "https://www.nysenate.gov/senators/robert-jackson"
   },
   "S:32": {
    "email": "sepulveda@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/hssepulveda1.jpg",
    "key": "luis sepulveda",
    "name": "Luis Sep\u00falveda",
+   "party": "Democratic",
    "phone": "718-991-3161",
    "url": "https://www.nysenate.gov/senators/luis-r-sepulveda"
   },
   "S:33": {
    "email": "grivera@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2024/05/01/senator-rivera-9.7.23.jpg",
    "key": "gustavo rivera",
    "name": "Gustavo Rivera",
+   "party": "Democratic/Working Families",
    "phone": "718-933-2034",
    "url": "https://www.nysenate.gov/senators/gustavo-rivera"
   },
   "S:34": {
    "email": "fernandez@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2023/09/05/sd34nfernandez-member-680-header.jpg",
    "key": "nathalia fernandez",
    "name": "Nathalia Ferna\u0301ndez",
+   "party": "Democratic",
    "phone": "718-822-2049",
    "url": "https://www.nysenate.gov/senators/nathalia-fernandez"
   },
   "S:35": {
    "email": "scousins@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/ascsweringin2019.jpg",
    "key": "andrea stewart-cousins",
    "name": "Andrea Stewart-Cousins",
+   "party": "Democratic/Working Families",
    "phone": "212-298-5585",
    "url": "https://www.nysenate.gov/senators/andrea-stewart-cousins"
   },
   "S:36": {
    "email": "senatorjbailey@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2024/07/26/sd36-jb-680-header-photo-main-page.jpg",
    "key": "jamaal bailey",
    "name": "Jamaal Bailey",
+   "party": "Democratic/Working Families",
    "phone": "718-547-8854",
    "url": "https://www.nysenate.gov/senators/jamaal-t-bailey"
   },
   "S:37": {
    "email": "smayer@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2026/04/16/04-01-26-mayer-hs-014.jpg",
    "key": "shelley mayer",
    "name": "Shelley Mayer",
+   "party": "Democratic/Working Families",
    "phone": "914-934-5250",
    "url": "https://www.nysenate.gov/senators/shelley-b-mayer"
   },
   "S:38": {
    "email": "weber@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/01-10-23_weber-hs-02.jpg",
    "key": "bill weber",
    "name": "Bill Weber",
+   "party": "Republican/Conservative",
    "phone": "845-623-3627",
    "url": "https://www.nysenate.gov/senators/bill-weber"
   },
   "S:39": {
    "email": "rolison@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/2025/02/10/01-22-25-rolison-hs-003-1.jpg",
    "key": "rob rolison",
    "name": "Rob Rolison",
+   "party": "Republican",
    "phone": "845-229-0106",
    "url": "https://www.nysenate.gov/senators/rob-rolison"
   },
   "S:4": {
    "email": "martinez@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2024/03/06/02-27-24-martinez-015.jpg",
    "key": "monica martinez",
    "name": "Monica Martinez",
+   "party": "Democratic/Working Families",
    "phone": "631-341-7111",
    "url": "https://www.nysenate.gov/senators/monica-r-martinez"
   },
   "S:40": {
    "email": "harckham@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2026/04/01/sen-pete-harckham-landing-page-image.jpg",
    "key": "pete harckham",
    "name": "Pete Harckham",
+   "party": "Democratic/Working Families",
    "phone": "914-241-4600",
    "url": "https://www.nysenate.gov/senators/pete-harckham"
   },
   "S:41": {
    "email": "hinchey@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/2024/10/08/hinchey-headshot-copy-3.jpg",
    "key": "michelle hinchey",
    "name": "Michelle Hinchey",
+   "party": "Democratic/Working Families",
    "phone": "845-331-3810",
    "url": "https://www.nysenate.gov/senators/michelle-hinchey"
   },
   "S:42": {
    "email": "skoufis@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/skoufis_gov_microsite_header_2022_0.jpeg",
    "key": "james skoufis",
    "name": "James Skoufis",
+   "party": "Democratic",
    "phone": "845-567-1270",
    "url": "https://www.nysenate.gov/senators/james-skoufis"
   },
   "S:43": {
    "email": "ashby@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/ashby_lphs.jpg",
    "key": "jake ashby",
    "name": "Jake Ashby",
+   "party": "Republican/Conservative",
    "phone": "518-371-2751",
    "url": "https://www.nysenate.gov/senators/jacob-ashby"
   },
   "S:44": {
    "email": "tedisco@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/veterans11.jpg",
    "key": "jim tedisco",
    "name": "Jim Tedisco",
+   "party": "Republican/Conservative",
    "phone": "518-885-1829",
    "url": "https://www.nysenate.gov/senators/james-tedisco"
   },
   "S:45": {
    "email": "stec@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/stec21.jpg",
    "key": "dan stec",
    "name": "Dan Stec",
+   "party": "Republican/Conservative/Independence",
    "phone": "315-229-3195",
    "url": "https://www.nysenate.gov/senators/daniel-g-stec"
   },
   "S:46": {
    "email": "fahy@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/2025/01/23/01-17-25-fahy-hs-021r_final-1.jpg",
    "key": "pat fahy",
    "name": "Pat Fahy",
+   "party": "Democratic",
    "phone": "518-842-2159",
    "url": "https://www.nysenate.gov/senators/patricia-fahy"
   },
   "S:47": {
    "email": "bottcher@nysenate.gov",
+   "image": "https://run.imgix.net/b5819a9c-e1d0-4b20-bdf9-c7cb2ad13f53/051f0dfd-9744-4ba7-b291-937b4da47d3e/051f0dfd-9744-4ba7-b291-937b4da47d3e.jpeg",
    "key": "erik bottcher",
    "name": "Erik Bottcher",
+   "party": "Democratic",
    "phone": "212-633-8052",
    "url": "https://www.nysenate.gov/senators/erik-bottcher"
   },
   "S:48": {
    "email": "may@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/may-2019portrait.jpg",
    "key": "rachel may",
    "name": "Rachel May",
+   "party": "Democratic/Working Families",
    "phone": "315-478-8745",
    "url": "https://www.nysenate.gov/senators/rachel-may"
   },
   "S:49": {
    "email": "walczyk@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/2025/07/08/05-05-25-walczyk-hs-014.jpg",
    "key": "mark walczyk",
    "name": "Mark Walczyk",
+   "party": "Republican/Conservative",
    "phone": "518-762-3733",
    "url": "https://www.nysenate.gov/senators/mark-walczyk"
   },
   "S:5": {
    "email": "rhoads@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/rhoads_website_photo_1.png",
    "key": "steve rhoads",
    "name": "Steve Rhoads",
+   "party": "Republican/Conservative",
    "phone": "516-882-0630",
    "url": "https://www.nysenate.gov/senators/steven-d-rhoads"
   },
   "S:50": {
    "email": "chrisryan@nysenate.gov",
+   "image": "https://images.squarespace-cdn.com/content/v1/66bb81005c9c9e5a6b4e499f/e85a6952-dc93-4557-a1b4-bd4e8471565b/chris+stand+serious.jpg?format=2500w",
    "key": "chris ryan",
    "name": "Chris Ryan",
+   "party": "Democratic",
    "phone": "315-428-7632",
    "url": "https://www.nysenate.gov/senators/christopher-j-ryan"
   },
   "S:51": {
    "email": "oberacker@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/sen_oberacker_hs_square.jpeg",
    "key": "peter oberacker",
    "name": "Peter Oberacker",
+   "party": "Republican/Conservative",
    "phone": "607-432-5524",
    "url": "https://www.nysenate.gov/senators/peter-oberacker"
   },
   "S:52": {
    "email": "leawebb@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/senwebbhslp_0.jpg",
    "key": "lea webb",
    "name": "Lea Webb",
+   "party": "Democratic/Working Families",
    "phone": "607-878-7025",
    "url": "https://www.nysenate.gov/senators/lea-webb"
   },
   "S:53": {
    "email": "griffo@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/griffo_w_rocco_1_6.25.15.jpg",
    "key": "joe griffo",
    "name": "Joe Griffo",
+   "party": "Republican/Conservative",
    "phone": "315-793-9072",
    "url": "https://www.nysenate.gov/senators/joseph-griffo"
   },
   "S:54": {
    "email": "helming@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2026/03/05/03-05-26-500-39-083.jpg",
    "key": "pam helming",
    "name": "Pam Helming",
+   "party": "Republican/Conservative",
    "phone": null,
    "url": "https://www.nysenate.gov/senators/pamela-helming"
   },
   "S:55": {
    "email": "brouk@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/sd-55-sb-member-header-img-680.jpg",
    "key": "samra brouk",
    "name": "Samra Brouk",
+   "party": "Democratic/Working Families",
    "phone": "585-223-1800",
    "url": "https://www.nysenate.gov/senators/samra-g-brouk"
   },
   "S:56": {
    "email": "cooney@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/2025/03/03/01-27-25-hs-4582_3.jpg",
    "key": "jeremy cooney",
    "name": "Jeremy Cooney",
+   "party": "Democratic/Working Families",
    "phone": "585-225-3650",
    "url": "https://www.nysenate.gov/senators/jeremy-cooney"
   },
   "S:57": {
    "email": "borrello@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/03-02-20500-48-017_0.jpg",
    "key": "george borrello",
    "name": "George Borrello",
+   "party": "Republican/Conservative",
    "phone": "716-372-4901",
    "url": "https://www.nysenate.gov/senators/george-m-borrello"
   },
   "S:58": {
    "email": "omara@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/2026/04/23/omara-headshot-2026.jpg",
    "key": "tom omara",
    "name": "Tom O'Mara",
+   "party": "Republican/Conservative",
    "phone": "315-393-3024",
    "url": "https://www.nysenate.gov/senators/thomas-f-omara"
   },
   "S:59": {
    "email": "gonzalez@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/gonzalez_hs-2_0.jpg",
    "key": "kristen gonzalez",
    "name": "Kristen Gonzalez",
+   "party": "Democratic/Working Families",
    "phone": "718-765-6674",
    "url": "https://www.nysenate.gov/senators/kristen-gonzalez"
   },
   "S:6": {
    "email": "bynoe@nysenate.gov",
+   "image": "https://www.nassaucountyny.gov/ImageRepository/Document?documentID=9396",
    "key": "siela bynoe",
    "name": "Siela Bynoe",
+   "party": "Democratic",
    "phone": "516-739-1700",
    "url": "https://www.nysenate.gov/senators/siela-bynoe"
   },
   "S:60": {
    "email": "gallivan@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/1366x1020-Gallivan%20.jpg",
    "key": "patrick gallivan",
    "name": "Patrick Gallivan",
+   "party": "Republican/Conservative",
    "phone": "716-656-8544",
    "url": "https://www.nysenate.gov/senators/patrick-m-gallivan"
   },
   "S:61": {
    "email": "zellner@nysenate.gov",
+   "image": "https://ecdems.com/wp-content/uploads/2011/02/Jeremy-J-Zellner-headshot-2-200x300.jpg",
    "key": "jeremy zellner",
    "name": "Jeremy Zellner",
+   "party": "Democratic",
    "phone": "716-854-8705",
    "url": "https://www.nysenate.gov/senators/jeremy-j-zellner"
   },
   "S:62": {
    "email": "ortt@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/62-2019-bio.jpg",
    "key": "rob ortt",
    "name": "Rob Ortt",
+   "party": "Republican/Conservative/Independence",
    "phone": "716-434-0680",
    "url": "https://www.nysenate.gov/senators/robert-g-ortt"
   },
   "S:63": {
    "email": "baskin@nysenate.gov",
+   "image": null,
    "key": "april baskin",
    "name": "April Baskin",
+   "party": "Democratic",
    "phone": "716-826-2683",
    "url": "https://www.nysenate.gov/senators/april-baskin"
   },
   "S:7": {
    "email": "martins@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/jack_martins_hs_2023.jpg",
    "key": "jack martins",
    "name": "Jack Martins",
+   "party": "Republican/Conservative",
    "phone": "516-922-1811",
    "url": "https://www.nysenate.gov/senators/jack-m-martins"
   },
   "S:8": {
    "email": "weik@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/senator_hero/public/alexis_weik2.jpg",
    "key": "alexis weik",
    "name": "Alexis Weik",
+   "party": "Republican/Conservative",
    "phone": "631-665-2311",
    "url": "https://www.nysenate.gov/senators/alexis-weik"
   },
   "S:9": {
    "email": "canzoneri@nysenate.gov",
+   "image": "https://www.nysenate.gov/sites/default/files/styles/4_3_medium/public/canzoneri-fitzpatrick.jpg",
    "key": "patricia canzoneri-fitzpatrick",
    "name": "Patricia Canzoneri-Fitzpatrick",
+   "party": "Republican/Conservative",
    "phone": "516-766-8383",
    "url": "https://www.nysenate.gov/senators/patricia-canzoneri-fitzpatrick"
   }
@@ -4546,5 +4970,219 @@
    "name": "Women's Issues"
   }
  },
- "session": 2025
+ "session": 2025,
+ "since": {
+  "A:1": 2025,
+  "A:10": 2017,
+  "A:100": 2025,
+  "A:101": 2023,
+  "A:102": 2017,
+  "A:103": 2023,
+  "A:104": 2019,
+  "A:105": 2023,
+  "A:106": 2011,
+  "A:107": 2023,
+  "A:108": 2013,
+  "A:109": 2025,
+  "A:11": 2025,
+  "A:110": 2013,
+  "A:111": 2013,
+  "A:112": 2017,
+  "A:113": 2015,
+  "A:114": 2021,
+  "A:115": 2025,
+  "A:116": 2023,
+  "A:117": 2011,
+  "A:118": 2019,
+  "A:119": 2019,
+  "A:12": 2019,
+  "A:120": 2009,
+  "A:121": 2021,
+  "A:122": 2017,
+  "A:123": 2009,
+  "A:124": 2011,
+  "A:125": 2021,
+  "A:126": 2021,
+  "A:127": 2009,
+  "A:128": 2015,
+  "A:129": 2009,
+  "A:13": 2009,
+  "A:130": 2019,
+  "A:131": 2021,
+  "A:132": 2011,
+  "A:133": 2025,
+  "A:134": 2021,
+  "A:135": 2021,
+  "A:136": 2019,
+  "A:137": 2019,
+  "A:138": 2011,
+  "A:139": 2009,
+  "A:14": 2009,
+  "A:140": 2021,
+  "A:141": 2009,
+  "A:142": 2019,
+  "A:143": 2025,
+  "A:144": 2025,
+  "A:145": 2017,
+  "A:146": 2019,
+  "A:147": 2013,
+  "A:148": 2025,
+  "A:149": 2021,
+  "A:15": 2021,
+  "A:150": 2025,
+  "A:16": 2025,
+  "A:17": 2017,
+  "A:18": 2025,
+  "A:19": 2011,
+  "A:2": 2021,
+  "A:20": 2021,
+  "A:21": 2019,
+  "A:22": 2013,
+  "A:23": 2017,
+  "A:24": 2009,
+  "A:25": 2013,
+  "A:26": 2011,
+  "A:27": 2023,
+  "A:28": 2009,
+  "A:29": 2015,
+  "A:3": 2019,
+  "A:30": 2023,
+  "A:31": 2019,
+  "A:32": 2009,
+  "A:33": 2017,
+  "A:34": 2021,
+  "A:35": 2025,
+  "A:36": 2025,
+  "A:37": 2025,
+  "A:38": 2021,
+  "A:39": 2019,
+  "A:4": 2025,
+  "A:40": 2013,
+  "A:41": 2025,
+  "A:42": 2015,
+  "A:43": 2021,
+  "A:44": 2017,
+  "A:45": 2023,
+  "A:46": 2009,
+  "A:47": 2009,
+  "A:48": 2019,
+  "A:49": 2023,
+  "A:5": 2017,
+  "A:50": 2021,
+  "A:51": 2021,
+  "A:52": 2015,
+  "A:53": 2013,
+  "A:54": 2015,
+  "A:55": 2015,
+  "A:56": 2021,
+  "A:57": 2021,
+  "A:58": 2021,
+  "A:59": 2015,
+  "A:6": 2009,
+  "A:60": 2021,
+  "A:61": 2019,
+  "A:62": 2019,
+  "A:63": 2023,
+  "A:64": 2021,
+  "A:65": 2023,
+  "A:66": 2009,
+  "A:67": 2009,
+  "A:68": 2021,
+  "A:69": 2025,
+  "A:7": 2021,
+  "A:70": 2025,
+  "A:71": 2017,
+  "A:72": 2021,
+  "A:73": 2023,
+  "A:74": 2025,
+  "A:75": 2023,
+  "A:76": 2015,
+  "A:77": 2023,
+  "A:78": 2023,
+  "A:79": 2021,
+  "A:8": 2009,
+  "A:80": 2023,
+  "A:81": 2009,
+  "A:82": 2009,
+  "A:83": 2009,
+  "A:84": 2021,
+  "A:85": 2023,
+  "A:86": 2021,
+  "A:87": 2019,
+  "A:88": 2009,
+  "A:89": 2009,
+  "A:9": 2021,
+  "A:90": 2019,
+  "A:91": 2013,
+  "A:92": 2023,
+  "A:93": 2021,
+  "A:94": 2023,
+  "A:95": 2023,
+  "A:96": 2023,
+  "A:97": 2025,
+  "A:98": 2015,
+  "A:99": 2023,
+  "S:1": 2021,
+  "S:10": 2013,
+  "S:11": 2009,
+  "S:13": 2019,
+  "S:14": 2015,
+  "S:15": 2009,
+  "S:16": 2019,
+  "S:17": 2025,
+  "S:18": 2019,
+  "S:19": 2015,
+  "S:2": 2021,
+  "S:20": 2019,
+  "S:21": 2009,
+  "S:22": 2025,
+  "S:23": 2023,
+  "S:24": 2009,
+  "S:25": 2021,
+  "S:26": 2019,
+  "S:27": 2017,
+  "S:28": 2009,
+  "S:29": 2009,
+  "S:3": 2023,
+  "S:30": 2021,
+  "S:31": 2019,
+  "S:32": 2017,
+  "S:33": 2011,
+  "S:34": 2023,
+  "S:35": 2009,
+  "S:36": 2017,
+  "S:37": 2017,
+  "S:38": 2023,
+  "S:39": 2023,
+  "S:4": 2019,
+  "S:40": 2019,
+  "S:41": 2021,
+  "S:42": 2019,
+  "S:43": 2023,
+  "S:44": 2017,
+  "S:45": 2021,
+  "S:46": 2025,
+  "S:47": 2025,
+  "S:48": 2019,
+  "S:49": 2023,
+  "S:5": 2023,
+  "S:50": 2025,
+  "S:51": 2021,
+  "S:52": 2023,
+  "S:53": 2009,
+  "S:54": 2017,
+  "S:55": 2021,
+  "S:56": 2021,
+  "S:57": 2019,
+  "S:58": 2011,
+  "S:59": 2023,
+  "S:6": 2025,
+  "S:60": 2011,
+  "S:61": 2025,
+  "S:62": 2015,
+  "S:63": 2025,
+  "S:7": 2011,
+  "S:8": 2021,
+  "S:9": 2023
+ }
 }

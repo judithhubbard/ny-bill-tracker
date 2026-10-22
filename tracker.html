@@ -229,9 +229,12 @@ table.oc th { vertical-align: bottom; }
 .side .topic { font-size: 12.5px; padding: 4px 9px; }
 .side .toggles { display: grid; gap: 6px; }
 .side label.inline { display: inline-flex; gap: 6px; align-items: center; font: 400 13px var(--body); letter-spacing: 0; text-transform: none; color: var(--ink-2); margin-top: 4px; }
-.person { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 10px 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
-.person h2 { margin: 0; font: 700 20px var(--display); font-stretch: 85%; }
-.person span { font-size: 13.5px; color: var(--ink-2); }
+.person { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; padding: 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.person .photo { width: 96px; height: 120px; object-fit: cover; border-radius: 4px; background: var(--chip); }
+.person .who-body { display: grid; gap: 3px; min-width: 0; grid-column: -2; }
+.person h2 { margin: 0 0 2px; font: 700 22px var(--display); font-stretch: 85%; }
+.person p { margin: 0; font-size: 13.5px; color: var(--ink-2); max-width: 90ch; }
+.person p b { color: var(--ink); font-weight: 600; }
 .person .phone { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 .results { min-width: 0; display: grid; gap: 10px; align-content: start; }
 .sortby { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
@@ -1238,9 +1241,25 @@ function setupLegislators(raw) {
 
 function renderPerson(L) {
   if (!L) return;
+  const house = L.house === "S" ? "Senate" : "Assembly";
+  const since = L.since ? (L.since <= 2009 ? `In the ${house} since 2009 or earlier` : `In the ${house} since ${L.since}`) : "";
+  const mine = BILLS.filter((b) => sponsoredBy(b, L, false));
+  const signed = mine.filter((b) => b.stage === 5).length;
+  const chairs = (L.committees || []).filter((c) => c.chair).map((c) => c.name);
+  const member = (L.committees || []).filter((c) => !c.chair).map((c) => c.name);
   const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, L.phone && `<span class="phone">${esc(L.phone)}</span>`,
     L.url && `<a href="${esc(L.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
-  $("person").innerHTML = `<h2>${esc(L.label)}</h2><span>${L.house === "S" ? "Senate" : "Assembly"} District ${L.district}</span><span>${reach}</span><span><a href="${esc(BASE || "./")}">All legislators' bills</a></span>`;
+  $("person").innerHTML = `
+    ${L.image ? `<img class="photo" src="${esc(L.image)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
+    <div class="who-body">
+      <h2>${esc(L.label)}</h2>
+      <p>${[L.party, `${house} District ${L.district}`, since].filter(Boolean).map(esc).join(" · ")}</p>
+      ${chairs.length ? `<p><b>Chairs:</b> ${chairs.map(esc).join(", ")}</p>` : ""}
+      ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
+      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.</p>
+      <p>${reach}</p>
+      <p><a href="${esc(BASE || "./")}">All bills</a></p>
+    </div>`;
   $("person").hidden = false;
 }
 

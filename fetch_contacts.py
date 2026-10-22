@@ -165,9 +165,25 @@ def people():
             "email": r["email"] or None,
             "phone": r["district_voice"] or r["capitol_voice"] or None,
             "url": links[0] if links else None,
+            "party": r["current_party"] or None,
+            "image": r["image"] or None,
         }
     if len(out) < 200:
         raise RuntimeError(f"only {len(out)} legislators found")
+    return out
+
+
+def service():
+    """First session year each sitting member served in their current house: {"A:125": 2021}.
+    The API's records start in 2009."""
+    out = {}
+    for chamber, house in (("senate", "S"), ("assembly", "A")):
+        q = urllib.parse.urlencode({"key": KEY, "full": "true", "limit": 300})
+        d = get(f"https://legislation.nysenate.gov/api/3/members/{SESSION}/{chamber}?{q}", as_json=True)
+        for m in d["result"]["items"]:
+            years = (m.get("service") or {}).get("sessionYearsServed") or []
+            if m.get("districtCode") and years and m.get("incumbent"):
+                out[f"{house}:{m['districtCode']}"] = min(years)
     return out
 
 
@@ -188,6 +204,11 @@ def main():
     except Exception as e:
         print(f"Open States: {e}; keeping previous", file=sys.stderr)
         out["people"] = old.get("people", {})
+    try:
+        out["since"] = service()
+    except Exception as e:
+        print(f"Service years: {e}; keeping previous", file=sys.stderr)
+        out["since"] = old.get("since", {})
     try:
         out["assemblyCommittees"], out["assemblyMembers"] = assembly()
     except Exception as e:
