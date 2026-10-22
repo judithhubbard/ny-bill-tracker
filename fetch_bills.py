@@ -73,6 +73,10 @@ def slim(b):
 def main():
     first = get(1)
     total = first["total"]
+    if total == 0:
+        # A new session before its first bills are filed: keep the previous session as current.
+        print(f"No bills yet in the {SESSION} session; nothing written.", file=sys.stderr)
+        return
     out = [slim(b) for b in first["result"]["items"]]
     print(f"{total} bills in {SESSION} session", file=sys.stderr)
     offset = 1 + PAGE

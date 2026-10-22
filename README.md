@@ -12,14 +12,18 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `build_data.py --github _site` builds one page per session with the data embedded:
   `index.html` for the current session and `YEAR.html` for past ones.
 - `tracker.html` is the page template; topic rules and the sponsor checkboxes are at the top of `build_data.py`.
-- `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages.
+- `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages. The note at
+  the top of the page (end of votes, governor's remaining bills, session over) is worked out
+  in the browser from the data and the date, so it changes on its own.
   The API key is the repository secret `NYSENATE_API_KEY`.
 
 Past sessions don't change, so they're stored compressed in `data/` and not re-downloaded.
 
 ## When a new session starts (January of odd years)
 
-1. Download the finished session one last time and store it:
-   `python3 fetch_bills.py 2025 && gzip -9 -k -f data/bills_2025.json`, then commit `data/bills_2025.json.gz`.
-2. In `.github/workflows/update.yml`, set `CURRENT_SESSION` to the new year (e.g. `"2027"`).
-3. In `build_data.py`, add the new session to `DELEGATION` so the Webb and Kelles checkboxes appear.
+Nothing has to be done by hand. The workflow works out the session from the date. The first
+time it runs in a new session, it downloads the session that just ended one last time and
+commits it as `data/bills_YEAR.json.gz`. Until the new session has bills, the old one stays
+the current page. The Webb and Kelles checkboxes carry forward for Senate District 52 and
+Assembly District 125, and drop out on their own if someone else holds either seat
+(`DELEGATION` in `build_data.py`).

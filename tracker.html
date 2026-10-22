@@ -950,6 +950,26 @@ function decode(raw) {
   return raw;
 }
 
+// A one-paragraph note on where the session stands, worked out from the data and today's date,
+// so it stays accurate as the year goes on. Returns "" while the Legislature is actively voting.
+function sessionNotice(raw) {
+  if (!raw.current) return "";
+  const today = isoToday(), y1 = raw.session, y2 = raw.session + 1;
+  const lv = raw.lastVote || "";
+  const quiet = lv ? (new Date(today) - new Date(lv)) / 864e5 > 21 : false;
+  const waiting = BILLS.filter((b) => b.stage === 3).length, desk = BILLS.filter((b) => b.stage === 4).length;
+  const governor = waiting + desk
+    ? `The governor still has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} to act on: ${num(desk)} on her desk and ${num(waiting)} not yet sent to her.`
+    : "The governor has acted on every bill that passed both houses.";
+  if (today > `${y2}-12-31`)
+    return `The ${span(y1)} session ended on December 31, ${y2}. Bills that hadn't passed both houses died and have to be reintroduced in the new session. ${governor}`;
+  if (quiet && lv.startsWith(String(y2)))
+    return `The Legislature held its last floor votes of this session on ${fmtDate(lv)}. Bills that hadn't passed both houses by then can move only if lawmakers return for a special session, and they die on December 31, ${y2}. ${governor}`;
+  if (quiet && lv.startsWith(String(y1)) && today.startsWith(String(y1)))
+    return `The Legislature finished its ${y1} floor votes on ${fmtDate(lv)}. Bills that haven't passed both houses carry over to January ${y2}, when the second year of the session begins; bills that passed only one house will be sent back to committee and have to pass again. ${waiting + desk ? governor : ""}`.trim();
+  return "";
+}
+
 function hydrate(raw) {
   DATA = raw; TOPICS = raw.topics;
   LATEST = Math.max(...raw.sessions.map((s) => s.session));
@@ -973,14 +993,9 @@ function hydrate(raw) {
   document.title = raw.current ? "Albany Bill Tracker" : `Albany Bill Tracker ${span(raw.session)}`;
   $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
-  // After the last floor votes of the second year, only the governor's actions are still moving.
-  const lv = raw.lastVote || "";
-  const quietDays = lv ? (new Date(isoToday()) - new Date(lv)) / 864e5 : 0;
-  if (raw.current && lv.startsWith(String(raw.session + 1)) && quietDays > 21) {
-    const pending = BILLS.filter((b) => b.stage === 3 || b.stage === 4).length;
-    $("notice").textContent = `The Legislature held its last floor votes of this session on ${fmtDate(lv)}. Bills that hadn't passed both houses by then can move only if lawmakers return for a special session, and they all die on December 31, ${raw.session + 1}. What's still moving is the governor's work on the ${num(pending)} bills that passed both houses and haven't been signed or vetoed.`;
-    $("notice").hidden = false;
-  }
+  const notice = sessionNotice(raw);
+  $("notice").textContent = notice;
+  $("notice").hidden = !notice;
   if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option>`);
   $("sessions").innerHTML = raw.sessions.map(({ session, url }) => {
     const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;

@@ -41,12 +41,17 @@ def read_session(session):
         return json.load(f)
 
 # Sponsor checkboxes: only Sen. Webb (SD 52, from 2023) and Asm. Kelles (AD 125, from 2021).
-# Sessions with neither get no checkboxes.
+# Later sessions use the same districts, but a checkbox appears only while Webb or Kelles
+# holds the seat. Sessions with neither get no checkboxes.
 DELEGATION = {
     2021: {"ASSEMBLY": {125}},
-    2023: {"SENATE": {52}, "ASSEMBLY": {125}},
-    2025: {"SENATE": {52}, "ASSEMBLY": {125}},
 }
+DEFAULT_DELEGATION = {"SENATE": {52}, "ASSEMBLY": {125}}  # 2023 onward
+DELEGATION_NAMES = {"Webb", "Kelles"}
+
+
+def delegation(session):
+    return DELEGATION.get(session, DEFAULT_DELEGATION if session >= 2023 else {})
 
 # Topic: (label, committees, laws amended, title/summary words).
 # Committee and law names are matched exactly as the API spells them.
@@ -163,7 +168,7 @@ def load_session(session):
     """Read one session's bills and return (records, printNo -> record index, fetched time)."""
     raw = read_session(session)
     bills = {b["printNo"]: b for b in raw["bills"] if not b["resolution"]}
-    deleg = DELEGATION.get(session, {})
+    deleg = delegation(session)
 
     # The API names some laws two ways ("Cannabis" and "Cannabis Law"); use the full name.
     law_names = {b["lawSection"] for b in bills.values() if b["lawSection"]}
@@ -307,7 +312,14 @@ def load_session(session):
         if b["district"] in deleg.get(b["chamber"], ()) and b["sponsorShort"]:
             names[b["chamber"]].add(b["sponsor"].split()[-1] if not b["sponsor"].split()[-1].rstrip(".").isupper()
                                     else b["sponsor"].split()[-2])
-    return recs, index, raw["fetched"], {k: sorted(v) for k, v in names.items()}
+    names = {k: sorted(v & DELEGATION_NAMES) for k, v in names.items()}
+    # If someone else holds the seat, drop that checkbox's matches as well.
+    for r in recs:
+        if not names["SENATE"]:
+            r["senDeleg"] = False
+        if not names["ASSEMBLY"]:
+            r["asmDeleg"] = False
+    return recs, index, raw["fetched"], names
 
 
 def github_page(html):
