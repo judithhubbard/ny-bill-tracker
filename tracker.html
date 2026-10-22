@@ -282,6 +282,26 @@ table.oc th { vertical-align: bottom; }
 .stance.support { color: var(--signed); border-color: var(--signed); }
 .stance.oppose { color: var(--veto); border-color: var(--veto); }
 .watchview { display: grid; gap: 20px; }
+.wcards { display: grid; gap: 12px; }
+.wcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
+.wcard .wtop { display: flex; justify-content: space-between; gap: 12px; align-items: start; flex-wrap: wrap; }
+.wcard .nums { display: flex; gap: 10px; align-items: center; font: 700 13px var(--mono); }
+.wcard .nums .watchbtn, .wcard .nums .stance { margin: 0; padding-top: 0; }
+.wcard .wstatus { min-width: 0; text-align: right; }
+.wcard h3 { margin: 0; font: 700 17px/1.3 var(--body); }
+.wcard .sum { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 85ch; }
+.wcard .do { border-left: 3px solid var(--gold); padding: 4px 0 4px 12px; display: grid; gap: 3px; }
+.wcard .do p { margin: 0; font-size: 14px; }
+.wcard .do .star { color: var(--gold); }
+.wcard .do .reach { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.wcard .do .also { font-size: 13px; color: var(--ink-2); }
+.wcard .phone { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+.act-btn.small { padding: 3px 9px; font-size: 12px; }
+.wcard details.morebill { border: 0; }
+.wcard details.morebill > summary { display: block; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; font-size: 13px; color: var(--navy); font-weight: 600; }
+.wcard details.morebill > summary:hover { background: none; text-decoration: underline; }
+.wcard details.morebill .detail { padding: 10px 0 0; }
+.multi { margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 .watchview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .watchview .list { border-top: 1px solid var(--rule); }
 .todo { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
@@ -1212,72 +1232,94 @@ function shareLink() {
 }
 const sharedStance = (b) => { for (const n of b.nums) if (SHARED.has(baseNum(n))) return SHARED.get(baseNum(n)); return null; };
 
-// The Watchlist tab: what to do (grouped by person), then the bills.
+// The Watchlist tab: one card per bill with what it does, where it stands, and the one
+// action that matters most now.
+function keyAction(b, stance) {
+  const plan = planFor(b, stance);
+  if (!plan || !plan.actionable) return { plan, key: null, reps: [] };
+  const people = DATA.contacts?.people || {};
+  const infoFor = (name) => people[name] || Object.entries(people).find(([n]) => lastName(n) === lastName(name))?.[1] || {};
+  let key = null;
+  if (plan.gov) key = { gov: true, name: "Governor's office", ask: plan.gov };
+  else {
+    const p = plan.book.entries().find((e) => e.star && e.asks.length);
+    if (p) key = { gov: false, name: p.name, house: p.house, ask: p.asks.join("; "), info: infoFor(p.name) };
+  }
+  // Our own legislators, when they have something to do on this bill.
+  const reps = plan.book.entries().filter((e) => e.asks.length && e.roles.some((r) => r.startsWith("your ")) && (!key || lastName(e.name) !== lastName(key.name || "")))
+    .map((e) => {
+      const L = LEGS.find((x) => x.house === e.house && lastName(x.name) === lastName(e.name));
+      return { name: L ? L.name : e.name, house: e.house, ask: e.asks.join("; "), info: infoFor(e.name) };
+    });
+  return { plan, key, reps };
+}
+
+const titleOf = (p) => (p.gov ? "Governor's office" : `${p.house === "S" ? "Sen." : "Asm."} ${p.name}`);
+function reachOf(p) {
+  if (p.gov) return `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`;
+  const i = p.info || {};
+  return [i.email && `<span class="phone">${esc(i.email)}</span>`, i.phone && `<span class="phone">${esc(i.phone)}</span>`,
+    i.url && `<a href="${esc(i.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
+}
+
 function renderWatchView() {
   const tabCount = WATCH_COUNT();
   $("watchTabCount").textContent = tabCount ? ` (${tabCount})` : "";
   if ($("view-watch").hidden) return;
   const list = SHARED ? BILLS.filter((b) => sharedStance(b)) : BILLS.filter(isWatched);
   const stanceOf = (b) => (SHARED ? sharedStance(b) : watchStance(b)) || "support";
+  const back = PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : "";
   const card = $("wl");
   if (SHARED) {
-    card.innerHTML = `<h2>Shared watchlist</h2><p>${num(list.length)} bill${list.length === 1 ? "" : "s"} someone shared with you.</p>
-      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button>${PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : ""}</p>`;
+    card.innerHTML = `<h2>Shared watchlist</h2><p>${num(list.length)} bill${list.length === 1 ? "" : "s"} someone shared with you.${back}</p>
+      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
-    const back = PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : "";
     card.innerHTML = `<h2>My watchlist</h2>
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."} Saved in this browser only.${back}</p>
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>` : ""}`;
   }
 
-  // Group every ask by the person to contact, so one message covers all their bills.
-  const groups = new Map();
-  let idle = 0;
-  const people = DATA.contacts?.people || {};
-  for (const b of list) {
-    const plan = planFor(b, stanceOf(b));
-    if (!plan || !plan.actionable) { idle++; continue; }
-    if (plan.gov) {
-      if (!groups.has("gov")) groups.set("gov", { key: "gov", name: "Governor's office", star: true, items: [] });
-      groups.get("gov").items.push({ b, due: plan.due, ask: plan.gov, star: true });
-    }
-    for (const p of plan.book.entries()) {
-      if (!p.asks.length) continue;
-      const key = `${p.house}:${lastName(p.name)}`;
-      if (!groups.has(key)) groups.set(key, { key, name: p.name, house: p.house, star: false, items: [],
-        info: people[p.name] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {} });
-      const g = groups.get(key);
-      if (p.star) g.star = true;
-      g.items.push({ b, due: plan.due, ask: p.asks.join("; "), star: p.star });
-    }
-  }
-  const soonest = (g) => g.items.map((i) => i.due || "9999").sort()[0];
-  const ordered = [...groups.values()].sort((a, b) => (b.key === "gov") - (a.key === "gov") || b.star - a.star
-    || soonest(a).localeCompare(soonest(b)) || b.items.length - a.items.length);
-  $("wlActions").innerHTML = !list.length ? "" : `<h2>What to do</h2>
-    ${ordered.length ? `<div class="todo">${ordered.map((g, gi) => {
-      const title = g.key === "gov" ? "Governor's office" : `${g.house === "S" ? "Sen." : "Asm."} ${esc(g.name)}`;
-      const reach = g.key === "gov"
-        ? `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`
-        : [g.info.url && `<a href="${esc(g.info.url)}" target="_blank" rel="noopener">Official page</a>`, g.info.email && `<span class="phone">${esc(g.info.email)}</span>`,
-           g.info.phone && `<span class="phone">${esc(g.info.phone)}</span>`].filter(Boolean).join(" · ");
-      const items = g.items.sort((x, y) => (x.due || "9999").localeCompare(y.due || "9999")).map((i) =>
-        `<li><span class="bn">${esc(i.b.nums.join(" / "))}</span> ${esc(i.b.title)}<br><span class="ask">${i.star ? "★ " : ""}Ask: ${esc(i.ask)}</span> <span class="sidetag ${stanceOf(i.b)}">${stanceOf(i.b) === "oppose" ? "you oppose" : "you support"}</span></li>`).join("");
-      return `<div class="todo-g${g.star ? " key" : ""}"><h3>${g.star ? `<span class="star">★</span> ` : ""}${title}</h3><p class="reach">${reach}</p><ul>${items}</ul>
-        <button class="act-btn" type="button" data-draft="${gi}">Copy email draft</button></div>`;
-    }).join("")}</div>` : `<p>Nothing to do right now.</p>`}
-    ${idle ? `<p class="muted">${num(idle)} of these bills can't move right now (out of session, or already decided).</p>` : ""}`;
-  $("wlActions")._groups = ordered;
-  const sorted = list.slice().sort((a, b) => hasNews(b) - hasNews(a) || rankOf(b.stage) - rankOf(a.stage));
-  $("wlList").innerHTML = list.length ? `<h2>${SHARED ? "Bills" : "Your bills"}</h2><div class="list">${sorted.map(billRow).join("")}</div>` : "";
+  const items = list.map((b) => ({ b, stance: stanceOf(b), ...keyAction(b, stanceOf(b)) }));
+  const active = items.filter((x) => x.key).sort((x, y) => (x.plan.due || "9999").localeCompare(y.plan.due || "9999") || rankOf(y.b.stage) - rankOf(x.b.stage));
+  const idle = items.filter((x) => !x.key);
+  $("wlActions")._items = active;
+
+  // One email to the governor (or anyone) covering several bills.
+  const byPerson = new Map();
+  for (const x of active) { const k = x.key.gov ? "gov" : `${x.key.house}:${lastName(x.key.name)}`; (byPerson.get(k) || byPerson.set(k, []).get(k)).push(x); }
+  const multi = [...byPerson.entries()].filter(([, xs]) => xs.length > 1);
+  $("wlActions").innerHTML = multi.map(([k, xs]) =>
+    `<p class="multi">${num(xs.length)} of your bills need ${xs[0].key.gov ? "the governor's office" : esc(titleOf(xs[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(xs.length)}</button></p>`).join("");
+  $("wlActions")._multi = Object.fromEntries(multi);
+
+  const cardFor = (x) => {
+    const { b } = x;
+    const summary = b.summary && b.summary !== b.title ? `<p class="sum">${esc(b.summary.length > 260 ? b.summary.slice(0, 257) + "…" : b.summary)}</p>` : "";
+    const action = x.key ? `
+      <div class="do">
+        <p class="who"><span class="star">★</span> <b>${esc(titleOf(x.key))}</b>: ${esc(x.key.ask)}</p>
+        <p class="reach">${reachOf(x.key)} <button class="act-btn small" type="button" data-email="${b.idx}">Copy email</button></p>
+        ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
+      </div>` : "";
+    return `<article class="wcard" data-idx="${b.idx}">
+      <div class="wtop"><div class="nums">${esc(b.nums.join(" / "))}${watchButton(b)}</div><div class="wstatus">${statusText(b)}</div></div>
+      <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
+      ${summary}
+      ${action}
+      <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
+    </article>`;
+  };
+  $("wlList").innerHTML = !list.length ? "" : `
+    ${active.length ? `<h2>Needs action</h2><div class="wcards">${active.map(cardFor).join("")}</div>` : ""}
+    ${idle.length ? `<h2>Can't move right now</h2><p class="muted">Out of session, or already decided.</p><div class="wcards">${idle.map(cardFor).join("")}</div>` : ""}`;
 }
 
-// A short, plain email for one person, listing each bill and the ask.
-function draftFor(g) {
-  const greet = g.key === "gov" ? "Dear Governor," : `Dear ${g.house === "S" ? "Senator" : "Assemblymember"} ${g.name.split(" ").pop()},`;
-  const lines = g.items.map((i) => `- ${i.b.nums.join(" / ")}, ${i.b.title}: please ${i.ask}.`).join("\n");
-  return `${greet}\n\nI'm writing about ${g.items.length === 1 ? "this bill" : "these bills"}:\n\n${lines}\n\nThank you,\n[Your name]\n[Your address]`;
+// A short, plain email: one person, one or more bills.
+function draftFor(person, xs) {
+  const greet = person.gov ? "Dear Governor," : `Dear ${person.house === "S" ? "Senator" : "Assemblymember"} ${person.name.split(" ").pop()},`;
+  const lines = xs.map((x) => `- ${x.b.nums.join(" / ")}, ${x.b.title}: please ${x.ask}.`).join("\n");
+  return `${greet}\n\nI'm writing about ${xs.length === 1 ? "this bill" : "these bills"}:\n\n${lines}\n\nThank you,\n[Your name]\n[Your address]`;
 }
 
 function refreshWatchButtons(b) {
@@ -1313,11 +1355,13 @@ function fillDetail(el) {
   d.dataset.done = "1";
   const b = BILLS[+el.dataset.idx];
   markSeen(b);
-  d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
+  // On a watchlist card the summary and the key action are already shown above.
+  const inCard = el.classList.contains("morebill");
+  d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
     <div class="linkrow"><span>Link to this bill:</span><input type="text" readonly value="${esc(billLink(b))}" aria-label="Link to this bill" onclick="this.select()"><button class="act-btn" type="button" data-copylink>Copy</button></div>
-    ${nextSteps(b)}
+    ${inCard ? "" : nextSteps(b)}
     ${keyDates(b)}
     ${votesBlock(b)}
     ${lineage(b)}
@@ -1399,11 +1443,20 @@ function wire() {
     try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
   });
   window.addEventListener("hashchange", () => { if (openFromHash()) { render(); openOne(); } });
-  $("wlActions").addEventListener("click", async (e) => {
-    const btn = e.target.closest("[data-draft]"); if (!btn) return;
-    const text = draftFor($("wlActions")._groups[+btn.dataset.draft]);
+  // Copy an email: one bill (button on its card) or several bills for the same person.
+  const copyText = async (btn, text) => {
     try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
     catch (err) { btn.insertAdjacentHTML("afterend", `<textarea class="draft" rows="9" readonly>${esc(text)}</textarea>`); btn.remove(); }
+  };
+  $("wlActions").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-multi]"); if (!btn) return;
+    const xs = $("wlActions")._multi[btn.dataset.multi];
+    copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
+  });
+  $("wlList").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-email]"); if (!btn) return;
+    const x = $("wlActions")._items.find((i) => i.b.idx === +btn.dataset.email);
+    if (x) copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }]));
   });
   $("wl").addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
