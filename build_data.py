@@ -294,8 +294,8 @@ def github_page(html):
 
 
 def outcomes(recs):
-    """Counts per topic: [bills, passed both houses or further, signed, vetoed]."""
-    out = defaultdict(lambda: [0, 0, 0, 0])
+    """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
+    out = defaultdict(lambda: [0, 0, 0, 0, 0])
     for r in recs:
         for t in ["all"] + r["topics"]:
             c = out[t]
@@ -303,6 +303,7 @@ def outcomes(recs):
             c[1] += r["stage"] >= 3
             c[2] += r["stage"] == 5
             c[3] += r["stage"] == 6
+            c[4] += r["stage"] == 2
     return dict(out)
 
 

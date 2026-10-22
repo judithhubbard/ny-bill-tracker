@@ -602,13 +602,14 @@ function chartTime() {
 function chartSessions() {
   const t = state.topics.size === 1 ? [...state.topics][0] : "all";
   const rows = DATA.sessions.map(({ session }) => {
-    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
+    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0, 0];
     return { session, c, share: c[0] ? c[2] / c[0] : 0 };
   });
   const max = Math.max(1, ...rows.map((r) => r.c[0]));
   return `<p class="chart-cap">Every session's bills${t === "all" ? "" : ` on ${esc(TOPICS[t])}`} and how they ended. ${t === "all" ? "Select one topic to narrow this view." : ""}</p>${legend()}
     <div class="bars">${rows.map(({ session, c, share }) => {
-      const segs = [c[2], c[3], c[1] - c[2] - c[3], 0, c[0] - c[1]];
+      const one = c[4] || 0;
+      const segs = [c[2], c[3], c[1] - c[2] - c[3], one, c[0] - c[1] - one];
       return `<div class="barrow" style="cursor:default" title="${num(c[0])} bills, ${num(c[2])} signed (${(share * 100).toFixed(1)}%)">
         <span class="bl">${span(session)}${session === DATA.session ? " ◂" : ""}</span>
         <span class="bt">${segs.map((n, i) => n > 0 ? `<i class="${SEGS[i][0]}" style="width:${(n / max) * 100}%"></i>` : "").join("")}</span>
