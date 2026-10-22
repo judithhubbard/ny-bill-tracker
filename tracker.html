@@ -305,12 +305,14 @@ table.oc th { vertical-align: bottom; }
 .vtrack .tick.a { background: var(--navy); }
 .net svg { display: block; max-width: 900px; }
 .net line { stroke: var(--ink-2); stroke-opacity: .35; }
-.net circle { stroke: var(--paper); stroke-width: 1; cursor: pointer; fill: var(--ink-2); }
-.net circle.dem, .key .k-dem { fill: #3b6fd1; background: #3b6fd1; }
-.net circle.rep, .key .k-rep { fill: #c8423a; background: #c8423a; }
+.net circle, .net rect { stroke: var(--paper); stroke-width: 1; cursor: pointer; fill: var(--ink-2); }
+.net .dem, .key .k-dem { fill: #3b6fd1; background: #3b6fd1; }
+.net .rep, .key .k-rep { fill: #c8423a; background: #c8423a; }
+.net line.x { stroke: var(--gold); stroke-opacity: .55; }
+.key .k-cross { background: var(--gold); height: 3px !important; width: 14px !important; }
+.commctl input[type="search"] { width: 220px; padding: 4px 8px; font-size: 13px; }
 .net text { font: 600 9px var(--body); fill: var(--ink); text-anchor: middle; pointer-events: none; opacity: 0; }
-.net text.mine { opacity: 1; }
-.net svg.focus circle:not(.on), .net svg.focus line:not(.on) { opacity: .15; }
+.net svg.focus circle:not(.on), .net svg.focus rect:not(.on), .net svg.focus line:not(.on) { opacity: .15; }
 .net svg.focus text.on { opacity: 1; }
 .net svg.focus line.on { stroke-opacity: .9; }
 .vtrack .tick.p, .key .k-tick.p { background: var(--gold); }
@@ -1277,60 +1279,78 @@ function loadD3() {
   });
   return d3Loading;
 }
-// Two members are linked when one signs on to a large share of the other's bills. Each member
-// keeps their strongest few links, so the picture shows who works most closely together.
-function netData(house, t) {
-  const legs = LEGS.filter((L) => L.house === house);
-  const byName = new Map(legs.map((L) => [L.apiName, L]));
-  const spons = new Map(), w = new Map();
+// Two members are linked when one signs on to a large share of the other's bills (same house),
+// or when they carry the two houses' versions of the same bills (across houses). Each member
+// keeps their strongest few links of each kind, so the picture shows who works most closely.
+function netData(sel, t) {
+  const houses = sel === "B" ? ["S", "A"] : [sel];
+  const legs = LEGS.filter((L) => houses.includes(L.house));
+  const byName = new Map(legs.map((L) => [`${L.house}:${L.apiName}`, L]));
+  const spons = new Map(), w = new Map(), cross = new Map();
+  const bump = (m, k) => m.set(k, (m.get(k) || 0) + 1);
   for (const b of BILLS) {
     if (t !== "all" && !b.topics.includes(t)) continue;
+    const carriers = { S: new Set(), A: new Set() };
     for (const v of b.vers) {
-      if (v.p[0] !== house) continue;
-      const s = byName.get(v.sponsor);
+      const h = v.p[0];
+      if (!houses.includes(h)) continue;
+      const s = byName.get(`${h}:${v.sponsor}`);
       if (!s) continue;
-      spons.set(s, (spons.get(s) || 0) + 1);
+      bump(spons, s.id);
+      carriers[h].add(s.id);
       for (const c of v.cosponsors) {
-        const cL = byName.get(c);
-        if (!cL || cL === s) continue;
-        const key = `${cL.id}|${s.id}`;
-        w.set(key, (w.get(key) || 0) + 1);
+        const cL = byName.get(`${h}:${c}`);
+        if (cL && cL !== s) bump(w, `${cL.id}|${s.id}`);
       }
     }
+    if (sel === "B") for (const a of carriers.S) for (const z of carriers.A) bump(cross, `${a}|${z}`);
   }
-  const nodes = legs.filter((L) => spons.get(L)).map((L) => ({ L, id: L.id, n: spons.get(L), party: /Democrat/.test(L.party || "") ? "D" : /Republican/.test(L.party || "") ? "R" : "" }));
+  const nodes = legs.filter((L) => spons.get(L.id)).map((L) => ({ L, id: L.id, n: spons.get(L.id), party: /Democrat/.test(L.party || "") ? "D" : /Republican/.test(L.party || "") ? "R" : "" }));
   const byId = new Map(nodes.map((x) => [x.id, x]));
-  const pair = new Map();
-  for (const [key, c] of w) {
-    const [a, s] = key.split("|");
-    if (!byId.has(a) || !byId.has(s) || c < 3) continue;
-    const share = c / byId.get(s).n;
-    const k = a < s ? `${a}|${s}` : `${s}|${a}`;
-    const p = pair.get(k) || { source: a < s ? a : s, target: a < s ? s : a, share: 0, count: 0 };
-    p.share = Math.max(p.share, share); p.count += c;
-    pair.set(k, p);
-  }
-  const all = [...pair.values()], keep = new Set();
-  for (const x of nodes) all.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.share - a.share).slice(0, 4).forEach((p) => keep.add(p));
-  return { nodes, links: [...keep].map((p) => ({ ...p })) };
+  const pairs = (m, kind, directed) => {
+    const out = new Map();
+    for (const [key, c] of m) {
+      const [a, s] = key.split("|");
+      if (!byId.has(a) || !byId.has(s) || c < 3) continue;
+      // Share of the smaller member's bills this tie accounts for.
+      const share = directed ? c / byId.get(s).n : c / Math.min(byId.get(a).n, byId.get(s).n);
+      const k = a < s ? `${a}|${s}` : `${s}|${a}`;
+      const p = out.get(k) || { source: a < s ? a : s, target: a < s ? s : a, share: 0, count: 0, kind };
+      p.share = Math.max(p.share, share); p.count += c;
+      out.set(k, p);
+    }
+    return [...out.values()];
+  };
+  const keep = new Set();
+  for (const [list, n] of [[pairs(w, "co", true), sel === "B" ? 3 : 4], [pairs(cross, "x", false), 3]])
+    for (const x of nodes) list.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.share - a.share).slice(0, n).forEach((p) => keep.add(p));
+  // Members with no strong ties aren't drawn; they're listed under the chart instead.
+  const tied = new Set([...keep].flatMap((p) => [p.source, p.target]));
+  return { nodes: nodes.filter((x) => tied.has(x.id)), loose: nodes.filter((x) => !tied.has(x.id)), links: [...keep].map((p) => ({ ...p })) };
 }
+let netPinned = null;
 function renderNet() {
   const box = $("statNet");
   if (!DATA.current || !LEGS.length) { box.innerHTML = ""; return; }
   const t = $("statTopic").value || "all";
+  const both = netHouse === "B";
+  const names = LEGS.filter((L) => both || L.house === netHouse).map((L) => L.label).sort((a, b) => lastName(a).localeCompare(lastName(b)));
   box.innerHTML = `<h2>Who works with whom</h2>
-    <div class="commctl"><label class="commsort">House <select data-nethouse><option value="S"${netHouse === "S" ? " selected" : ""}>Senate</option><option value="A"${netHouse === "A" ? " selected" : ""}>Assembly</option></select></label></div>
-    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span><span>Bigger dot: more bills sponsored</span></p>
+    <div class="commctl"><label class="commsort">Show <select data-nethouse>${[["S", "Senate"], ["A", "Assembly"], ["B", "Both houses"]].map(([k, l]) => `<option value="${k}"${netHouse === k ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+    <label class="commsort">Find <input type="search" id="netFind" list="netNames" placeholder="Type a name" autocomplete="off"></label>
+    <datalist id="netNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
+    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
-    <p class="note">${t === "all" ? "All bills" : `${esc(TOPICS[t])} bills`} this session. A line joins two members when one co-sponsors a large share of the other's bills; each member shows their four strongest. Hover for names; click to see a member's bills.</p>`;
+    <p class="note" id="netLoose"></p>
+    <p class="note">${t === "all" ? "All bills" : `${esc(TOPICS[t])} bills`} this session. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member shows only their strongest ties. Hover or find a name to highlight; click to see a member's bills.</p>`;
   loadD3().then(() => drawNet(netData(netHouse, t))).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
-function drawNet({ nodes, links }) {
+function drawNet({ nodes, links, loose }) {
   const el = $("netBox");
   if (!el) return;
+  $("netLoose").textContent = loose.length ? `Not shown, no strong co-sponsor ties: ${loose.map((x) => x.L.label).join(", ")}.` : "";
   if (!nodes.length) { el.innerHTML = `<p class="muted">No bills to show.</p>`; return; }
-  const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * 0.6);
-  const mine = new Set((DATA.contacts?.reps || []).map((r) => `${r.house}:${r.last}`));
+  const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * (netHouse === "B" ? 0.75 : 0.6));
   const r = (x) => 3 + Math.sqrt(x.n) * 0.55;
   const sim = d3.forceSimulation(nodes)
     .force("link", d3.forceLink(links).id((x) => x.id).distance((l) => 30 + 60 * (1 - Math.min(1, l.share))).strength((l) => 0.2 + 0.6 * Math.min(1, l.share)))
@@ -1346,25 +1366,41 @@ function drawNet({ nodes, links }) {
   const nb = new Map(nodes.map((x) => [x.id, new Set([x.id])]));
   for (const l of links) { nb.get(l.source.id).add(l.target.id); nb.get(l.target.id).add(l.source.id); }
   const last = (x) => x.L.name.split(" ").pop();
+  const shape = (x) => {
+    const cls = `${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}`, t = `<title>${esc(x.L.label)}: ${num(x.n)} bills</title>`;
+    if (x.L.house === "S" && netHouse === "B") { const s = r(x) * 1.7; return `<rect data-id="${x.id}" class="${cls}" x="${(x.x - s / 2).toFixed(1)}" y="${(x.y - s / 2).toFixed(1)}" width="${s.toFixed(1)}" height="${s.toFixed(1)}">${t}</rect>`; }
+    return `<circle data-id="${x.id}" class="${cls}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${r(x).toFixed(1)}">${t}</circle>`;
+  };
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Co-sponsorship network">
-    <g class="links">${links.map((l) => `<line data-a="${l.source.id}" data-b="${l.target.id}" x1="${l.source.x.toFixed(1)}" y1="${l.source.y.toFixed(1)}" x2="${l.target.x.toFixed(1)}" y2="${l.target.y.toFixed(1)}" stroke-width="${(0.5 + 2.5 * Math.min(1, l.share)).toFixed(2)}"></line>`).join("")}</g>
-    <g class="nodes">${nodes.map((x) => `<circle data-id="${x.id}" class="${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${r(x).toFixed(1)}"><title>${esc(x.L.label)}: ${num(x.n)} bills</title></circle>`).join("")}</g>
-    <g class="labels">${nodes.map((x) => `<text data-id="${x.id}" class="${mine.has(`${x.L.house}:${lastName(x.L.name)}`) ? "mine" : ""}" x="${x.x.toFixed(1)}" y="${(x.y - r(x) - 3).toFixed(1)}">${esc(last(x))}</text>`).join("")}</g></svg>`;
+    <g class="links">${links.map((l) => `<line class="${l.kind === "x" ? "x" : ""}" data-a="${l.source.id}" data-b="${l.target.id}" x1="${l.source.x.toFixed(1)}" y1="${l.source.y.toFixed(1)}" x2="${l.target.x.toFixed(1)}" y2="${l.target.y.toFixed(1)}" stroke-width="${(0.5 + 2.5 * Math.min(1, l.share)).toFixed(2)}"></line>`).join("")}</g>
+    <g class="nodes">${nodes.map(shape).join("")}</g>
+    <g class="labels">${nodes.map((x) => `<text data-id="${x.id}" x="${x.x.toFixed(1)}" y="${(x.y - r(x) - 3).toFixed(1)}">${esc(last(x))}</text>`).join("")}</g></svg>`;
   const svg = el.querySelector("svg");
   const focus = (id) => {
     svg.classList.toggle("focus", !!id);
     const keep = id ? nb.get(id) : null;
-    for (const c of svg.querySelectorAll("circle, text")) c.classList.toggle("on", !!keep && keep.has(c.dataset.id));
+    for (const c of svg.querySelectorAll("circle, rect, text")) c.classList.toggle("on", !!keep && keep.has(c.dataset.id));
     for (const l of svg.querySelectorAll("line")) l.classList.toggle("on", !!id && (l.dataset.a === id || l.dataset.b === id));
   };
-  svg.addEventListener("mouseover", (e) => { const c = e.target.closest("circle"); focus(c ? c.dataset.id : null); });
-  svg.addEventListener("mouseleave", () => focus(null));
+  const node = (e) => e.target.closest("circle, rect");
+  svg.addEventListener("mouseover", (e) => { const c = node(e); focus(c ? c.dataset.id : netPinned); });
+  svg.addEventListener("mouseleave", () => focus(netPinned));
   svg.addEventListener("click", (e) => {
-    const c = e.target.closest("circle"); if (!c) return;
+    const c = node(e); if (!c) return;
     const L = LEG_BY_ID[c.dataset.id]; if (!L) return;
     if (ROOT && L.slug) { location.href = `${ROOT}${L.slug}/`; return; }
     Object.assign(state, blank()); state.who = L.id; syncControls(); showView("bills"); render();
   });
+  // Find: a typed name stays highlighted until cleared.
+  const find = $("netFind");
+  const pin = () => {
+    const q = find.value.trim().toLowerCase();
+    const hit = q ? nodes.find((x) => x.L.label.toLowerCase() === q) || nodes.filter((x) => x.L.label.toLowerCase().includes(q)).slice(0, 2).reduce((a, x, i, arr) => (arr.length === 1 ? x : a), null) : null;
+    netPinned = hit ? hit.id : null;
+    focus(netPinned);
+  };
+  find.addEventListener("input", pin);
+  if (netPinned && nodes.some((x) => x.id === netPinned)) { find.value = LEG_BY_ID[netPinned].label; focus(netPinned); } else netPinned = null;
 }
 
 const inTen = (n, d) => (d ? Math.round((n / d) * 10) : 0);
