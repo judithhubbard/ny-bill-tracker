@@ -751,7 +751,7 @@ function statusText(b) {
 }
 
 // ---- What's next and who to contact (current session only) ----
-const govItem = (ask) => `<li class="key"><span class="contact"><span class="star" title="Decides the next step">★</span> <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Governor's office</a></span><span class="role">Online message form</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><span class="phone">(518) 474-8390</span></span></li>`;
+const govItem = (ask) => `<li class="key"><span class="contact"><span class="star" title="Decides the next step">★</span> Governor's office</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
