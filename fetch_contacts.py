@@ -8,11 +8,15 @@ addresses, are read from nyassembly.gov. Senators' pages on nysenate.gov can't b
 by a script, so their addresses come from SENATE_SLUGS below (checked October 2026), with a
 name-based guess for anyone not listed.
 
+Email addresses, district office phones and official page links for every current legislator
+come from Open States (https://data.openstates.org/people/current/ny.csv), keyed by house and
+district.
+
 If a source can't be reached, the previous contacts file is kept as is.
 
 Usage: python3 fetch_contacts.py [session_year]   (default 2025)
 """
-import html, json, os, re, sys, time, unicodedata, urllib.parse, urllib.request
+import csv, html, io, json, os, re, sys, time, unicodedata, urllib.parse, urllib.request
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -146,6 +150,27 @@ def assembly():
     return committees, members
 
 
+def people():
+    """Every current legislator: {"S:52": {...}, "A:125": {...}} from Open States."""
+    text = get("https://data.openstates.org/people/current/ny.csv")
+    out = {}
+    for r in csv.DictReader(io.StringIO(text)):
+        house = {"upper": "S", "lower": "A"}.get(r["current_chamber"])
+        if not house or not r["current_district"].isdigit():
+            continue
+        links = [l for l in r["links"].split(";") if re.search(r"nysenate\.gov/senators/|nyassembly\.gov/mem/", l)]
+        out[f"{house}:{int(r['current_district'])}"] = {
+            "name": r["name"],
+            "key": name_key(r["name"]),
+            "email": r["email"] or None,
+            "phone": r["district_voice"] or r["capitol_voice"] or None,
+            "url": links[0] if links else None,
+        }
+    if len(out) < 200:
+        raise RuntimeError(f"only {len(out)} legislators found")
+    return out
+
+
 def main():
     global SESSION, KEY, OUT
     SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
@@ -159,6 +184,11 @@ def main():
         print(f"Senate committees: {e}; keeping previous", file=sys.stderr)
         out["senateCommittees"] = old.get("senateCommittees", {})
     try:
+        out["people"] = people()
+    except Exception as e:
+        print(f"Open States: {e}; keeping previous", file=sys.stderr)
+        out["people"] = old.get("people", {})
+    try:
         out["assemblyCommittees"], out["assemblyMembers"] = assembly()
     except Exception as e:
         print(f"Assembly: {e}; keeping previous", file=sys.stderr)
@@ -167,7 +197,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(out, f, indent=1, sort_keys=True)
-    print(f"{len(out['senateCommittees'])} Senate committees, {len(out['assemblyCommittees'])} Assembly committees, "
+    print(f"{len(out['people'])} legislators, {len(out['senateCommittees'])} Senate committees, {len(out['assemblyCommittees'])} Assembly committees, "
           f"{len(out['assemblyMembers'])} Assembly members -> {OUT}", file=sys.stderr)
 
 

@@ -279,6 +279,10 @@ table.oc th { vertical-align: bottom; }
 .next ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13.5px; }
 .next li { display: grid; gap: 1px; }
 .next li .role { font-size: 12px; color: var(--ink-2); }
+.next li .reach { font-size: 12px; }
+.next .muted { color: var(--ink-2); font-size: 12px; font-weight: 400; }
+.actview .list { border-top: 1px solid var(--rule); }
+.actview .more { justify-self: start; margin-top: 4px; }
 .next .contact { overflow-wrap: anywhere; }
 .next .phone { font-family: var(--mono); font-size: 12.5px; user-select: all; }
 .next .ours { color: var(--signed); font-weight: 600; font-size: 12px; }
@@ -423,7 +427,6 @@ table.oc th { vertical-align: bottom; }
 
   <!-- Weigh in -->
   <section class="actview" id="view-act" hidden>
-    <div class="act-sec" id="openNow"></div>
 
     <div class="act-sec">
       <h2>How to weigh in</h2>
@@ -456,6 +459,14 @@ table.oc th { vertical-align: bottom; }
     </div>
 
     <div class="act-sec">
+      <h2>Governor's office</h2>
+      <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message to the governor</a></p>
+      <p>Phone: <span class="phone">(518) 474-8390</span>, 9 a.m. to 5 p.m.</p>
+      <p>Mail: NYS State Capitol Building, Albany, NY 12224. Letters on passed bills: Counsel to the Governor, same address.</p>
+    </div>
+
+    <div class="act-sec" id="openNow"></div>
+    <div class="act-sec">
       <h2>Who decides at each stage</h2>
       <div class="tablewrap"><table class="stagehelp">
         <thead><tr><th>Stage</th><th>Who decides</th><th>Contact</th></tr></thead>
@@ -469,12 +480,6 @@ table.oc th { vertical-align: bottom; }
       </table></div>
     </div>
 
-    <div class="act-sec">
-      <h2>Governor's office</h2>
-      <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message to the governor</a></p>
-      <p>Phone: <span class="phone">(518) 474-8390</span>, 9 a.m. to 5 p.m.</p>
-      <p>Mail: NYS State Capitol Building, Albany, NY 12224. Letters on passed bills: Counsel to the Governor, same address.</p>
-    </div>
   </section>
 
   <!-- How it works -->
@@ -701,35 +706,52 @@ function statusText(b) {
 }
 
 // ---- What's next and who to contact (current session only) ----
-const GOV = `<li><span class="role">Governor's office</span><span class="contact"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
+const GOV = `<li><span class="contact"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Governor's office</a></span><span class="role">Online message form</span><span class="reach"><span class="phone">(518) 474-8390</span></span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
-function personLink(name, title) {
-  const p = (DATA.contacts?.people || {})[name] || {};
-  const label = `${title} ${esc(name)}`;
-  const link = p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${label}</a>` : label;
-  return p.email ? `${link} · <span class="phone">${esc(p.email)}</span>` : link;
-}
+const lastName = (n) => (n || "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
 
-function committeeContact(house, name) {
-  const c = (DATA.contacts?.committees || {})[`${house}:${commKey(name)}`];
-  if (!c) return "";
-  const title = house === "S" ? "Sen." : "Asm.";
-  const ours = c.ours.length ? ` <span class="ours">${c.ours.map((n) => `${title} ${esc(n)}`).join(", ")} ${c.ours.length > 1 ? "are members" : "is a member"}</span>` : "";
-  const cname = c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${HOUSE[house]} ${esc(c.name)} Committee</a>` : `${HOUSE[house]} ${esc(c.name)} Committee`;
-  return `<li><span class="role">Chair, ${cname}${c.meets ? ` · meets ${esc(c.meets)} during session` : ""}</span>
-    <span class="contact">${c.chair ? personLink(c.chair, title) : "Chair not listed"}${ours}</span></li>`;
-}
-
-function sponsorsList(b, houses = ["S", "A"]) {
-  return b.vers.filter((v) => v.sponsor && houses.includes(v.p[0])).map((v) =>
-    `<li><span class="role">Sponsor of ${esc(v.p)} (${HOUSE[v.p[0]]})</span><span class="contact">${personLink(v.sponsor, v.p[0] === "S" ? "Sen." : "Asm.")}</span></li>`).join("");
-}
-
-function ourReps(houses = ["S", "A"]) {
-  return (DATA.contacts?.reps || []).filter((r) => houses.includes(r.house)).map((r) =>
-    `<li><span class="role">Your ${r.house === "S" ? "state senator" : "Assembly member"}</span><span class="contact">${personLink(r.name, r.title)}</span></li>`).join("");
+// Collects the people to contact about a bill, one entry each, with every role they play.
+function contactBook(b) {
+  const book = new Map();
+  // Keyed by house and last name, so "Anna Kelles" and "Anna R. Kelles" are one person.
+  const add = (name, house, role) => {
+    if (!name) return;
+    const key = `${house}:${lastName(name)}`;
+    if (!book.has(key)) book.set(key, { name, house, roles: [], cosponsor: false });
+    const p = book.get(key);
+    if (role && !p.roles.includes(role)) p.roles.push(role);
+  };
+  const cos = (house) => b.vers.filter((v) => v.p[0] === house).flatMap((v) => v.cosponsors.map(lastName));
+  return {
+    sponsor(v) { add(v.sponsor, v.p[0], `sponsor of ${v.p}`); },
+    chair(house, cname) {
+      const c = (DATA.contacts?.committees || {})[`${house}:${commKey(cname)}`];
+      if (!c || !c.chair) return;
+      add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`);
+      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`); }
+    },
+    reps(houses = ["S", "A"]) {
+      for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) add(r.name, r.house, r.house === "S" ? "your state senator" : "your Assembly member");
+    },
+    html(gov) {
+      const items = [...book.values()].map((p) => {
+        const people = DATA.contacts?.people || {};
+        const info = people[p.name] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {};
+        const title = p.house === "S" ? "Sen." : "Asm.";
+        const isSponsor = p.roles.some((r) => r.startsWith("sponsor"));
+        const signed = !isSponsor && cos(p.house).includes(lastName(p.name));
+        const ours = p.roles.some((r) => r.startsWith("your "));
+        const status = signed ? ` <span class="ours">co-sponsor</span>` : ours && !isSponsor ? ` <span class="muted">not a sponsor or co-sponsor</span>` : "";
+        const name = info.url ? `<a href="${esc(info.url)}" target="_blank" rel="noopener">${title} ${esc(p.name)}</a>` : `${title} ${esc(p.name)}`;
+        const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, info.phone && `<span class="phone">${esc(info.phone)}</span>`].filter(Boolean).join(" · ");
+        const roles = p.roles.join("; ");
+        return `<li><span class="contact">${name}${status}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${reach ? `<span class="reach">${reach}</span>` : ""}</li>`;
+      });
+      return (gov ? GOV : "") + items.join("");
+    },
+  };
 }
 
 function nextSteps(b) {
@@ -739,48 +761,58 @@ function nextSteps(b) {
   const adjourned = today > `${y2}-12-31` || (quiet && lv.startsWith(String(y2)));
   const recess = !adjourned && quiet && today.startsWith(String(DATA.session));
   const stalled = adjourned
-    ? `The Legislature has finished voting for this session, so this bill can move only if lawmakers return for a special session. If it doesn't pass both houses by December 31, ${y2}, it dies and would have to be reintroduced.`
-    : recess ? `The Legislature is out until January ${y2}, when committees and floor votes resume.` : "";
-  let what = "", who = "";
+    ? `Floor votes are over for this session. Unless lawmakers return for a special session, it dies December 31, ${y2}.`
+    : recess ? `The Legislature is out until January ${y2}.` : "";
+  let what = "", gov = false;
+  const book = contactBook(b);
   const inComm = b.vers.filter((v) => v.committee && /committee/i.test(v.statusDesc || ""));
   if (b.stage === 0) {
-    what = `<p class="when">Next: a vote in committee.</p><p>${stalled || "The chair decides which bills go on the committee's agenda. Senate agendas are posted on nysenate.gov about a week ahead."}</p>`;
-    who = inComm.map((v) => committeeContact(v.p[0], v.committee)).join("") + sponsorsList(b) + ourReps();
+    what = `<p class="when">Next: a committee vote.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
+    inComm.forEach((v) => book.chair(v.p[0], v.committee));
+    b.vers.forEach(book.sponsor); book.reps();
   } else if (b.stage === 1) {
-    what = `<p class="when">Next: a vote by the full ${b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => HOUSE[v.p[0]]).join(" and ") || "house"}.</p><p>${stalled || "Party leaders decide which bills come up, and the calendar is published the day of the vote, so there's little advance notice."}</p>`;
-    who = sponsorsList(b) + ourReps();
+    what = `<p class="when">Next: a vote of the full ${b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => HOUSE[v.p[0]]).join(" and ") || "house"}.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
+    b.vers.forEach(book.sponsor); book.reps();
   } else if (b.stage === 2) {
     const other = b.passedIn === "Senate" ? "A" : "S";
     const twin = b.vers.find((v) => v.p[0] === other);
-    what = `<p class="when">Next: the ${HOUSE[other]} has to pass it too.</p><p>${stalled || (twin ? `The ${HOUSE[other]} version, ${esc(twin.p)}, is ${twin.committee ? `in the ${esc(twin.committee)} Committee` : "waiting there"}.` : `There's no matching ${HOUSE[other]} bill, so the ${HOUSE[other]} would have to take up this one.`)}</p>`;
-    who = (twin && twin.committee ? committeeContact(other, twin.committee) : "") + sponsorsList(b, [other]) + ourReps([other]) + sponsorsList(b, [other === "S" ? "A" : "S"]);
+    what = `<p class="when">Next: the ${HOUSE[other]} has to pass it.${twin ? "" : ` It has no ${HOUSE[other]} version.`}</p>${stalled ? `<p>${stalled}</p>` : ""}`;
+    if (twin && twin.committee) book.chair(other, twin.committee);
+    b.vers.filter((v) => v.p[0] === other).forEach(book.sponsor); book.reps([other]);
+    b.vers.filter((v) => v.p[0] !== other).forEach(book.sponsor);
   } else if (b.stage === 3) {
-    what = `<p class="when">Next: the governor's office asks for the bill, then has 10 days (not counting Sundays) to act.</p><p>It can be requested any day through December, so now is the time to weigh in. A county or other local government can send a letter to the Counsel to the Governor for the bill's official file.</p>`;
-    who = GOV + sponsorsList(b) + ourReps();
+    what = `<p class="when">Next: the governor's office requests it (any day through December), then she has 10 days to act.</p>`;
+    gov = true; b.vers.forEach(book.sponsor); book.reps();
   } else if (b.stage === 4) {
-    what = `<p class="when">Next: the governor signs or vetoes it${b.due ? ` by about ${fmtDate(b.due)}` : ""}.</p><p>That's 10 days after it was delivered, not counting Sundays. Comments need to reach her office before then.</p>`;
-    who = GOV + sponsorsList(b);
+    what = `<p class="when">Next: the governor signs or vetoes it${b.due ? `, by about ${fmtDate(b.due)}` : ""}.</p>`;
+    gov = true; b.vers.forEach(book.sponsor);
   } else if (b.stage === 5) {
-    what = `<p class="when">This bill is law${b.chapter ? ` (Chapter ${b.chapter} of ${fmtDate(b.dates.signed).slice(-4)})` : ""}.</p><p>Changing it would take a new bill. Some bills are signed with an agreement to amend them the next year.</p>`;
-    who = sponsorsList(b);
+    what = `<p class="when">Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}.</p>`;
+    b.vers.forEach(book.sponsor);
   } else if (b.stage === 6) {
-    what = `<p class="when">The governor vetoed this bill.</p><p>The sponsors can reintroduce it in the next session. The Legislature can override a veto with a two-thirds vote in each house, which is rare.</p>`;
-    who = sponsorsList(b);
+    what = `<p class="when">Vetoed. The sponsors can reintroduce it next session.</p>`;
+    b.vers.forEach(book.sponsor);
   }
+  const who = book.html(gov);
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
 
-// Where things stand for the governor, from all bills (filters on the Bills tab don't apply here).
+// Bills still open for comment, listed right here (filters on the Bills tab don't apply).
+let openShown = 25;
 function renderOpenNow() {
   if (!DATA.current) {
-    $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died. The current session's page shows bills that are still open for comment.</p>`;
+    $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died.</p>`;
     return;
   }
-  const desk = BILLS.filter((b) => b.stage === 4), waiting = BILLS.filter((b) => b.stage === 3);
-  const next = desk.map((b) => b.due).filter((d) => d && d >= isoToday()).sort()[0];
+  const desk = BILLS.filter((b) => b.stage === 4).sort((a, b) => (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
+  const waiting = BILLS.filter((b) => b.stage === 3).sort((a, b) => (b.last || "").localeCompare(a.last || ""));
+  const more = waiting.length - openShown;
   $("openNow").innerHTML = `<h2>Open for comment</h2>
-    <p>${num(desk.length)} on the governor's desk${next ? ` (next decision due about ${fmtDate(next)})` : ""}. ${num(waiting.length)} more passed both houses and can be sent to her any day.</p>
-    <p>To find them, use <i>Where it is now</i> on the Bills tab. Each bill lists who to contact.</p>`;
+    <h3>On the governor's desk (${num(desk.length)}), soonest deadline first</h3>
+    <div class="list">${desk.map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
+    <h3>Passed both houses, not yet sent to her (${num(waiting.length)})</h3>
+    <div class="list">${waiting.slice(0, openShown).map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
+    ${more > 0 ? `<button class="more" type="button" data-more>Show ${num(Math.min(25, more))} more</button>` : ""}`;
 }
 
 function keyDates(b) {
@@ -841,11 +873,18 @@ function renderList() {
   if (!slice.length) {
     $("list").innerHTML = `<div class="empty">No bills match all of these filters. Remove one of the filters listed above, or clear them all.</div>`;
   } else {
-    $("list").innerHTML = slice.map((b, i) => {
+    $("list").innerHTML = slice.map(billRow).join("");
+  }
+  $("more").hidden = rows.length <= state.shown;
+  $("more").textContent = `Show ${num(Math.min(PAGE, rows.length - state.shown))} more`;
+}
+
+// One bill as an expandable row; used on the Bills tab and the Weigh in tab.
+function billRow(b) {
       const [first, second] = b.nums;
       const tags = b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
-      return `<details class="bill" data-i="${i}">
+      return `<details class="bill" data-idx="${b.idx}">
         <summary>
           <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}</div>
           <div class="main">
@@ -857,11 +896,6 @@ function renderList() {
         </summary>
         <div class="detail"></div>
       </details>`;
-    }).join("");
-    $("list")._rows = slice;
-  }
-  $("more").hidden = rows.length <= state.shown;
-  $("more").textContent = `Show ${num(Math.min(PAGE, rows.length - state.shown))} more`;
 }
 
 
@@ -1022,7 +1056,7 @@ function fillDetail(el) {
   const d = el.querySelector(".detail");
   if (d.dataset.done) return;
   d.dataset.done = "1";
-  const b = $("list")._rows[+el.dataset.i];
+  const b = BILLS[+el.dataset.idx];
   d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
@@ -1079,7 +1113,11 @@ function wire() {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
-  $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
+  for (const id of ["list", "openNow"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
+  $("openNow").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-more]"); if (!btn) return;
+    openShown += 25; renderOpenNow();
+  });
   $("chartTabs").addEventListener("click", (e) => {
     const tab = e.target.closest(".tab"); if (!tab) return;
     chartView = tab.dataset.v; try { localStorage.setItem("abt:chart", chartView); } catch (err) {}
@@ -1104,8 +1142,8 @@ function decode(raw) {
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
     dates.passAAll = kd[3] ? kd[3].split(";").map(day) : [];
-    const v = vers.map(([p, sp, c, sd, cm, acts]) => ({
-      p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm),
+    const v = vers.map(([p, sp, c, sd, cm, acts, cos]) => ({
+      p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm), cosponsors: (cos || []).map(str),
       actions: acts.map(([dt, t]) => [day(dt), T[t]]),
     }));
     return {

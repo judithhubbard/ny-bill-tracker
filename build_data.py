@@ -297,6 +297,8 @@ def load_session(session):
             "vers": [{
                 "p": b["printNo"] + (b["activeVersion"] or ""),
                 "sponsor": b["sponsor"],
+                "district": b["district"],
+                "cosponsors": (b.get("coSponsors") or []) + (b.get("multiSponsors") or []),
                 "cosp": b["cosponsorCount"],
                 "statusDesc": b["status"]["statusDesc"],
                 "committee": b["status"]["committeeName"],
@@ -335,28 +337,36 @@ def github_page(html):
 
 def contacts_for(session, recs, delegation_names):
     """Who to contact for the current session: committee chairs (and whether our legislators
-    sit on each committee) plus a page link for every sponsor and chair."""
+    sit on each committee), our legislators, and email, phone and page for each person."""
     path = os.path.join(HERE, "data", f"contacts_{session}.json")
     if not os.path.exists(path):
         return None
     raw = json.load(open(path))
+    seats = raw.get("people", {})  # "S:52" -> {name, key, email, phone, url}
     asm_members = raw.get("assemblyMembers", {})
     people = {}
 
-    def person(name, house):
-        if not name:
-            return None
-        if name not in people:
-            if house == "S":
-                people[name] = {"url": senate_url(name)}
-            else:
-                m = asm_members.get(name_key(name))
-                if not m:
-                    # Nicknames ("Al" for Albert): fall back to a unique last-name match.
-                    last = name_key(name).split()[-1]
-                    hits = [v for k, v in asm_members.items() if k.split()[-1] == last]
-                    m = hits[0] if len(hits) == 1 else {}
-                people[name] = {"url": m.get("url"), "email": m.get("email")}
+    def lookup(name, house, district=None):
+        """Contact details for a legislator, by seat when known (checking it's the same person)."""
+        key = name_key(name)
+        p = seats.get(f"{house}:{district}") if district else None
+        if p and p["key"].split()[-1] != key.split()[-1]:
+            p = None  # someone else holds that seat now
+        if not p:
+            hits = [v for k, v in seats.items() if k[0] == house and v["key"] == key]
+            if not hits:
+                hits = [v for k, v in seats.items() if k[0] == house and v["key"].split()[-1] == key.split()[-1]]
+            p = hits[0] if len(hits) == 1 else None
+        if p:
+            return {"url": p["url"], "email": p["email"], "phone": p["phone"]}
+        if house == "S":
+            return {"url": senate_url(name)}
+        m = asm_members.get(key) or {}
+        return {"url": m.get("url"), "email": m.get("email")}
+
+    def person(name, house, district=None):
+        if name and name not in people:
+            people[name] = lookup(name, house, district)
         return name
 
     ours = {"S": set(delegation_names.get("SENATE", [])), "A": set(delegation_names.get("ASSEMBLY", []))}
@@ -376,19 +386,15 @@ def contacts_for(session, recs, delegation_names):
             }
     for r in recs:
         for v in r["vers"]:
-            person(v["sponsor"], v["p"][0])
+            person(v["sponsor"], v["p"][0], v.get("district"))
     reps = []
     for house, title in (("S", "Sen."), ("A", "Asm.")):
-        for last in sorted(ours[house]):
-            full = next((n for n in people if n.split()[-1] == last), None)
-            if not full:
-                for r in recs:
-                    full = next((v["sponsor"] for v in r["vers"] if v["sponsor"] and v["sponsor"].split()[-1] == last), None)
-                    if full:
-                        break
-            if full:
-                person(full, house)
-                reps.append({"title": title, "name": full, "house": house})
+        for district in sorted(delegation(session).get("SENATE" if house == "S" else "ASSEMBLY", ())):
+            seat = seats.get(f"{house}:{district}")
+            if seat and seat["key"].split()[-1] in {n.lower() for n in ours[house]}:
+                name = next((n for n in people if name_key(n) == seat["key"]), seat["name"])
+                people.setdefault(name, lookup(name, house, district))
+                reps.append({"title": title, "name": name, "house": house, "last": seat["key"].split()[-1]})
     return {"fetched": raw.get("fetched"), "committees": committees, "people": people, "reps": reps}
 
 
@@ -463,7 +469,8 @@ def main():
         for i, r in enumerate(recs):
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
-                     [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]]] for v in r["vers"]]
+                     [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
+                     [S(n) for n in v["cosponsors"]] if session == current else []] for v in r["vers"]]
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,

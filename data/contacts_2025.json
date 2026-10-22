@@ -2400,6 +2400,1492 @@
   }
  },
  "fetched": "2026-10-22",
+ "people": {
+  "A:1": {
+   "email": "schiavonitj@nyassembly.gov",
+   "key": "tommy schiavoni",
+   "name": "Tommy John Schiavoni",
+   "phone": "631-537-2583",
+   "url": "https://nyassembly.gov/mem/Tommy-John-Schiavoni"
+  },
+  "A:10": {
+   "email": "sterns@nyassembly.gov",
+   "key": "steve stern",
+   "name": "Steve Stern",
+   "phone": "631-271-8025",
+   "url": "https://nyassembly.gov/mem/Steve-Stern"
+  },
+  "A:100": {
+   "email": "kayp@nyassembly.gov",
+   "key": "paula kay",
+   "name": "Paula Kay",
+   "phone": "845-342-9304",
+   "url": "https://nyassembly.gov/mem/Paula-Elaine-Kay"
+  },
+  "A:101": {
+   "email": "maherb@nyassembly.gov",
+   "key": "brian maher",
+   "name": "Brian Maher",
+   "phone": "845-379-5001",
+   "url": "https://nyassembly.gov/mem/Brian-Maher"
+  },
+  "A:102": {
+   "email": "taguec@nyassembly.gov",
+   "key": "chris tague",
+   "name": "Chris Tague",
+   "phone": "518-943-1371",
+   "url": "https://nyassembly.gov/mem/Chris-Tague/"
+  },
+  "A:103": {
+   "email": "shresthas@nyassembly.gov",
+   "key": "sarahana shrestha",
+   "name": "Sarahana Shrestha",
+   "phone": "845-338-9610",
+   "url": "https://nyassembly.gov/mem/Sarahana-Shrestha"
+  },
+  "A:104": {
+   "email": "jacobsonj@nyassembly.gov",
+   "key": "jonathan jacobson",
+   "name": "Jonathan Jacobson",
+   "phone": "845-763-7011",
+   "url": "https://nyassembly.gov/mem/Jonathan-G-Jacobson"
+  },
+  "A:105": {
+   "email": "beephana@nyassembly.gov",
+   "key": "anil beephan",
+   "name": "Anil Beephan",
+   "phone": "845-221-2202",
+   "url": "https://nyassembly.gov/mem/Anil-Beephan-Jr"
+  },
+  "A:106": {
+   "email": "barrettd@nyassembly.gov",
+   "key": "didi barrett",
+   "name": "Didi Barrett",
+   "phone": "518-828-1961",
+   "url": "https://nyassembly.gov/mem/didi-barrett"
+  },
+  "A:107": {
+   "email": "bendetts@nyassembly.gov",
+   "key": "scott bendett",
+   "name": "Scott Bendett",
+   "phone": "518-272-6149",
+   "url": "https://nyassembly.gov/mem/Scott-Bendett"
+  },
+  "A:108": {
+   "email": "mcdonaldj@nyassembly.gov",
+   "key": "john mcdonald",
+   "name": "John McDonald",
+   "phone": null,
+   "url": "https://nyassembly.gov/mem/John-T-McDonald-III"
+  },
+  "A:109": {
+   "email": "romerog@nyassembly.gov",
+   "key": "gabriella romero",
+   "name": "Gabriella Romero",
+   "phone": null,
+   "url": "https://nyassembly.gov/mem/Gabriella-A-Romero"
+  },
+  "A:11": {
+   "email": "opharrk@nyassembly.gov",
+   "key": "kwani opharrow",
+   "name": "Kwani O'Pharrow",
+   "phone": "631-957-2087",
+   "url": "https://nyassembly.gov/mem/Kwani-B-O'Pharrow"
+  },
+  "A:110": {
+   "email": "steckp@nyassembly.gov",
+   "key": "phil steck",
+   "name": "Phil Steck",
+   "phone": "518-377-0902",
+   "url": "https://nyassembly.gov/mem/Phil-Steck"
+  },
+  "A:111": {
+   "email": "santabarbaraa@nyassembly.gov",
+   "key": "angelo santabarbara",
+   "name": "Angelo Santabarbara",
+   "phone": "518-843-0227",
+   "url": "https://nyassembly.gov/mem/Angelo-Santabarbara/"
+  },
+  "A:112": {
+   "email": "walshm@nyassembly.gov",
+   "key": "mary walsh",
+   "name": "Mary Beth Walsh",
+   "phone": "518-884-8010",
+   "url": "https://nyassembly.gov/mem/Mary-Beth-Walsh"
+  },
+  "A:113": {
+   "email": "woernerc@nyassembly.gov",
+   "key": "carrie woerner",
+   "name": "Carrie Woerner",
+   "phone": "518-584-5493",
+   "url": "https://nyassembly.gov/mem/Carrie-Woerner"
+  },
+  "A:114": {
+   "email": "simpsonm@nyassembly.gov",
+   "key": "matt simpson",
+   "name": "Matt Simpson",
+   "phone": "518-792-4546",
+   "url": "https://nyassembly.gov/mem/Matthew-Simpson"
+  },
+  "A:115": {
+   "email": "cashmanm@nyassembly.gov",
+   "key": "michael cashman",
+   "name": "Michael Cashman",
+   "phone": "518-562-1986",
+   "url": null
+  },
+  "A:116": {
+   "email": "grays@nyassembly.gov",
+   "key": "scott gray",
+   "name": "Scott Gray",
+   "phone": "315-786-0284",
+   "url": "https://nyassembly.gov/mem/Scott-Gray"
+  },
+  "A:117": {
+   "email": "blankenbushk@nyassembly.gov",
+   "key": "ken blankenbush",
+   "name": "Ken Blankenbush",
+   "phone": "315-493-3909",
+   "url": "https://nyassembly.gov/mem/ken-blankenbush"
+  },
+  "A:118": {
+   "email": "smullenr@nyassembly.gov",
+   "key": "robert smullen",
+   "name": "Robert Smullen",
+   "phone": "518-762-1427",
+   "url": "https://nyassembly.gov/mem/Robert-Smullen"
+  },
+  "A:119": {
+   "email": "buttenschonm@nyassembly.gov",
+   "key": "marianne buttenschon",
+   "name": "Marianne Buttenschon",
+   "phone": "315-732-1055",
+   "url": "https://nyassembly.gov/mem/Marianne-Buttenschon"
+  },
+  "A:12": {
+   "email": "brownk@nyassembly.gov",
+   "key": "keith brown",
+   "name": "Keith Brown",
+   "phone": "631-261-4151",
+   "url": "https://nyassembly.gov/mem/Keith-P-Brown"
+  },
+  "A:120": {
+   "email": "barclaw@nyassembly.gov",
+   "key": "will barclay",
+   "name": "Will Barclay",
+   "phone": "315-598-5185",
+   "url": "https://nyassembly.gov/mem/william-a-barclay"
+  },
+  "A:121": {
+   "email": "angelinoj@nyassembly.gov",
+   "key": "joe angelino",
+   "name": "Joe Angelino",
+   "phone": "607-648-6080",
+   "url": "https://nyassembly.gov/mem/Joe-Angelino"
+  },
+  "A:122": {
+   "email": "millerb@nyassembly.gov",
+   "key": "brian miller",
+   "name": "Brian Miller",
+   "phone": "315-736-3879",
+   "url": "https://nyassembly.gov/mem/Brian-D-Miller"
+  },
+  "A:123": {
+   "email": "lupardod@nyassembly.gov",
+   "key": "donna lupardo",
+   "name": "Donna Lupardo",
+   "phone": "607-723-9047",
+   "url": "https://nyassembly.gov/mem/donna-a-lupardo"
+  },
+  "A:124": {
+   "email": "friendc@nyassembly.gov",
+   "key": "chris friend",
+   "name": "Chris Friend",
+   "phone": "607-562-3602",
+   "url": "https://nyassembly.gov/mem/christopher-s-friend"
+  },
+  "A:125": {
+   "email": "kellesa@nyassembly.gov",
+   "key": "anna kelles",
+   "name": "Anna Kelles",
+   "phone": "607-208-2024",
+   "url": "https://nyassembly.gov/mem/Anna-R-Kelles"
+  },
+  "A:126": {
+   "email": "lemondesj@nyassembly.gov",
+   "key": "john lemondes",
+   "name": "John Lemondes",
+   "phone": "315-255-3045",
+   "url": "https://nyassembly.gov/mem/John-Lemondes"
+  },
+  "A:127": {
+   "email": "stirpea@nyassembly.gov",
+   "key": "al stirpe",
+   "name": "Al Stirpe",
+   "phone": "315-452-1115",
+   "url": "https://nyassembly.gov/mem/Al-Stirpe"
+  },
+  "A:128": {
+   "email": "hunterp@nyassembly.gov",
+   "key": "pamela hunter",
+   "name": "Pamela Hunter",
+   "phone": "315-449-9536",
+   "url": "https://nyassembly.gov/mem/Pamela-J-Hunter"
+  },
+  "A:129": {
+   "email": "magnarw@nyassembly.gov",
+   "key": "bill magnarelli",
+   "name": "Bill Magnarelli",
+   "phone": "315-428-9651",
+   "url": "https://nyassembly.gov/mem/william-b-magnarelli"
+  },
+  "A:13": {
+   "email": "lavinec@nyassembly.gov",
+   "key": "charles lavine",
+   "name": "Charles Lavine",
+   "phone": "516-676-0050",
+   "url": "https://nyassembly.gov/mem/charles-d-lavine"
+  },
+  "A:130": {
+   "email": "manktelowb@nyassembly.gov",
+   "key": "brian manktelow",
+   "name": "Brian Manktelow",
+   "phone": "315-946-5166",
+   "url": "https://nyassembly.gov/mem/Brian-Manktelow"
+  },
+  "A:131": {
+   "email": "gallahanj@nyassembly.gov",
+   "key": "jeff gallahan",
+   "name": "Jeff Gallahan",
+   "phone": "315-497-0354",
+   "url": "https://nyassembly.gov/mem/Jeff-Gallahan"
+  },
+  "A:132": {
+   "email": "palmesanop@nyassembly.gov",
+   "key": "phil palmesano",
+   "name": "Phil Palmesano",
+   "phone": "607-776-9691",
+   "url": "https://nyassembly.gov/mem/philip-a-palmesano"
+  },
+  "A:133": {
+   "email": "baileya@nyassembly.gov",
+   "key": "andrea bailey",
+   "name": "Andrea Bailey",
+   "phone": "585-218-0038",
+   "url": "https://nyassembly.gov/mem/Andrea-K-Bailey"
+  },
+  "A:134": {
+   "email": "jensenj@nyassembly.gov",
+   "key": "josh jensen",
+   "name": "Josh Jensen",
+   "phone": "585-225-4190",
+   "url": "https://nyassembly.gov/mem/Josh-Jensen"
+  },
+  "A:135": {
+   "email": "lunsfordj@nyassembly.gov",
+   "key": "jen lunsford",
+   "name": "Jen Lunsford",
+   "phone": "585-223-9130",
+   "url": "https://nyassembly.gov/mem/Jennifer-Lunsford"
+  },
+  "A:136": {
+   "email": "clarks@nyassembly.gov",
+   "key": "sarah clark",
+   "name": "Sarah Clark",
+   "phone": "585-467-0410",
+   "url": "https://nyassembly.gov/mem/Sarah-Clark/"
+  },
+  "A:137": {
+   "email": "meeksd@nyassembly.gov",
+   "key": "demond meeks",
+   "name": "Demond Meeks",
+   "phone": "585-454-3670",
+   "url": "https://nyassembly.gov/mem/Demond-Meeks"
+  },
+  "A:138": {
+   "email": "bronsonh@nyassembly.gov",
+   "key": "harry bronson",
+   "name": "Harry Bronson",
+   "phone": "585-244-5255",
+   "url": "https://nyassembly.gov/mem/harry-b-bronson"
+  },
+  "A:139": {
+   "email": "hawleys@nyassembly.gov",
+   "key": "steve hawley",
+   "name": "Steve Hawley",
+   "phone": "585-589-5780",
+   "url": "https://nyassembly.gov/mem/stephen-hawley"
+  },
+  "A:14": {
+   "email": "mcdonoughd@nyassembly.gov",
+   "key": "dave mcdonough",
+   "name": "Dave McDonough",
+   "phone": "516-409-2070",
+   "url": "https://nyassembly.gov/mem/david-g-mcdonough"
+  },
+  "A:140": {
+   "email": "conradw@nyassembly.gov",
+   "key": "bill conrad",
+   "name": "Bill Conrad",
+   "phone": "716-873-2540",
+   "url": "https://nyassembly.gov/mem/William-Conrad"
+  },
+  "A:141": {
+   "email": "peoplec@nyassembly.gov",
+   "key": "crystal peoples-stokes",
+   "name": "Crystal Peoples-Stokes",
+   "phone": "716-897-9714",
+   "url": "https://nyassembly.gov/mem/crystal-d-peoples-stokes"
+  },
+  "A:142": {
+   "email": "burkep@nyassembly.gov",
+   "key": "pat burke",
+   "name": "Pat Burke",
+   "phone": "716-608-6099",
+   "url": "https://nyassembly.gov/mem/Patrick-Burke"
+  },
+  "A:143": {
+   "email": "chludzinskip@nyassembly.gov",
+   "key": "pat chludzinski",
+   "name": "Pat Chludzinski",
+   "phone": "716-686-0080",
+   "url": "https://nyassembly.gov/mem/Patrick-J-Chludzinski"
+  },
+  "A:144": {
+   "email": "bolognap@nyassembly.gov",
+   "key": "paul bologna",
+   "name": "Paul Bologna",
+   "phone": "716-839-4691",
+   "url": "https://nyassembly.gov/mem/Paul-A-Bologna"
+  },
+  "A:145": {
+   "email": "morinelloa@nyassembly.gov",
+   "key": "angelo morinello",
+   "name": "Angelo Morinello",
+   "phone": "716-282-6062",
+   "url": "https://nyassembly.gov/mem/Angelo-J-Morinello"
+  },
+  "A:146": {
+   "email": "mcmahonk@nyassembly.gov",
+   "key": "karen mcmahon",
+   "name": "Karen McMahon",
+   "phone": "716-634-1895",
+   "url": "https://nyassembly.gov/mem/Karen-McMahon"
+  },
+  "A:147": {
+   "email": "dipietrod@nyassembly.gov",
+   "key": "dave dipietro",
+   "name": "Dave DiPietro",
+   "phone": "716-655-0951",
+   "url": "https://nyassembly.gov/mem/David-DiPietro"
+  },
+  "A:148": {
+   "email": "sempolinskij@nyassembly.gov",
+   "key": "joe sempolinski",
+   "name": "Joe Sempolinski",
+   "phone": "716-373-7103",
+   "url": "https://nyassembly.gov/mem/Joe-Sempolinski"
+  },
+  "A:149": {
+   "email": "riverajd@nyassembly.gov",
+   "key": "jon rivera",
+   "name": "Jon Rivera",
+   "phone": "716-885-9630",
+   "url": "https://nyassembly.gov/mem/Jonathan-Rivera"
+  },
+  "A:15": {
+   "email": "blumencranzj@nyassembly.gov",
+   "key": "jake blumencranz",
+   "name": "Jake Blumencranz",
+   "phone": "516-937-3571",
+   "url": "https://nyassembly.gov/mem/Jake-Blumencranz"
+  },
+  "A:150": {
+   "email": "molitora@nyassembly.gov",
+   "key": "andrew molitor",
+   "name": "Andrew Molitor",
+   "phone": "716-664-7773",
+   "url": "https://nyassembly.gov/mem/Andrew-M-Molitor"
+  },
+  "A:16": {
+   "email": "norberd@nyassembly.gov",
+   "key": "danny norber",
+   "name": "Danny Norber",
+   "phone": "516-482-6966",
+   "url": "https://nyassembly.gov/mem/Daniel-J-Norber"
+  },
+  "A:17": {
+   "email": "mikulinj@nyassembly.gov",
+   "key": "john mikulin",
+   "name": "John Mikulin",
+   "phone": "516-228-4960",
+   "url": "https://nyassembly.gov/mem/John-K-Mikulin"
+  },
+  "A:18": {
+   "email": "burroughsn@nyassembly.gov",
+   "key": "noah burroughs",
+   "name": "Noah Burroughs",
+   "phone": "516-489-6610",
+   "url": "https://nyassembly.gov/mem/Noah-Burroughs"
+  },
+  "A:19": {
+   "email": "rae@nyassembly.gov",
+   "key": "ed ra",
+   "name": "Ed Ra",
+   "phone": "516-535-4095",
+   "url": "https://nyassembly.gov/mem/edward-p-ra"
+  },
+  "A:2": {
+   "email": "giglioj2@nyassembly.gov",
+   "key": "jodi giglio",
+   "name": "Jodi Giglio",
+   "phone": "631-727-0204",
+   "url": "https://nyassembly.gov/mem/Jodi-Giglio"
+  },
+  "A:20": {
+   "email": "browna@nyassembly.gov",
+   "key": "ari brown",
+   "name": "Ari Brown",
+   "phone": "516-431-0500",
+   "url": "https://nyassembly.gov/mem/Ari-Brown"
+  },
+  "A:21": {
+   "email": "griffij@nyassembly.gov",
+   "key": "judy griffin",
+   "name": "Judy Griffin",
+   "phone": "516-561-8216",
+   "url": "https://nyassembly.gov/mem/Judy-Griffin"
+  },
+  "A:22": {
+   "email": "solagesm@nyassembly.gov",
+   "key": "michaelle solages",
+   "name": "Michaelle Solages",
+   "phone": "516-599-2972",
+   "url": "https://nyassembly.gov/mem/Michaelle-C-Solages"
+  },
+  "A:23": {
+   "email": "amatos@nyassembly.gov",
+   "key": "stacey amato",
+   "name": "Stacey Pheffer Amato",
+   "phone": "718-945-9550",
+   "url": "https://nyassembly.gov/mem/Stacey-Pheffer-Amato"
+  },
+  "A:24": {
+   "email": "weprind@nyassembly.gov",
+   "key": "david weprin",
+   "name": "David Weprin",
+   "phone": "718-805-2381",
+   "url": "https://nyassembly.gov/mem/david-i-weprin"
+  },
+  "A:25": {
+   "email": "rozicn@nyassembly.gov",
+   "key": "nily rozic",
+   "name": "Nily Rozic",
+   "phone": "718-820-0241",
+   "url": "https://nyassembly.gov/mem/Nily-Rozic"
+  },
+  "A:26": {
+   "email": "braunsteine@nyassembly.gov",
+   "key": "ed braunstein",
+   "name": "Ed Braunstein",
+   "phone": "718-357-3588",
+   "url": "https://nyassembly.gov/mem/edward-c-braunstein"
+  },
+  "A:27": {
+   "email": "bergers@nyassembly.gov",
+   "key": "sam berger",
+   "name": "Sam Berger",
+   "phone": "718-969-1508",
+   "url": "https://nyassembly.gov/mem/Sam-Berger"
+  },
+  "A:28": {
+   "email": "hevesia@nyassembly.gov",
+   "key": "andrew hevesi",
+   "name": "Andrew Hevesi",
+   "phone": "718-263-5595",
+   "url": "https://nyassembly.gov/mem/andrew-hevesi"
+  },
+  "A:29": {
+   "email": "hyndmana@nyassembly.gov",
+   "key": "alicia hyndman",
+   "name": "Alicia Hyndman",
+   "phone": "718-723-5412",
+   "url": "https://nyassembly.gov/mem/Alicia-Hyndman"
+  },
+  "A:3": {
+   "email": "destefanoj@nyassembly.gov",
+   "key": "joe destefano",
+   "name": "Joe DeStefano",
+   "phone": "631-207-0073",
+   "url": "https://nyassembly.gov/mem/Joe-DeStefano"
+  },
+  "A:30": {
+   "email": "ragas@nyassembly.gov",
+   "key": "steven raga",
+   "name": "Steven Raga",
+   "phone": "718-651-3185",
+   "url": "https://nyassembly.gov/mem/Steven-Raga"
+  },
+  "A:31": {
+   "email": "andersonk@nyassembly.gov",
+   "key": "khaleel anderson",
+   "name": "Khaleel Anderson",
+   "phone": "718-327-1845",
+   "url": "https://nyassembly.gov/mem/Khaleel-M-Anderson"
+  },
+  "A:32": {
+   "email": "cookv@nyassembly.gov",
+   "key": "vivian cook",
+   "name": "Vivian Cook",
+   "phone": "718-322-3975",
+   "url": "https://nyassembly.gov/mem/vivian-e-cook"
+  },
+  "A:33": {
+   "email": "vanelc@nyassembly.gov",
+   "key": "clyde vanel",
+   "name": "Clyde Vanel",
+   "phone": "718-479-2333",
+   "url": "https://nyassembly.gov/mem/Clyde-Vanel"
+  },
+  "A:34": {
+   "email": "gonzalezrojasj@nyassembly.gov",
+   "key": "jessica gonzalez-rojas",
+   "name": "Jessica Gonz\u00e1lez-Rojas",
+   "phone": "718-457-0384",
+   "url": "https://nyassembly.gov/mem/Jessica-Gonzalez-Rojas"
+  },
+  "A:35": {
+   "email": "hooksl@nyassembly.gov",
+   "key": "larinda hooks",
+   "name": "Larinda Hooks",
+   "phone": "718-457-3615",
+   "url": "https://nyassembly.gov/mem/Larinda-C-Hooks"
+  },
+  "A:36": {
+   "email": "morenod@nyassembly.gov",
+   "key": "diana moreno",
+   "name": "Diana Moreno",
+   "phone": "718-545-3889",
+   "url": "https://nyassembly.gov/mem/Diana-C-Moreno"
+  },
+  "A:37": {
+   "email": "valdezc@nyassembly.gov",
+   "key": "claire valdez",
+   "name": "Claire Valdez",
+   "phone": "718-784-3194",
+   "url": null
+  },
+  "A:38": {
+   "email": "rajkumarj@nyassembly.gov",
+   "key": "jenifer rajkumar",
+   "name": "Jenifer Rajkumar",
+   "phone": "718-805-0950",
+   "url": "https://nyassembly.gov/mem/Jenifer-Rajkumar"
+  },
+  "A:39": {
+   "email": "cruzc@nyassembly.gov",
+   "key": "catalina cruz",
+   "name": "Catalina Cruz",
+   "phone": "718-458-5367",
+   "url": "https://nyassembly.gov/mem/Catalina-Cruz"
+  },
+  "A:4": {
+   "email": "kassayr@nyassembly.gov",
+   "key": "rebecca kassay",
+   "name": "Rebecca Kassay",
+   "phone": "631-751-3094",
+   "url": "https://nyassembly.gov/mem/Rebecca-Kassay"
+  },
+  "A:40": {
+   "email": "kimr@nyassembly.gov",
+   "key": "ron kim",
+   "name": "Ron Kim",
+   "phone": "718-939-0195",
+   "url": "https://nyassembly.gov/mem/Ron-Kim"
+  },
+  "A:41": {
+   "email": "askkalman@nyassembly.gov",
+   "key": "kalman yeger",
+   "name": "Kalman Yeger",
+   "phone": "718-648-4700",
+   "url": "https://nyassembly.gov/mem/Kalman-Yeger"
+  },
+  "A:42": {
+   "email": "bichotter@nyassembly.gov",
+   "key": "rodneyse hermelyn",
+   "name": "Rodneyse Bichotte Hermelyn",
+   "phone": "718-940-0428",
+   "url": "https://nyassembly.gov/mem/Rodneyse-Bichotte-Hermelyn/"
+  },
+  "A:43": {
+   "email": "cunninghamba@nyassembly.gov",
+   "key": "brian cunningham",
+   "name": "Brian Cunningham",
+   "phone": "718-771-3105",
+   "url": "https://nyassembly.gov/mem/Brian-Cunningham"
+  },
+  "A:44": {
+   "email": "carrollr@nyassembly.gov",
+   "key": "robert carroll",
+   "name": "Robert Carroll",
+   "phone": "718-788-7221",
+   "url": "https://nyassembly.gov/mem/Robert-C-Carroll"
+  },
+  "A:45": {
+   "email": "novakhovm@nyassembly.gov",
+   "key": "misha novakhov",
+   "name": "Misha Novakhov",
+   "phone": "718-743-4078",
+   "url": "https://nyassembly.gov/mem/Michael-Novakhov"
+  },
+  "A:46": {
+   "email": "brook-krasnya@nyassembly.gov",
+   "key": "alec brook-krasny",
+   "name": "Alec Brook-Krasny",
+   "phone": "347-560-6302",
+   "url": null
+  },
+  "A:47": {
+   "email": "coltonw@nyassembly.gov",
+   "key": "william colton",
+   "name": "William Colton",
+   "phone": "718-236-1598",
+   "url": "https://nyassembly.gov/mem/william-colton"
+  },
+  "A:48": {
+   "email": "eichensteins@nyassembly.gov",
+   "key": "simcha eichenstein",
+   "name": "Simcha Eichenstein",
+   "phone": "718-853-9616",
+   "url": "https://nyassembly.gov/mem/Simcha-Eichenstein"
+  },
+  "A:49": {
+   "email": "changl@nyassembly.gov",
+   "key": "lester chang",
+   "name": "Lester Chang",
+   "phone": "718-236-1764",
+   "url": "https://nyassembly.gov/mem/Lester-Chang"
+  },
+  "A:5": {
+   "email": "smithd@nyassembly.gov",
+   "key": "doug smith",
+   "name": "Doug Smith",
+   "phone": "631-585-0230",
+   "url": "https://nyassembly.gov/mem/Doug-Smith"
+  },
+  "A:50": {
+   "email": "gallaghere@nyassembly.gov",
+   "key": "emily gallagher",
+   "name": "Emily Gallagher",
+   "phone": "718-383-7474",
+   "url": "https://nyassembly.gov/mem/Emily-Gallagher"
+  },
+  "A:51": {
+   "email": "mitaynesm@nyassembly.gov",
+   "key": "marcela mitaynes",
+   "name": "Marcela Mitaynes",
+   "phone": "718-492-6334",
+   "url": "https://nyassembly.gov/mem/Marcela-Mitaynes"
+  },
+  "A:52": {
+   "email": "simonj@nyassembly.gov",
+   "key": "jo simon",
+   "name": "Jo Anne Simon",
+   "phone": "718-246-4889",
+   "url": "https://nyassembly.gov/mem/Jo-Anne-Simon"
+  },
+  "A:53": {
+   "email": "davilam@nyassembly.gov",
+   "key": "maritza davila",
+   "name": "Maritza Davila",
+   "phone": "718-443-1205",
+   "url": "https://nyassembly.gov/mem/Maritza-Davila"
+  },
+  "A:54": {
+   "email": "dilane@nyassembly.gov",
+   "key": "erik dilan",
+   "name": "Erik Dilan",
+   "phone": "718-386-4576",
+   "url": "https://nyassembly.gov/mem/Erik-M-Dilan"
+  },
+  "A:55": {
+   "email": "walkerl@nyassembly.gov",
+   "key": "latrice walker",
+   "name": "Latrice Walker",
+   "phone": "718-342-1256",
+   "url": "https://nyassembly.gov/mem/Latrice-Walker"
+  },
+  "A:56": {
+   "email": "zinermans@nyassembly.gov",
+   "key": "stefani zinerman",
+   "name": "Stefani Zinerman",
+   "phone": "718-399-7630",
+   "url": "https://nyassembly.gov/mem/Stefani-Zinerman"
+  },
+  "A:57": {
+   "email": "souffrantforrestp@nyassembly.gov",
+   "key": "phara forrest",
+   "name": "Phara Souffrant Forrest",
+   "phone": "718-596-0100",
+   "url": "https://nyassembly.gov/mem/Phara-Souffrant-Forrest"
+  },
+  "A:58": {
+   "email": "chandlerwatermanm@nyassembly.gov",
+   "key": "monique chandler-waterman",
+   "name": "Monique Chandler-Waterman",
+   "phone": "718-385-3336",
+   "url": "https://nyassembly.gov/mem/Monique-Chandler-Waterman"
+  },
+  "A:59": {
+   "email": "williamsja@nyassembly.gov",
+   "key": "jaime williams",
+   "name": "Jaime Williams",
+   "phone": "718-252-2124",
+   "url": "https://nyassembly.gov/mem/Jaime-R-Williams"
+  },
+  "A:6": {
+   "email": "ramosp@nyassembly.gov",
+   "key": "phil ramos",
+   "name": "Phil Ramos",
+   "phone": "631-435-3214",
+   "url": "https://nyassembly.gov/mem/phil-ramos"
+  },
+  "A:60": {
+   "email": "lucasn@nyassembly.gov",
+   "key": "nikki lucas",
+   "name": "Nikki Lucas",
+   "phone": "718-257-5824",
+   "url": "https://nyassembly.gov/mem/Nikki-Lucas"
+  },
+  "A:61": {
+   "email": "fallc@nyassembly.gov",
+   "key": "charles fall",
+   "name": "Charles Fall",
+   "phone": "718-442-9932",
+   "url": "https://nyassembly.gov/mem/Charles-Fall"
+  },
+  "A:62": {
+   "email": "reillym@nyassembly.gov",
+   "key": "mike reilly",
+   "name": "Mike Reilly",
+   "phone": "718-967-5194",
+   "url": "https://nyassembly.gov/mem/Michael-Reilly"
+  },
+  "A:63": {
+   "email": "pirozzolos@nyassembly.gov",
+   "key": "sam pirozzolo",
+   "name": "Sam Pirozzolo",
+   "phone": "718-370-1384",
+   "url": "https://nyassembly.gov/mem/Sam-Pirozzolo"
+  },
+  "A:64": {
+   "email": "tannousism@nyassembly.gov",
+   "key": "mike tannousis",
+   "name": "Mike Tannousis",
+   "phone": "718-439-8090",
+   "url": "https://nyassembly.gov/mem/Michael-Tannousis"
+  },
+  "A:65": {
+   "email": "leeg@nyassembly.gov",
+   "key": "grace lee",
+   "name": "Grace Lee",
+   "phone": "212-312-1420",
+   "url": "https://nyassembly.gov/mem/Grace-Lee"
+  },
+  "A:66": {
+   "email": "glickd@nyassembly.gov",
+   "key": "deborah glick",
+   "name": "Deborah Glick",
+   "phone": "212-674-5153",
+   "url": "https://nyassembly.gov/mem/deborah-j-glick"
+  },
+  "A:67": {
+   "email": "rosentl@nyassembly.gov",
+   "key": "linda rosenthal",
+   "name": "Linda Rosenthal",
+   "phone": "212-873-6368",
+   "url": "https://nyassembly.gov/mem/linda-b-rosenthal"
+  },
+  "A:68": {
+   "email": "gibbse@nyassembly.gov",
+   "key": "eddie gibbs",
+   "name": "Eddie Gibbs",
+   "phone": "212-828-3953",
+   "url": "https://nyassembly.gov/mem/Edward-Gibbs"
+  },
+  "A:69": {
+   "email": "lasherm@nyassembly.gov",
+   "key": "micah lasher",
+   "name": "Micah Lasher",
+   "phone": "212-866-3970",
+   "url": "https://nyassembly.gov/mem/Micah-C-Lasher"
+  },
+  "A:7": {
+   "email": "gandolfoj@nyassembly.gov",
+   "key": "jarett gandolfo",
+   "name": "Jarett Gandolfo",
+   "phone": "631-589-0348",
+   "url": "https://nyassembly.gov/mem/Jarett-Gandolfo"
+  },
+  "A:70": {
+   "email": "wrightjj@nyassembly.gov",
+   "key": "jordan wright",
+   "name": "Jordan Wright",
+   "phone": "212-866-5809",
+   "url": "https://nyassembly.gov/mem/Jordan-J.G-Wright"
+  },
+  "A:71": {
+   "email": "taylora@nyassembly.gov",
+   "key": "al taylor",
+   "name": "Al Taylor",
+   "phone": "212-234-1430",
+   "url": "https://nyassembly.gov/mem/Al-Taylor"
+  },
+  "A:72": {
+   "email": "delossm@nyassembly.gov",
+   "key": "manny santos",
+   "name": "Manny De Los Santos",
+   "phone": "212-544-2278",
+   "url": "https://nyassembly.gov/mem/Manny-De-Los-Santos"
+  },
+  "A:73": {
+   "email": "boresa@nyassembly.gov",
+   "key": "alex bores",
+   "name": "Alex Bores",
+   "phone": "212-605-0937",
+   "url": "https://nyassembly.gov/mem/Alex-Bores"
+  },
+  "A:74": {
+   "email": "powersk@nyassembly.gov",
+   "key": "keith powers",
+   "name": "Keith Powers",
+   "phone": "212-979-9696",
+   "url": "https://nyassembly.gov/mem/Keith-Powers"
+  },
+  "A:75": {
+   "email": "simonet@nyassembly.gov",
+   "key": "tony simone",
+   "name": "Tony Simone",
+   "phone": "212-807-7900",
+   "url": "https://nyassembly.gov/mem/Tony-Simone"
+  },
+  "A:76": {
+   "email": "seawrightr@nyassembly.gov",
+   "key": "rebecca seawright",
+   "name": "Rebecca Seawright",
+   "phone": "212-288-4607",
+   "url": "https://nyassembly.gov/mem/Rebecca-A-Seawright"
+  },
+  "A:77": {
+   "email": "daisl@nyassembly.gov",
+   "key": "landon dais",
+   "name": "Landon Dais",
+   "phone": "718-538-2000",
+   "url": "https://nyassembly.gov/mem/Landon-C-Dais/"
+  },
+  "A:78": {
+   "email": "alvarezg@nyassembly.gov",
+   "key": "george alvarez",
+   "name": "George Alvarez",
+   "phone": "718-933-2204",
+   "url": "https://nyassembly.gov/mem/George-Alvarez"
+  },
+  "A:79": {
+   "email": "jacksonc@nyassembly.gov",
+   "key": "chantel jackson",
+   "name": "Chantel Jackson",
+   "phone": "718-538-3829",
+   "url": "https://nyassembly.gov/mem/Chantel-Jackson"
+  },
+  "A:8": {
+   "email": "fitzpatrickm@nyassembly.gov",
+   "key": "mike fitzpatrick",
+   "name": "Mike Fitzpatrick",
+   "phone": "631-724-2929",
+   "url": "https://nyassembly.gov/mem/michael-j-fitzpatrick"
+  },
+  "A:80": {
+   "email": "zaccaroj@nyassembly.gov",
+   "key": "john zaccaro",
+   "name": "John Zaccaro",
+   "phone": "718-409-0109",
+   "url": "https://nyassembly.gov/mem/John-Zaccaro-Jr"
+  },
+  "A:81": {
+   "email": "dinowitzj@nyassembly.gov",
+   "key": "jeffrey dinowitz",
+   "name": "Jeffrey Dinowitz",
+   "phone": "718-796-5345",
+   "url": "https://nyassembly.gov/mem/jeffrey-dinowitz"
+  },
+  "A:82": {
+   "email": "benedettom@nyassembly.gov",
+   "key": "michael benedetto",
+   "name": "Michael Benedetto",
+   "phone": "718-320-2220",
+   "url": "https://nyassembly.gov/mem/michael-benedetto"
+  },
+  "A:83": {
+   "email": "speaker@nyassembly.gov",
+   "key": "carl heastie",
+   "name": "Carl Heastie",
+   "phone": "212-312-1400",
+   "url": "https://nyassembly.gov/mem/carl-e-heastie"
+  },
+  "A:84": {
+   "email": "septimoa@nyassembly.gov",
+   "key": "amanda septimo",
+   "name": "Amanda Septimo",
+   "phone": "718-292-2901",
+   "url": "https://nyassembly.gov/mem/Amanda-Septimo"
+  },
+  "A:85": {
+   "email": "torrese@nyassembly.gov",
+   "key": "emerita torres",
+   "name": "Em\u00e9rita Torres",
+   "phone": "718-893-0202",
+   "url": "https://nyassembly.gov/mem/Emerita-Torres/"
+  },
+  "A:86": {
+   "email": "tapiay@nyassembly.gov",
+   "key": "yudelka tapia",
+   "name": "Yudelka Tapia",
+   "phone": "718-933-6909",
+   "url": "https://nyassembly.gov/mem/Yudelka-Tapia"
+  },
+  "A:87": {
+   "email": "reyesk@nyassembly.gov",
+   "key": "karines reyes",
+   "name": "Karines Reyes",
+   "phone": "718-931-2620",
+   "url": "https://nyassembly.gov/mem/Karines-Reyes"
+  },
+  "A:88": {
+   "email": "paulina@nyassembly.gov",
+   "key": "amy paulin",
+   "name": "Amy Paulin",
+   "phone": "914-723-1115",
+   "url": "https://nyassembly.gov/mem/amy-paulin"
+  },
+  "A:89": {
+   "email": "pretloj@nyassembly.gov",
+   "key": "gary pretlow",
+   "name": "Gary Pretlow",
+   "phone": "914-667-0127",
+   "url": "https://nyassembly.gov/mem/j-gary-pretlow"
+  },
+  "A:9": {
+   "email": "dursom@nyassembly.gov",
+   "key": "michael durso",
+   "name": "Michael Durso",
+   "phone": "516-541-4598",
+   "url": "https://nyassembly.gov/mem/Michael-Durso"
+  },
+  "A:90": {
+   "email": "sayeghn@nyassembly.gov",
+   "key": "nader sayegh",
+   "name": "Nader Sayegh",
+   "phone": "914-779-8805",
+   "url": "https://nyassembly.gov/mem/Nader-J-Sayegh"
+  },
+  "A:91": {
+   "email": "otiss@nyassembly.gov",
+   "key": "steve otis",
+   "name": "Steve Otis",
+   "phone": "914-939-7028",
+   "url": "https://nyassembly.gov/mem/Steven-Otis"
+  },
+  "A:92": {
+   "email": "shimskym@nyassembly.gov",
+   "key": "maryjane shimsky",
+   "name": "MaryJane Shimsky",
+   "phone": "914-631-1605",
+   "url": "https://nyassembly.gov/mem/MaryJane-Shimsky"
+  },
+  "A:93": {
+   "email": "burdickc@nyassembly.gov",
+   "key": "chris burdick",
+   "name": "Chris Burdick",
+   "phone": "914-244-4450",
+   "url": "https://nyassembly.gov/mem/Chris-Burdick"
+  },
+  "A:94": {
+   "email": "slaterm@nyassembly.gov",
+   "key": "matt slater",
+   "name": "Matt Slater",
+   "phone": "845-278-2923",
+   "url": "https://nyassembly.gov/mem/Matt-Slater"
+  },
+  "A:95": {
+   "email": "levenbergd@nyassembly.gov",
+   "key": "dana levenberg",
+   "name": "Dana Levenberg",
+   "phone": "914-941-1111",
+   "url": "https://nyassembly.gov/mem/Dana-Levenberg"
+  },
+  "A:96": {
+   "email": "carrollp@nyassembly.gov",
+   "key": "pat carroll",
+   "name": "Pat Carroll",
+   "phone": "845-634-9791",
+   "url": "https://nyassembly.gov/mem/Patrick-J-Carroll"
+  },
+  "A:97": {
+   "email": "wiedera@nyassembly.gov",
+   "key": "aron wieder",
+   "name": "Aron Wieder",
+   "phone": "845-425-1734",
+   "url": "https://nyassembly.gov/mem/Aron-Wieder"
+  },
+  "A:98": {
+   "email": "brabeneck@nyassembly.gov",
+   "key": "karl brabenec",
+   "name": "Karl Brabenec",
+   "phone": "845-544-7551",
+   "url": "https://nyassembly.gov/mem/Karl-Brabenec"
+  },
+  "A:99": {
+   "email": "eachusc@nyassembly.gov",
+   "key": "chris eachus",
+   "name": "Chris Eachus",
+   "phone": "845-469-6929",
+   "url": "https://nyassembly.gov/mem/Chris-Eachus"
+  },
+  "S:1": {
+   "email": "palumbo@nysenate.gov",
+   "key": "tony palumbo",
+   "name": "Tony Palumbo",
+   "phone": "631-461-9100",
+   "url": "https://www.nysenate.gov/senators/anthony-h-palumbo"
+  },
+  "S:10": {
+   "email": "sanders@nysenate.gov",
+   "key": "james sanders",
+   "name": "James Sanders",
+   "phone": "718-327-7017",
+   "url": "https://www.nysenate.gov/senators/james-sanders-jr"
+  },
+  "S:11": {
+   "email": "stavisky@nysenate.gov",
+   "key": "toby stavisky",
+   "name": "Toby Stavisky",
+   "phone": "718-445-0004",
+   "url": "https://www.nysenate.gov/senators/toby-ann-stavisky"
+  },
+  "S:13": {
+   "email": "ramos@nysenate.gov",
+   "key": "jessica ramos",
+   "name": "Jessica Ramos",
+   "phone": "718-205-3881",
+   "url": "https://www.nysenate.gov/senators/jessica-ramos"
+  },
+  "S:14": {
+   "email": "comrie@nysenate.gov",
+   "key": "leroy comrie",
+   "name": "Leroy Comrie",
+   "phone": "718-765-6359",
+   "url": "https://www.nysenate.gov/senators/leroy-comrie"
+  },
+  "S:15": {
+   "email": "addabbo@nysenate.gov",
+   "key": "joe addabbo",
+   "name": "Joe Addabbo",
+   "phone": "718-738-1111",
+   "url": "https://www.nysenate.gov/senators/joseph-p-addabbo-jr"
+  },
+  "S:16": {
+   "email": "liu@nysenate.gov",
+   "key": "john liu",
+   "name": "John Liu",
+   "phone": "718-765-6675",
+   "url": "https://www.nysenate.gov/senators/john-c-liu"
+  },
+  "S:17": {
+   "email": "chan@nysenate.gov",
+   "key": "steve chan",
+   "name": "Steve Chan",
+   "phone": "718-333-0311",
+   "url": "https://www.nysenate.gov/senators/stephen-t-chan"
+  },
+  "S:18": {
+   "email": "salazar@nysenate.gov",
+   "key": "julia salazar",
+   "name": "Julia Salazar",
+   "phone": "718-573-1726",
+   "url": "https://www.nysenate.gov/senators/julia-salazar"
+  },
+  "S:19": {
+   "email": "persaud@nysenate.gov",
+   "key": "roxanne persaud",
+   "name": "Roxanne Persaud",
+   "phone": "718-649-7653",
+   "url": "https://www.nysenate.gov/senators/roxanne-j-persaud"
+  },
+  "S:2": {
+   "email": "mattera@nysenate.gov",
+   "key": "mario mattera",
+   "name": "Mario Mattera",
+   "phone": "631-361-2154",
+   "url": "https://www.nysenate.gov/senators/mario-r-mattera"
+  },
+  "S:20": {
+   "email": "myrie@nysenate.gov",
+   "key": "zellnor myrie",
+   "name": "Zellnor Myrie",
+   "phone": "718-284-4700",
+   "url": "https://www.nysenate.gov/senators/zellnor-myrie"
+  },
+  "S:21": {
+   "email": "parker@nysenate.gov",
+   "key": "kevin parker",
+   "name": "Kevin Parker",
+   "phone": "718-629-6401",
+   "url": "https://www.nysenate.gov/senators/kevin-s-parker"
+  },
+  "S:22": {
+   "email": "sutton@nysenate.gov",
+   "key": "sam sutton",
+   "name": "Sam Sutton",
+   "phone": "718-253-2015",
+   "url": "https://www.nysenate.gov/senators/sam-sutton"
+  },
+  "S:23": {
+   "email": "spanton@nysenate.gov",
+   "key": "jessica scarcella-spanton",
+   "name": "Jessica Scarcella-Spanton",
+   "phone": "718-727-9406",
+   "url": "https://www.nysenate.gov/senators/jessica-scarcella-spanton"
+  },
+  "S:24": {
+   "email": "lanza@nysenate.gov",
+   "key": "andrew lanza",
+   "name": "Andrew Lanza",
+   "phone": "718-984-4073",
+   "url": "https://www.nysenate.gov/senators/andrew-j-lanza"
+  },
+  "S:25": {
+   "email": "brisport@nysenate.gov",
+   "key": "jabari brisport",
+   "name": "Jabari Brisport",
+   "phone": "718-643-6140",
+   "url": "https://www.nysenate.gov/senators/jabari-brisport"
+  },
+  "S:26": {
+   "email": "gounardes@nysenate.gov",
+   "key": "andrew gounardes",
+   "name": "Andrew Gounardes",
+   "phone": "718-238-6044",
+   "url": "https://www.nysenate.gov/senators/andrew-gounardes"
+  },
+  "S:27": {
+   "email": "kavanagh@nysenate.gov",
+   "key": "brian kavanagh",
+   "name": "Brian Kavanagh",
+   "phone": "212-298-5565",
+   "url": "https://www.nysenate.gov/senators/brian-kavanagh"
+  },
+  "S:28": {
+   "email": "lkrueger@nysenate.gov",
+   "key": "liz krueger",
+   "name": "Liz Krueger",
+   "phone": "212-490-9535",
+   "url": "https://www.nysenate.gov/senators/liz-krueger"
+  },
+  "S:29": {
+   "email": "serrano@nysenate.gov",
+   "key": "jose serrano",
+   "name": "Jose Serrano",
+   "phone": "212-828-5829",
+   "url": "https://www.nysenate.gov/senators/jos%C3%A9-m-serrano/contact"
+  },
+  "S:3": {
+   "email": "murray@nysenate.gov",
+   "key": "dean murray",
+   "name": "Dean Murray",
+   "phone": "631-360-3356",
+   "url": "https://www.nysenate.gov/senators/dean-murray"
+  },
+  "S:30": {
+   "email": "cleare@nysenate.gov",
+   "key": "cordell cleare",
+   "name": "Cordell Cleare",
+   "phone": "212-222-7315",
+   "url": "https://www.nysenate.gov/senators/cordell-cleare"
+  },
+  "S:31": {
+   "email": "jackson@nysenate.gov",
+   "key": "robert jackson",
+   "name": "Robert Jackson",
+   "phone": "212-544-0173",
+   "url": "https://www.nysenate.gov/senators/robert-jackson"
+  },
+  "S:32": {
+   "email": "sepulveda@nysenate.gov",
+   "key": "luis sepulveda",
+   "name": "Luis Sep\u00falveda",
+   "phone": "718-991-3161",
+   "url": "https://www.nysenate.gov/senators/luis-r-sepulveda"
+  },
+  "S:33": {
+   "email": "grivera@nysenate.gov",
+   "key": "gustavo rivera",
+   "name": "Gustavo Rivera",
+   "phone": "718-933-2034",
+   "url": "https://www.nysenate.gov/senators/gustavo-rivera"
+  },
+  "S:34": {
+   "email": "fernandez@nysenate.gov",
+   "key": "nathalia fernandez",
+   "name": "Nathalia Ferna\u0301ndez",
+   "phone": "718-822-2049",
+   "url": "https://www.nysenate.gov/senators/nathalia-fernandez"
+  },
+  "S:35": {
+   "email": "scousins@nysenate.gov",
+   "key": "andrea stewart-cousins",
+   "name": "Andrea Stewart-Cousins",
+   "phone": "212-298-5585",
+   "url": "https://www.nysenate.gov/senators/andrea-stewart-cousins"
+  },
+  "S:36": {
+   "email": "senatorjbailey@nysenate.gov",
+   "key": "jamaal bailey",
+   "name": "Jamaal Bailey",
+   "phone": "718-547-8854",
+   "url": "https://www.nysenate.gov/senators/jamaal-t-bailey"
+  },
+  "S:37": {
+   "email": "smayer@nysenate.gov",
+   "key": "shelley mayer",
+   "name": "Shelley Mayer",
+   "phone": "914-934-5250",
+   "url": "https://www.nysenate.gov/senators/shelley-b-mayer"
+  },
+  "S:38": {
+   "email": "weber@nysenate.gov",
+   "key": "bill weber",
+   "name": "Bill Weber",
+   "phone": "845-623-3627",
+   "url": "https://www.nysenate.gov/senators/bill-weber"
+  },
+  "S:39": {
+   "email": "rolison@nysenate.gov",
+   "key": "rob rolison",
+   "name": "Rob Rolison",
+   "phone": "845-229-0106",
+   "url": "https://www.nysenate.gov/senators/rob-rolison"
+  },
+  "S:4": {
+   "email": "martinez@nysenate.gov",
+   "key": "monica martinez",
+   "name": "Monica Martinez",
+   "phone": "631-341-7111",
+   "url": "https://www.nysenate.gov/senators/monica-r-martinez"
+  },
+  "S:40": {
+   "email": "harckham@nysenate.gov",
+   "key": "pete harckham",
+   "name": "Pete Harckham",
+   "phone": "914-241-4600",
+   "url": "https://www.nysenate.gov/senators/pete-harckham"
+  },
+  "S:41": {
+   "email": "hinchey@nysenate.gov",
+   "key": "michelle hinchey",
+   "name": "Michelle Hinchey",
+   "phone": "845-331-3810",
+   "url": "https://www.nysenate.gov/senators/michelle-hinchey"
+  },
+  "S:42": {
+   "email": "skoufis@nysenate.gov",
+   "key": "james skoufis",
+   "name": "James Skoufis",
+   "phone": "845-567-1270",
+   "url": "https://www.nysenate.gov/senators/james-skoufis"
+  },
+  "S:43": {
+   "email": "ashby@nysenate.gov",
+   "key": "jake ashby",
+   "name": "Jake Ashby",
+   "phone": "518-371-2751",
+   "url": "https://www.nysenate.gov/senators/jacob-ashby"
+  },
+  "S:44": {
+   "email": "tedisco@nysenate.gov",
+   "key": "jim tedisco",
+   "name": "Jim Tedisco",
+   "phone": "518-885-1829",
+   "url": "https://www.nysenate.gov/senators/james-tedisco"
+  },
+  "S:45": {
+   "email": "stec@nysenate.gov",
+   "key": "dan stec",
+   "name": "Dan Stec",
+   "phone": "315-229-3195",
+   "url": "https://www.nysenate.gov/senators/daniel-g-stec"
+  },
+  "S:46": {
+   "email": "fahy@nysenate.gov",
+   "key": "pat fahy",
+   "name": "Pat Fahy",
+   "phone": "518-842-2159",
+   "url": "https://www.nysenate.gov/senators/patricia-fahy"
+  },
+  "S:47": {
+   "email": "bottcher@nysenate.gov",
+   "key": "erik bottcher",
+   "name": "Erik Bottcher",
+   "phone": "212-633-8052",
+   "url": "https://www.nysenate.gov/senators/erik-bottcher"
+  },
+  "S:48": {
+   "email": "may@nysenate.gov",
+   "key": "rachel may",
+   "name": "Rachel May",
+   "phone": "315-478-8745",
+   "url": "https://www.nysenate.gov/senators/rachel-may"
+  },
+  "S:49": {
+   "email": "walczyk@nysenate.gov",
+   "key": "mark walczyk",
+   "name": "Mark Walczyk",
+   "phone": "518-762-3733",
+   "url": "https://www.nysenate.gov/senators/mark-walczyk"
+  },
+  "S:5": {
+   "email": "rhoads@nysenate.gov",
+   "key": "steve rhoads",
+   "name": "Steve Rhoads",
+   "phone": "516-882-0630",
+   "url": "https://www.nysenate.gov/senators/steven-d-rhoads"
+  },
+  "S:50": {
+   "email": "chrisryan@nysenate.gov",
+   "key": "chris ryan",
+   "name": "Chris Ryan",
+   "phone": "315-428-7632",
+   "url": "https://www.nysenate.gov/senators/christopher-j-ryan"
+  },
+  "S:51": {
+   "email": "oberacker@nysenate.gov",
+   "key": "peter oberacker",
+   "name": "Peter Oberacker",
+   "phone": "607-432-5524",
+   "url": "https://www.nysenate.gov/senators/peter-oberacker"
+  },
+  "S:52": {
+   "email": "leawebb@nysenate.gov",
+   "key": "lea webb",
+   "name": "Lea Webb",
+   "phone": "607-878-7025",
+   "url": "https://www.nysenate.gov/senators/lea-webb"
+  },
+  "S:53": {
+   "email": "griffo@nysenate.gov",
+   "key": "joe griffo",
+   "name": "Joe Griffo",
+   "phone": "315-793-9072",
+   "url": "https://www.nysenate.gov/senators/joseph-griffo"
+  },
+  "S:54": {
+   "email": "helming@nysenate.gov",
+   "key": "pam helming",
+   "name": "Pam Helming",
+   "phone": null,
+   "url": "https://www.nysenate.gov/senators/pamela-helming"
+  },
+  "S:55": {
+   "email": "brouk@nysenate.gov",
+   "key": "samra brouk",
+   "name": "Samra Brouk",
+   "phone": "585-223-1800",
+   "url": "https://www.nysenate.gov/senators/samra-g-brouk"
+  },
+  "S:56": {
+   "email": "cooney@nysenate.gov",
+   "key": "jeremy cooney",
+   "name": "Jeremy Cooney",
+   "phone": "585-225-3650",
+   "url": "https://www.nysenate.gov/senators/jeremy-cooney"
+  },
+  "S:57": {
+   "email": "borrello@nysenate.gov",
+   "key": "george borrello",
+   "name": "George Borrello",
+   "phone": "716-372-4901",
+   "url": "https://www.nysenate.gov/senators/george-m-borrello"
+  },
+  "S:58": {
+   "email": "omara@nysenate.gov",
+   "key": "tom omara",
+   "name": "Tom O'Mara",
+   "phone": "315-393-3024",
+   "url": "https://www.nysenate.gov/senators/thomas-f-omara"
+  },
+  "S:59": {
+   "email": "gonzalez@nysenate.gov",
+   "key": "kristen gonzalez",
+   "name": "Kristen Gonzalez",
+   "phone": "718-765-6674",
+   "url": "https://www.nysenate.gov/senators/kristen-gonzalez"
+  },
+  "S:6": {
+   "email": "bynoe@nysenate.gov",
+   "key": "siela bynoe",
+   "name": "Siela Bynoe",
+   "phone": "516-739-1700",
+   "url": "https://www.nysenate.gov/senators/siela-bynoe"
+  },
+  "S:60": {
+   "email": "gallivan@nysenate.gov",
+   "key": "patrick gallivan",
+   "name": "Patrick Gallivan",
+   "phone": "716-656-8544",
+   "url": "https://www.nysenate.gov/senators/patrick-m-gallivan"
+  },
+  "S:61": {
+   "email": "zellner@nysenate.gov",
+   "key": "jeremy zellner",
+   "name": "Jeremy Zellner",
+   "phone": "716-854-8705",
+   "url": "https://www.nysenate.gov/senators/jeremy-j-zellner"
+  },
+  "S:62": {
+   "email": "ortt@nysenate.gov",
+   "key": "rob ortt",
+   "name": "Rob Ortt",
+   "phone": "716-434-0680",
+   "url": "https://www.nysenate.gov/senators/robert-g-ortt"
+  },
+  "S:63": {
+   "email": "baskin@nysenate.gov",
+   "key": "april baskin",
+   "name": "April Baskin",
+   "phone": "716-826-2683",
+   "url": "https://www.nysenate.gov/senators/april-baskin"
+  },
+  "S:7": {
+   "email": "martins@nysenate.gov",
+   "key": "jack martins",
+   "name": "Jack Martins",
+   "phone": "516-922-1811",
+   "url": "https://www.nysenate.gov/senators/jack-m-martins"
+  },
+  "S:8": {
+   "email": "weik@nysenate.gov",
+   "key": "alexis weik",
+   "name": "Alexis Weik",
+   "phone": "631-665-2311",
+   "url": "https://www.nysenate.gov/senators/alexis-weik"
+  },
+  "S:9": {
+   "email": "canzoneri@nysenate.gov",
+   "key": "patricia canzoneri-fitzpatrick",
+   "name": "Patricia Canzoneri-Fitzpatrick",
+   "phone": "516-766-8383",
+   "url": "https://www.nysenate.gov/senators/patricia-canzoneri-fitzpatrick"
+  }
+ },
  "senateCommittees": {
   "aging": {
    "chair": "Cordell Cleare",

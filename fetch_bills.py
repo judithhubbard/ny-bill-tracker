@@ -65,6 +65,8 @@ def slim(b):
         "actClause": am.get("actClause"),
         "relatedLaws": {k: v.get("items", []) for k, v in ((am.get("relatedLaws") or {}).get("items") or {}).items()},
         "cosponsorCount": len(items(am.get("coSponsors"))),
+        "coSponsors": [m["fullName"] for m in items(am.get("coSponsors"))],
+        "multiSponsors": [m["fullName"] for m in items(am.get("multiSponsors"))],
         "publishDate": am.get("publishDate"),
         "previousVersions": [{"session": p["session"], "printNo": p["basePrintNo"]} for p in items(b.get("previousVersions"))],
     }
