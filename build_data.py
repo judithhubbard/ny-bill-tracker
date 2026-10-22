@@ -252,6 +252,9 @@ def load_session(session):
             "senDeleg": any(b["chamber"] == "SENATE" and b["district"] in deleg.get("SENATE", ()) for b in live),
             "asmDeleg": any(b["chamber"] == "ASSEMBLY" and b["district"] in deleg.get("ASSEMBLY", ()) for b in live),
             "budget": any(b["budget"] for b in live),
+            # Passed each house at any point in the session, even if later sent back to committee.
+            "passedS": any(a["text"] in ("PASSED SENATE", "REPASSED SENATE") for b in live for a in b["actions"]),
+            "passedA": any(a["text"] in ("PASSED ASSEMBLY", "REPASSED ASSEMBLY") for b in live for a in b["actions"]),
             "program": f"Program bill: {prog}" if prog else None,
             "stage": stage,
             "passedIn": passed_in,
@@ -362,7 +365,7 @@ def main():
 
         rows = []
         for i, r in enumerate(recs):
-            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8)
+            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]]] for v in r["vers"]]
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
