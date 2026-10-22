@@ -281,6 +281,7 @@ table.oc th { vertical-align: bottom; }
 .stance { appearance: none; border: 1px solid var(--rule); background: var(--chip); color: var(--ink-2); border-radius: 999px; padding: 1px 7px; font: 600 10.5px var(--body); cursor: pointer; margin-top: 4px; justify-self: start; }
 .stance.support { color: var(--signed); border-color: var(--signed); }
 .stance.oppose { color: var(--veto); border-color: var(--veto); }
+.stance.fixed { cursor: default; background: none; }
 .watchview { display: grid; gap: 20px; }
 .wcards { display: grid; gap: 12px; }
 .wcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
@@ -1220,10 +1221,10 @@ const hasNews = (b) => { const e = watchEntry(b); return !!e && (b.last || "") >
 function setWatch(b, entry) { keysOf(b).forEach((k) => WATCH.delete(k)); if (entry) WATCH.set(billKey(b), entry); saveWatch(); }
 function toggleWatch(b) { setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
 function markSeen(b) { const e = watchEntry(b); if (e) setWatch(b, { ...e, seen: b.last || "" }); }
-function watchButton(b) {
+function watchButton(b, withStance = true) {
   const e = watchEntry(b);
   return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${!!e}" title="${e ? "Remove from" : "Add to"} my watchlist">${e ? "★" : "☆"}</button>`
-    + (e ? `<button class="stance ${e.stance}" type="button" data-stance="${b.idx}" title="Switch between support and oppose">${e.stance === "oppose" ? "Oppose" : "Support"}</button>` : "");
+    + (e && withStance ? `<button class="stance ${e.stance}" type="button" data-stance="${b.idx}" title="Switch between support and oppose">${e.stance === "oppose" ? "Oppose" : "Support"}</button>` : "");
 }
 function shareLink() {
   const nums = BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
@@ -1290,7 +1291,7 @@ function renderWatchView() {
   for (const x of active) { const k = x.key.gov ? "gov" : `${x.key.house}:${lastName(x.key.name)}`; (byPerson.get(k) || byPerson.set(k, []).get(k)).push(x); }
   const multi = [...byPerson.entries()].filter(([, xs]) => xs.length > 1);
   $("wlActions").innerHTML = multi.map(([k, xs]) =>
-    `<p class="multi">${num(xs.length)} of your bills need ${xs[0].key.gov ? "the governor's office" : esc(titleOf(xs[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(xs.length)}</button></p>`).join("");
+    `<p class="multi">${num(xs.length)} of ${SHARED ? "these" : "your"} bills need ${xs[0].key.gov ? "the governor's office" : esc(titleOf(xs[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(xs.length)}</button></p>`).join("");
   $("wlActions")._multi = Object.fromEntries(multi);
 
   const cardFor = (x) => {
@@ -1303,7 +1304,9 @@ function renderWatchView() {
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
     return `<article class="wcard" data-idx="${b.idx}">
-      <div class="wtop"><div class="nums">${esc(b.nums.join(" / "))}${watchButton(b)}</div><div class="wstatus">${statusText(b)}</div></div>
+      <div class="wtop"><div class="nums">${esc(b.nums.join(" / "))}${SHARED
+        ? `${watchButton(b, false)}<span class="stance fixed ${x.stance}" title="The position of whoever shared this list">Shared as: ${x.stance === "oppose" ? "Oppose" : "Support"}</span>`
+        : watchButton(b)}</div><div class="wstatus">${statusText(b)}</div></div>
       <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
       ${summary}
       ${action}
@@ -1323,6 +1326,7 @@ function draftFor(person, xs) {
 }
 
 function refreshWatchButtons(b) {
+  if (SHARED && !$("view-watch").hidden) { renderWatchView(); return; }
   for (const el of document.querySelectorAll(`.nums [data-watch="${b.idx}"]`)) {
     const box = el.parentElement;
     box.querySelectorAll(".watchbtn, .stance").forEach((x) => x.remove());
