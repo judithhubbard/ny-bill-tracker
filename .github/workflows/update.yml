@@ -52,6 +52,13 @@ jobs:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: python3 fetch_bills.py "$CURRENT_SESSION"
 
+      # Committee chairs and members, and legislators' page links. If a source is down,
+      # the committed data/contacts_<session>.json is used as is.
+      - name: Refresh contacts
+        env:
+          NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
+        run: python3 fetch_contacts.py "$CURRENT_SESSION" || echo "Contacts refresh failed; using the committed file"
+
       - name: Build pages
         run: python3 build_data.py --github _site
       - uses: actions/configure-pages@v5

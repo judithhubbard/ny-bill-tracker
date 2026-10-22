@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Collect who to contact about a bill: committee chairs and members in both houses, and the
+address of each legislator's official page. Writes data/contacts_<session>.json.
+
+Senate committees, chairs, members and meeting times come from the Open Legislation API.
+The Assembly isn't in the API, so its committee chairs and members, and its members' page
+addresses, are read from nyassembly.gov. Senators' pages on nysenate.gov can't be fetched
+by a script, so their addresses come from SENATE_SLUGS below (checked October 2026), with a
+name-based guess for anyone not listed.
+
+If a source can't be reached, the previous contacts file is kept as is.
+
+Usage: python3 fetch_contacts.py [session_year]   (default 2025)
+"""
+import html, json, os, re, sys, time, unicodedata, urllib.parse, urllib.request
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
+KEY = os.environ.get("NYSENATE_API_KEY") or open(os.path.expanduser("~/.nysenate_api_key")).read().strip()
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "data", f"contacts_{SESSION}.json")
+UA = "Mozilla/5.0 (compatible; ny-bill-tracker; +https://github.com/judithhubbard/ny-bill-tracker)"
+
+# nysenate.gov page addresses, keyed by first + last name (see name_key).
+SENATE_SLUGS = {
+    "joseph addabbo": "joseph-p-addabbo-jr", "jacob ashby": "jacob-ashby", "jamaal bailey": "jamaal-t-bailey",
+    "april baskin": "april-baskin", "george borrello": "george-m-borrello", "erik bottcher": "erik-bottcher",
+    "jabari brisport": "jabari-brisport", "samra brouk": "samra-g-brouk", "siela bynoe": "siela-bynoe",
+    "patricia canzoneri-fitzpatrick": "patricia-canzoneri-fitzpatrick", "stephen chan": "stephen-t-chan",
+    "cordell cleare": "cordell-cleare", "leroy comrie": "leroy-comrie", "jeremy cooney": "jeremy-cooney",
+    "patricia fahy": "patricia-fahy", "nathalia fernandez": "nathalia-fernandez",
+    "patrick gallivan": "patrick-m-gallivan", "kristen gonzalez": "kristen-gonzalez",
+    "andrew gounardes": "andrew-gounardes", "joseph griffo": "joseph-griffo", "pete harckham": "pete-harckham",
+    "pamela helming": "pamela-helming", "michelle hinchey": "michelle-hinchey", "robert jackson": "robert-jackson",
+    "brian kavanagh": "brian-kavanagh", "liz krueger": "liz-krueger", "andrew lanza": "andrew-j-lanza",
+    "john liu": "john-c-liu", "monica martinez": "monica-r-martinez", "jack martins": "jack-m-martins",
+    "mario mattera": "mario-r-mattera", "rachel may": "rachel-may", "shelley mayer": "shelley-b-mayer",
+    "dean murray": "dean-murray", "zellnor myrie": "zellnor-myrie", "thomas omara": "thomas-f-omara",
+    "peter oberacker": "peter-oberacker", "robert ortt": "robert-g-ortt", "anthony palumbo": "anthony-h-palumbo",
+    "kevin parker": "kevin-s-parker", "roxanne persaud": "roxanne-j-persaud", "jessica ramos": "jessica-ramos",
+    "steven rhoads": "steven-d-rhoads", "gustavo rivera": "gustavo-rivera", "rob rolison": "rob-rolison",
+    "christopher ryan": "christopher-j-ryan", "julia salazar": "julia-salazar", "james sanders": "james-sanders-jr",
+    "jessica scarcella-spanton": "jessica-scarcella-spanton", "luis sepulveda": "luis-r-sepulveda",
+    "jose serrano": "jose-m-serrano", "james skoufis": "james-skoufis", "toby stavisky": "toby-ann-stavisky",
+    "daniel stec": "daniel-g-stec", "andrea stewart-cousins": "andrea-stewart-cousins", "sam sutton": "sam-sutton",
+    "james tedisco": "james-tedisco", "mark walczyk": "mark-walczyk", "lea webb": "lea-webb",
+    "bill weber": "bill-weber", "alexis weik": "alexis-weik", "jeremy zellner": "jeremy-j-zellner",
+}
+
+
+def name_key(name):
+    """'Thomas F. O'Mara' and 'Thomas O'Mara' -> 'thomas omara'; drops middle names and suffixes."""
+    n = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
+    n = re.sub(r"^(mr|mrs|ms|dr)\.?\s+", "", n)
+    words = [w for w in re.sub(r"[^a-z\s-]", "", n).split() if w not in ("jr", "sr", "ii", "iii", "iv")]
+    return f"{words[0]} {words[-1]}" if len(words) > 1 else (words[0] if words else "")
+
+
+def committee_key(name):
+    return re.sub(r"[^a-z]", "", (name or "").lower().replace("and", ""))
+
+
+def senate_url(name):
+    slug = SENATE_SLUGS.get(name_key(name))
+    if not slug:
+        n = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower()
+        slug = re.sub(r"[^a-z0-9]+", "-", re.sub(r"['.]", "", n)).strip("-")
+    return f"https://www.nysenate.gov/senators/{slug}"
+
+
+def get(url, as_json=False):
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                body = r.read().decode("utf-8", "replace")
+                return json.loads(body) if as_json else body
+        except Exception as e:
+            print(f"  retry {attempt + 1}: {url.split('?')[0]}: {e}", file=sys.stderr)
+            time.sleep(3 * (attempt + 1))
+    raise RuntimeError(f"could not fetch {url.split('?')[0]}")
+
+
+def meeting_text(c):
+    day, tm, loc = c.get("meetDay"), c.get("meetTime"), c.get("location")
+    if not day:
+        return None
+    when = day.title() + "s"
+    if tm:
+        h, m = map(int, tm.split(":")[:2])
+        when += f" at {h % 12 or 12}:{m:02d} {'a.m.' if h < 12 else 'p.m.'}"
+    if c.get("meetAltWeek"):
+        when += f" ({c.get('meetAltWeekText') or 'alternate weeks'})"
+    if loc:
+        loc = re.sub(r"\bCAP\b", "Capitol", re.sub(r"\bLOB\b", "Legislative Office Building", loc))
+    return f"{when}, {loc}" if loc else when
+
+
+def senate():
+    q = urllib.parse.urlencode({"key": KEY, "full": "true", "limit": 100})
+    d = get(f"https://legislation.nysenate.gov/api/3/committees/{SESSION}/senate?{q}", as_json=True)
+    committees = {}
+    for c in d["result"]["items"]:
+        members = c.get("committeeMembers", {}).get("items", [])
+        chair = next((m["fullName"] for m in members if m.get("title") == "CHAIR_PERSON"), None)
+        committees[committee_key(c["name"])] = {
+            "name": c["name"],
+            "chair": chair,
+            "members": [m["fullName"] for m in members],
+            "meets": meeting_text(c),
+        }
+    return committees
+
+
+def assembly():
+    listing = get("https://nyassembly.gov/comm/")
+    committees = {}
+    for m in re.finditer(r'<div class="comm-title"><a href="\?id=(\d+)">([^<]+)</a></div>(.*?)</li>', listing, re.S):
+        cid, name, block = m.group(1), html.unescape(m.group(2)).strip(), m.group(3)
+        chair = re.search(r'Chair</strong>.*?<a href="/mem/([^"]+)">\s*([^<]+)</a>', block, re.S)
+        page = get(f"https://nyassembly.gov/comm/?id={cid}&sec=mem")
+        members = sorted({(s, html.unescape(n).strip()) for s, n in re.findall(r'<a href="/mem/([A-Za-z0-9.-]+)"><img[^>]*?title="\s*([^"]+?)\s*"', page)})
+        committees[committee_key(name)] = {
+            "name": name,
+            "chair": html.unescape(chair.group(2)).strip() if chair else None,
+            "members": [n for _, n in members],
+            "url": f"https://nyassembly.gov/comm/?id={cid}",
+        }
+        time.sleep(0.5)
+    if len(committees) < 20:
+        raise RuntimeError(f"only {len(committees)} Assembly committees found; page layout may have changed")
+    roster = get("https://nyassembly.gov/mem/")
+    members = {}
+    for block in roster.split('class="mem-name"')[1:]:
+        m = re.search(r'href="/mem/([A-Za-z0-9.-]+)">\s*([^<]+?)\s*<span>District (\d+)', block)
+        if not m:
+            continue
+        email = re.search(r'mailto:([^"]+)"', block[:1500])
+        members[name_key(html.unescape(m.group(2)))] = {
+            "url": f"https://nyassembly.gov/mem/{m.group(1)}",
+            "district": int(m.group(3)),
+            "email": email.group(1) if email else None,
+        }
+    if len(members) < 100:
+        raise RuntimeError(f"only {len(members)} Assembly members found; page layout may have changed")
+    return committees, members
+
+
+def main():
+    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    out = {"session": SESSION, "fetched": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")}
+    try:
+        out["senateCommittees"] = senate()
+    except Exception as e:
+        print(f"Senate committees: {e}; keeping previous", file=sys.stderr)
+        out["senateCommittees"] = old.get("senateCommittees", {})
+    try:
+        out["assemblyCommittees"], out["assemblyMembers"] = assembly()
+    except Exception as e:
+        print(f"Assembly: {e}; keeping previous", file=sys.stderr)
+        out["assemblyCommittees"] = old.get("assemblyCommittees", {})
+        out["assemblyMembers"] = old.get("assemblyMembers", {})
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    with open(OUT, "w") as f:
+        json.dump(out, f, indent=1, sort_keys=True)
+    print(f"{len(out['senateCommittees'])} Senate committees, {len(out['assemblyCommittees'])} Assembly committees, "
+          f"{len(out['assemblyMembers'])} Assembly members -> {OUT}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

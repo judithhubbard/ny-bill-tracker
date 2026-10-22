@@ -5,3 +5,4 @@ site/
 _site/
 __pycache__/
 .DS_Store
+!data/contacts_*.json

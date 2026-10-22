@@ -15,6 +15,7 @@ Usage: python3 build_data.py            builds every session found in data/
                                         for the others, linked to each other
 """
 import glob, gzip, json, os, re, sys
+from fetch_contacts import committee_key, name_key, senate_url
 from collections import Counter, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -332,6 +333,65 @@ def github_page(html):
             + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
 
 
+def contacts_for(session, recs, delegation_names):
+    """Who to contact for the current session: committee chairs (and whether our legislators
+    sit on each committee) plus a page link for every sponsor and chair."""
+    path = os.path.join(HERE, "data", f"contacts_{session}.json")
+    if not os.path.exists(path):
+        return None
+    raw = json.load(open(path))
+    asm_members = raw.get("assemblyMembers", {})
+    people = {}
+
+    def person(name, house):
+        if not name:
+            return None
+        if name not in people:
+            if house == "S":
+                people[name] = {"url": senate_url(name)}
+            else:
+                m = asm_members.get(name_key(name))
+                if not m:
+                    # Nicknames ("Al" for Albert): fall back to a unique last-name match.
+                    last = name_key(name).split()[-1]
+                    hits = [v for k, v in asm_members.items() if k.split()[-1] == last]
+                    m = hits[0] if len(hits) == 1 else {}
+                people[name] = {"url": m.get("url"), "email": m.get("email")}
+        return name
+
+    ours = {"S": set(delegation_names.get("SENATE", [])), "A": set(delegation_names.get("ASSEMBLY", []))}
+
+    def ours_on(members, house):
+        return sorted({n for n in ours[house] for m in members if name_key(m).endswith(" " + n.lower())})
+
+    committees = {}
+    for house, key in (("S", "senateCommittees"), ("A", "assemblyCommittees")):
+        for k, c in raw.get(key, {}).items():
+            committees[f"{house}:{k}"] = {
+                "name": c["name"],
+                "chair": person(c.get("chair"), house),
+                "meets": c.get("meets"),
+                "url": c.get("url"),
+                "ours": ours_on(c.get("members", []), house),
+            }
+    for r in recs:
+        for v in r["vers"]:
+            person(v["sponsor"], v["p"][0])
+    reps = []
+    for house, title in (("S", "Sen."), ("A", "Asm.")):
+        for last in sorted(ours[house]):
+            full = next((n for n in people if n.split()[-1] == last), None)
+            if not full:
+                for r in recs:
+                    full = next((v["sponsor"] for v in r["vers"] if v["sponsor"] and v["sponsor"].split()[-1] == last), None)
+                    if full:
+                        break
+            if full:
+                person(full, house)
+                reps.append({"title": title, "name": full, "house": house})
+    return {"fetched": raw.get("fetched"), "committees": committees, "people": people, "reps": reps}
+
+
 def outcomes(recs):
     """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
     out = defaultdict(lambda: [0, 0, 0, 0, 0])
@@ -426,6 +486,8 @@ def main():
             "strings": strings,
             "rows": rows,
         }
+        if session == current:
+            data["contacts"] = contacts_for(session, recs, names)
         payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
         template = open(TEMPLATE).read()
         if session != current:

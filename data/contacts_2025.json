@@ -1,0 +1,3064 @@
+{
+ "assemblyCommittees": {
+  "administrativeregulationsreview": {
+   "chair": "Jonathan Rivera",
+   "members": [
+    "Jonathan Rivera",
+    "Mary Beth Walsh"
+   ],
+   "name": "Administrative Regulations Review",
+   "url": "https://nyassembly.gov/comm/?id=44"
+  },
+  "aging": {
+   "chair": "Rebecca A. Seawright",
+   "members": [
+    "Alec Brook-Krasny",
+    "Charles D. Fall",
+    "Chris Eachus",
+    "Daniel J. Norber",
+    "David DiPietro",
+    "Diana C. Moreno",
+    "Doug Smith",
+    "Edward Gibbs",
+    "Em\u00e9rita Torres",
+    "Jeff Gallahan",
+    "Jenifer Rajkumar",
+    "John Zaccaro, Jr.",
+    "Jordan J.G. Wright",
+    "Judy Griffin",
+    "Kalman Yeger",
+    "Larinda C. Hooks",
+    "Lester Chang",
+    "Michael Novakhov",
+    "Michael S. Cashman",
+    "Nikki Lucas",
+    "Patrick J. Chludzinski",
+    "Phara Souffrant Forrest",
+    "Phil Ramos",
+    "Rebecca A. Seawright",
+    "Sam Berger",
+    "Sarahana Shrestha",
+    "Scott Bendett",
+    "Stefani Zinerman",
+    "Steve Stern",
+    "Steven Raga"
+   ],
+   "name": "Aging",
+   "url": "https://nyassembly.gov/comm/?id=1"
+  },
+  "agriculturalproductiontechnology": {
+   "chair": null,
+   "members": [],
+   "name": "Agricultural Production & Technology",
+   "url": "https://nyassembly.gov/comm/?id=144"
+  },
+  "agriculture": {
+   "chair": "Donna A. Lupardo",
+   "members": [
+    "Al Stirpe",
+    "Amanda Septimo",
+    "Anna R. Kelles",
+    "Brian Cunningham",
+    "Brian D. Miller",
+    "Carrie Woerner",
+    "Chris Tague",
+    "Diana C. Moreno",
+    "Didi Barrett",
+    "Donna A. Lupardo",
+    "Jaime R. Williams",
+    "Jodi Giglio",
+    "John Lemondes",
+    "Ken Blankenbush",
+    "Linda B. Rosenthal",
+    "Marianne Buttenschon",
+    "Michael J. Fitzpatrick",
+    "Michael S. Cashman",
+    "Paula Elaine Kay",
+    "Stefani Zinerman",
+    "Stephen Hawley",
+    "Steven Raga",
+    "Tommy John Schiavoni"
+   ],
+   "name": "Agriculture",
+   "url": "https://nyassembly.gov/comm/?id=2"
+  },
+  "agricultureeconomicdevelopmentfarmlprotection": {
+   "chair": null,
+   "members": [],
+   "name": "Agriculture Economic Development and Farmland Protection",
+   "url": "https://nyassembly.gov/comm/?id=117"
+  },
+  "alcoholismdrugabuse": {
+   "chair": "Phil Steck",
+   "members": [
+    "Al Stirpe",
+    "Alec Brook-Krasny",
+    "Claire Valdez",
+    "Emily Gallagher",
+    "Jeff Gallahan",
+    "John T. McDonald III",
+    "John Zaccaro, Jr.",
+    "Judy Griffin",
+    "Keith P. Brown",
+    "Maritza Davila",
+    "Michael S. Cashman",
+    "Phil Steck",
+    "Scott Gray",
+    "Tommy John Schiavoni"
+   ],
+   "name": "Alcoholism and Drug Abuse",
+   "url": "https://nyassembly.gov/comm/?id=3"
+  },
+  "asianpacificamericantaskforce": {
+   "chair": "Grace Lee",
+   "members": [
+    "Alex Bores",
+    "Amy Paulin",
+    "Chris Burdick",
+    "David I. Weprin",
+    "Edward C. Braunstein",
+    "Gabriella A. Romero",
+    "Grace Lee",
+    "Jenifer Rajkumar",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Jonathan Rivera",
+    "Judy Griffin",
+    "Karines Reyes",
+    "Marcela Mitaynes",
+    "Marianne Buttenschon",
+    "Nily Rozic",
+    "Rebecca A. Seawright",
+    "Rebecca Kassay",
+    "Ron Kim",
+    "Sam Berger",
+    "Sarah Clark",
+    "Sarahana Shrestha",
+    "Steve Stern",
+    "Steven Raga",
+    "William Colton"
+   ],
+   "name": "Asian Pacific American Task Force",
+   "url": "https://nyassembly.gov/comm/?id=149"
+  },
+  "autismspectrumdisorders": {
+   "chair": null,
+   "members": [],
+   "name": "Autism Spectrum Disorders",
+   "url": "https://nyassembly.gov/comm/?id=119"
+  },
+  "bankinginunderservedcommunities": {
+   "chair": null,
+   "members": [],
+   "name": "Banking in Underserved Communities",
+   "url": "https://nyassembly.gov/comm/?id=95"
+  },
+  "banks": {
+   "chair": "Clyde Vanel",
+   "members": [
+    "Al Taylor",
+    "Amanda Septimo",
+    "Andrew M. Molitor",
+    "Aron Wieder",
+    "Brian Cunningham",
+    "Chantel Jackson",
+    "Chris Burdick",
+    "Clyde Vanel",
+    "David DiPietro",
+    "David I. Weprin",
+    "Em\u00e9rita Torres",
+    "Grace Lee",
+    "John K. Mikulin",
+    "John Lemondes",
+    "Jordan J.G. Wright",
+    "Kalman Yeger",
+    "Landon C. Dais",
+    "Larinda C. Hooks",
+    "Lester Chang",
+    "Manny De Los Santos",
+    "Marcela Mitaynes",
+    "Michael J. Fitzpatrick",
+    "Monique Chandler-Waterman",
+    "Nader J. Sayegh",
+    "Patrick Burke",
+    "Patrick J. Chludzinski",
+    "Paul A. Bologna",
+    "Robert Smullen",
+    "Steve Stern",
+    "Steven Raga",
+    "Yudelka Tapia"
+   ],
+   "name": "Banks",
+   "url": "https://nyassembly.gov/comm/?id=4"
+  },
+  "blackpuertoricanhispanicasianlegislativecaucus": {
+   "chair": "Michaelle C. Solages",
+   "members": [],
+   "name": "Black, Puerto Rican, Hispanic & Asian Legislative Caucus",
+   "url": "https://nyassembly.gov/comm/?id=58"
+  },
+  "blacktaskforce": {
+   "chair": "Chantel Jackson",
+   "members": [],
+   "name": "Black Task Force",
+   "url": "https://nyassembly.gov/comm/?id=173"
+  },
+  "catastrophicnaturaldisasters": {
+   "chair": null,
+   "members": [],
+   "name": "Catastrophic Natural Disasters",
+   "url": "https://nyassembly.gov/comm/?id=118"
+  },
+  "childproductsafety": {
+   "chair": null,
+   "members": [
+    "David G. McDonough"
+   ],
+   "name": "Child Product Safety",
+   "url": "https://nyassembly.gov/comm/?id=88"
+  },
+  "childrenfamilies": {
+   "chair": "Andrew Hevesi",
+   "members": [
+    "Andrew Hevesi",
+    "Andrew M. Molitor",
+    "Aron Wieder",
+    "Demond Meeks",
+    "Grace Lee",
+    "Jen Lunsford",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Josh Jensen",
+    "Khaleel M. Anderson",
+    "Marcela Mitaynes",
+    "Maritza Davila",
+    "Micah C. Lasher",
+    "Michael Novakhov",
+    "Monique Chandler-Waterman",
+    "Paul A. Bologna",
+    "Sam Pirozzolo",
+    "Sarah Clark"
+   ],
+   "name": "Children and Families",
+   "url": "https://nyassembly.gov/comm/?id=5"
+  },
+  "cities": {
+   "chair": "Patrick Burke",
+   "members": [
+    "Alec Brook-Krasny",
+    "Chantel Jackson",
+    "Charles D. Fall",
+    "Claire Valdez",
+    "Demond Meeks",
+    "George Alvarez",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Jonathan G. Jacobson",
+    "Keith Powers",
+    "Landon C. Dais",
+    "Lester Chang",
+    "Michael Novakhov",
+    "Michael Tannousis",
+    "Patrick Burke",
+    "Paul A. Bologna",
+    "Simcha Eichenstein"
+   ],
+   "name": "Cities",
+   "url": "https://nyassembly.gov/comm/?id=6"
+  },
+  "codes": {
+   "chair": "Jeffrey Dinowitz",
+   "members": [
+    "Al Taylor",
+    "Alex Bores",
+    "Andrew Hevesi",
+    "Andrew M. Molitor",
+    "Angelo J. Morinello",
+    "Brian Cunningham",
+    "Catalina Cruz",
+    "Charles D. Lavine",
+    "Clyde Vanel",
+    "David I. Weprin",
+    "Gabriella A. Romero",
+    "George Alvarez",
+    "Jeffrey Dinowitz",
+    "Joe Angelino",
+    "John K. Mikulin",
+    "Karines Reyes",
+    "Latrice M. Walker",
+    "Linda B. Rosenthal",
+    "Michael Reilly",
+    "Michael Tannousis",
+    "Rebecca A. Seawright",
+    "Vivian E. Cook"
+   ],
+   "name": "Codes",
+   "url": "https://nyassembly.gov/comm/?id=7"
+  },
+  "communityintegration": {
+   "chair": null,
+   "members": [],
+   "name": "Community Integration",
+   "url": "https://nyassembly.gov/comm/?id=143"
+  },
+  "consumeraffairsprotection": {
+   "chair": "Nily Rozic",
+   "members": [
+    "Alex Bores",
+    "Brian Cunningham",
+    "Brian D. Miller",
+    "Charles D. Fall",
+    "Em\u00e9rita Torres",
+    "Emily Gallagher",
+    "George Alvarez",
+    "Grace Lee",
+    "Jake Blumencranz",
+    "Jenifer Rajkumar",
+    "John K. Mikulin",
+    "Michael Durso",
+    "Nily Rozic",
+    "Patrick J. Carroll",
+    "Paul A. Bologna",
+    "Phara Souffrant Forrest"
+   ],
+   "name": "Consumer Affairs and Protection",
+   "url": "https://nyassembly.gov/comm/?id=8"
+  },
+  "consumerfraudprotection": {
+   "chair": "Charles D. Fall",
+   "members": [
+    "Charles D. Fall"
+   ],
+   "name": "Consumer Fraud Protection",
+   "url": "https://nyassembly.gov/comm/?id=142"
+  },
+  "corporationsauthoritiescommissions": {
+   "chair": "Edward C. Braunstein",
+   "members": [
+    "Alex Bores",
+    "Andrea K. Bailey",
+    "Anil Beephan, Jr.",
+    "Charles D. Fall",
+    "Christopher S. Friend",
+    "Edward C. Braunstein",
+    "Erik M. Dilan",
+    "Jake Blumencranz",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Joe Angelino",
+    "John Lemondes",
+    "Jonathan G. Jacobson",
+    "Josh Jensen",
+    "Ken Blankenbush",
+    "MaryJane Shimsky",
+    "Micah C. Lasher",
+    "Nily Rozic",
+    "Robert C. Carroll",
+    "Ron Kim",
+    "Stacey Pheffer Amato",
+    "Stefani Zinerman",
+    "Steven Otis",
+    "Tony Simone",
+    "Vivian E. Cook",
+    "William Conrad",
+    "Yudelka Tapia"
+   ],
+   "name": "Corporations, Authorities and Commissions",
+   "url": "https://nyassembly.gov/comm/?id=9"
+  },
+  "correction": {
+   "chair": "Erik M. Dilan",
+   "members": [
+    "Anil Beephan, Jr.",
+    "Anna R. Kelles",
+    "Chris Burdick",
+    "Dana Levenberg",
+    "David DiPietro",
+    "Demond Meeks",
+    "Emily Gallagher",
+    "Erik M. Dilan",
+    "Jeff Gallahan",
+    "Joe DeStefano",
+    "Keith Powers",
+    "Noah Burroughs",
+    "William Colton"
+   ],
+   "name": "Correction",
+   "url": "https://nyassembly.gov/comm/?id=10"
+  },
+  "demographicresearchreapportionment": {
+   "chair": "John T. McDonald III",
+   "members": [
+    "Philip A. Palmesano"
+   ],
+   "name": "Demographic Research and Reapportionment",
+   "url": "https://nyassembly.gov/comm/?id=60"
+  },
+  "digitallibraries": {
+   "chair": null,
+   "members": [],
+   "name": "Digital Libraries",
+   "url": "https://nyassembly.gov/comm/?id=164"
+  },
+  "diversityinlaw": {
+   "chair": "Jenifer Rajkumar",
+   "members": [
+    "Jenifer Rajkumar"
+   ],
+   "name": "Diversity in Law",
+   "url": "https://nyassembly.gov/comm/?id=145"
+  },
+  "economicdevelopmentjobcreationcommerceindustry": {
+   "chair": "Al Stirpe",
+   "members": [
+    "Al Stirpe",
+    "Alec Brook-Krasny",
+    "Alicia Hyndman",
+    "Angelo J. Morinello",
+    "Anil Beephan, Jr.",
+    "Ari Brown",
+    "Brian Cunningham",
+    "Christopher S. Friend",
+    "Donna A. Lupardo",
+    "Em\u00e9rita Torres",
+    "John Lemondes",
+    "John Zaccaro, Jr.",
+    "Jordan J.G. Wright",
+    "Judy Griffin",
+    "Landon C. Dais",
+    "Larinda C. Hooks",
+    "Micah C. Lasher",
+    "Nikki Lucas",
+    "Paul A. Bologna",
+    "Paula Elaine Kay",
+    "Rebecca Kassay",
+    "Sam Pirozzolo",
+    "Steve Stern",
+    "Tony Simone",
+    "William B. Magnarelli",
+    "Yudelka Tapia"
+   ],
+   "name": "Economic Development, Job Creation, Commerce and Industry",
+   "url": "https://nyassembly.gov/comm/?id=11"
+  },
+  "education": {
+   "chair": "Michael Benedetto",
+   "members": [
+    "Al Taylor",
+    "Alicia Hyndman",
+    "Amanda Septimo",
+    "Amy Paulin",
+    "Ari Brown",
+    "Brian D. Miller",
+    "Chantel Jackson",
+    "David G. McDonough",
+    "Doug Smith",
+    "Edward Gibbs",
+    "Em\u00e9rita Torres",
+    "Harry B. Bronson",
+    "Joe Sempolinski",
+    "John K. Mikulin",
+    "John Zaccaro, Jr.",
+    "Lester Chang",
+    "Manny De Los Santos",
+    "Marcela Mitaynes",
+    "Marianne Buttenschon",
+    "Michael Benedetto",
+    "Michael Reilly",
+    "Nader J. Sayegh",
+    "Phil Ramos",
+    "Rodneyse Bichotte Hermelyn",
+    "Ron Kim",
+    "Sam Pirozzolo",
+    "Sarah Clark",
+    "Stacey Pheffer Amato",
+    "Steven Otis",
+    "William B. Magnarelli",
+    "William Conrad"
+   ],
+   "name": "Education",
+   "url": "https://nyassembly.gov/comm/?id=12"
+  },
+  "effectivetreatment": {
+   "chair": null,
+   "members": [],
+   "name": "Effective Treatment",
+   "url": "https://nyassembly.gov/comm/?id=94"
+  },
+  "electiondayoperationsvoterdisenfranchisement": {
+   "chair": null,
+   "members": [],
+   "name": "Election Day Operations and Voter Disenfranchisement",
+   "url": "https://nyassembly.gov/comm/?id=103"
+  },
+  "electionlaw": {
+   "chair": "Latrice M. Walker",
+   "members": [
+    "Al Taylor",
+    "Alec Brook-Krasny",
+    "Aron Wieder",
+    "Chris Tague",
+    "Emily Gallagher",
+    "Jeffrey Dinowitz",
+    "John K. Mikulin",
+    "Jonathan G. Jacobson",
+    "Jonathan Rivera",
+    "Karl Brabenec",
+    "Latrice M. Walker",
+    "Matt Slater",
+    "Monique Chandler-Waterman",
+    "Patrick J. Carroll",
+    "Robert C. Carroll",
+    "Tony Simone"
+   ],
+   "name": "Election Law",
+   "url": "https://nyassembly.gov/comm/?id=13"
+  },
+  "emergencyresponsedisasterpreparedness": {
+   "chair": null,
+   "members": [],
+   "name": "Emergency Response/Disaster Preparedness",
+   "url": "https://nyassembly.gov/comm/?id=153"
+  },
+  "emergingworkforce": {
+   "chair": "Stefani Zinerman",
+   "members": [
+    "Stefani Zinerman"
+   ],
+   "name": "Emerging Workforce",
+   "url": "https://nyassembly.gov/comm/?id=114"
+  },
+  "employmentopportunitiesforpeoplewithdisabilities": {
+   "chair": "Chris Burdick",
+   "members": [
+    "Chris Burdick",
+    "Jodi Giglio"
+   ],
+   "name": "Employment Opportunities for People with Disabilities",
+   "url": "https://nyassembly.gov/comm/?id=162"
+  },
+  "energy": {
+   "chair": "Didi Barrett",
+   "members": [
+    "Angelo Santabarbara",
+    "Brian Manktelow",
+    "Didi Barrett",
+    "Erik M. Dilan",
+    "Jonathan G. Jacobson",
+    "Jonathan Rivera",
+    "Ken Blankenbush",
+    "Khaleel M. Anderson",
+    "Landon C. Dais",
+    "Nikki Lucas",
+    "Paul A. Bologna",
+    "Sam Pirozzolo",
+    "Sarah Clark",
+    "Sarahana Shrestha",
+    "Scott Gray",
+    "Steve Stern",
+    "William Conrad"
+   ],
+   "name": "Energy",
+   "url": "https://nyassembly.gov/comm/?id=14"
+  },
+  "environmentalconservation": {
+   "chair": "Deborah J. Glick",
+   "members": [
+    "Amanda Septimo",
+    "Andrea K. Bailey",
+    "Anna R. Kelles",
+    "Brian Manktelow",
+    "Chris Burdick",
+    "Chris Tague",
+    "Dana Levenberg",
+    "Deborah J. Glick",
+    "Didi Barrett",
+    "Grace Lee",
+    "Jaime R. Williams",
+    "Jen Lunsford",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Joe Sempolinski",
+    "John Lemondes",
+    "Karen McMahon",
+    "Keith P. Brown",
+    "Khaleel M. Anderson",
+    "Matt Slater",
+    "Matthew Simpson",
+    "Micah C. Lasher",
+    "Paula Elaine Kay",
+    "Rebecca Kassay",
+    "Robert C. Carroll",
+    "Robert Smullen",
+    "Steven Otis",
+    "Tommy John Schiavoni",
+    "Tony Simone",
+    "William Colton",
+    "William Conrad"
+   ],
+   "name": "Environmental Conservation",
+   "url": "https://nyassembly.gov/comm/?id=15"
+  },
+  "ethicsguidance": {
+   "chair": "Karen McMahon",
+   "members": [
+    "Angelo J. Morinello",
+    "Catalina Cruz",
+    "Charles D. Lavine",
+    "Harry B. Bronson",
+    "Joe Angelino",
+    "Karen McMahon",
+    "Michael Reilly",
+    "Robert Smullen"
+   ],
+   "name": "Ethics and Guidance",
+   "url": "https://nyassembly.gov/comm/?id=16"
+  },
+  "exporttrade": {
+   "chair": null,
+   "members": [],
+   "name": "Export Trade",
+   "url": "https://nyassembly.gov/comm/?id=101"
+  },
+  "foodfarmnutritionpolicy": {
+   "chair": "Khaleel M. Anderson",
+   "members": [
+    "Alex Bores",
+    "Angelo Santabarbara",
+    "Anna R. Kelles",
+    "Brian Cunningham",
+    "Carrie Woerner",
+    "Chris Tague",
+    "Demond Meeks",
+    "Donna A. Lupardo",
+    "Em\u00e9rita Torres",
+    "George Alvarez",
+    "Grace Lee",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "John Lemondes",
+    "Karen McMahon",
+    "Karines Reyes",
+    "Khaleel M. Anderson",
+    "Latrice M. Walker",
+    "Michaelle C. Solages",
+    "Nikki Lucas",
+    "Scott Bendett",
+    "Stefani Zinerman",
+    "Stephen Hawley",
+    "Steven Raga"
+   ],
+   "name": "Food, Farm & Nutrition Policy",
+   "url": "https://nyassembly.gov/comm/?id=62"
+  },
+  "fostercare": {
+   "chair": null,
+   "members": [],
+   "name": "Foster Care",
+   "url": "https://nyassembly.gov/comm/?id=97"
+  },
+  "futureofthelongislpowerauthority": {
+   "chair": null,
+   "members": [
+    "Doug Smith",
+    "Khaleel M. Anderson",
+    "Michaelle C. Solages"
+   ],
+   "name": "Future of the Long Island Power Authority",
+   "url": "https://nyassembly.gov/comm/?id=168"
+  },
+  "governmentadministration": {
+   "chair": "Edward Gibbs",
+   "members": [
+    "David DiPietro",
+    "Edward Gibbs",
+    "Karl Brabenec"
+   ],
+   "name": "Government Administration",
+   "url": "https://nyassembly.gov/comm/?id=49"
+  },
+  "governmentalemployees": {
+   "chair": "Stacey Pheffer Amato",
+   "members": [
+    "Angelo Santabarbara",
+    "Charles D. Fall",
+    "Gabriella A. Romero",
+    "Jodi Giglio",
+    "Joe DeStefano",
+    "Judy Griffin",
+    "Kalman Yeger",
+    "Michael Reilly",
+    "Michael Tannousis",
+    "Patrick Burke",
+    "Patrick J. Carroll",
+    "Simcha Eichenstein",
+    "Stacey Pheffer Amato",
+    "William Colton"
+   ],
+   "name": "Governmental Employees",
+   "url": "https://nyassembly.gov/comm/?id=17"
+  },
+  "governmentaloperations": {
+   "chair": "John T. McDonald III",
+   "members": [
+    "Anil Beephan, Jr.",
+    "Daniel J. Norber",
+    "Deborah J. Glick",
+    "Jaime R. Williams",
+    "John T. McDonald III",
+    "MaryJane Shimsky",
+    "Matthew Simpson",
+    "Michael Novakhov",
+    "Noah Burroughs",
+    "Rebecca Kassay",
+    "Rodneyse Bichotte Hermelyn",
+    "Ron Kim",
+    "Steven Raga",
+    "Tony Simone"
+   ],
+   "name": "Governmental Operations",
+   "url": "https://nyassembly.gov/comm/?id=18"
+  },
+  "greatlakeswatershedtaskforce": {
+   "chair": "Patrick Burke",
+   "members": [
+    "Patrick Burke"
+   ],
+   "name": "Great Lakes Watershed Task Force",
+   "url": "https://nyassembly.gov/comm/?id=169"
+  },
+  "health": {
+   "chair": "Amy Paulin",
+   "members": [
+    "Amy Paulin",
+    "Andrew Hevesi",
+    "Anna R. Kelles",
+    "Catalina Cruz",
+    "Daniel J. Norber",
+    "Demond Meeks",
+    "Edward C. Braunstein",
+    "Jake Blumencranz",
+    "Jarett Gandolfo",
+    "Jeffrey Dinowitz",
+    "Jen Lunsford",
+    "Jenifer Rajkumar",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "John T. McDonald III",
+    "Josh Jensen",
+    "Karines Reyes",
+    "Linda B. Rosenthal",
+    "Matt Slater",
+    "Michael Durso",
+    "Nader J. Sayegh",
+    "Nikki Lucas",
+    "Patrick J. Chludzinski",
+    "Phara Souffrant Forrest",
+    "Phil Steck",
+    "Rodneyse Bichotte Hermelyn",
+    "Scott Gray"
+   ],
+   "name": "Health",
+   "url": "https://nyassembly.gov/comm/?id=19"
+  },
+  "highereducation": {
+   "chair": "Alicia Hyndman",
+   "members": [
+    "Al Stirpe",
+    "Alicia Hyndman",
+    "Anna R. Kelles",
+    "Brian D. Miller",
+    "Chris Eachus",
+    "Donna A. Lupardo",
+    "Doug Smith",
+    "Jo Anne Simon",
+    "Joe Sempolinski",
+    "John T. McDonald III",
+    "Judy Griffin",
+    "Karen McMahon",
+    "Karines Reyes",
+    "Marianne Buttenschon",
+    "Michael J. Fitzpatrick",
+    "Michael Reilly",
+    "Monique Chandler-Waterman",
+    "Nader J. Sayegh",
+    "Phara Souffrant Forrest",
+    "Rebecca A. Seawright",
+    "Robert Smullen",
+    "Rodneyse Bichotte Hermelyn",
+    "Sam Pirozzolo",
+    "Sarah Clark",
+    "Scott Gray"
+   ],
+   "name": "Higher Education",
+   "url": "https://nyassembly.gov/comm/?id=20"
+  },
+  "housing": {
+   "chair": "Linda B. Rosenthal",
+   "members": [
+    "Alec Brook-Krasny",
+    "Andrew M. Molitor",
+    "Anna R. Kelles",
+    "Ari Brown",
+    "Chantel Jackson",
+    "Chris Burdick",
+    "Dana Levenberg",
+    "Daniel J. Norber",
+    "Demond Meeks",
+    "Em\u00e9rita Torres",
+    "John Zaccaro, Jr.",
+    "Jonathan Rivera",
+    "Karines Reyes",
+    "Keith P. Brown",
+    "Landon C. Dais",
+    "Latrice M. Walker",
+    "Lester Chang",
+    "Linda B. Rosenthal",
+    "Maritza Davila",
+    "Michael J. Fitzpatrick",
+    "Michael Novakhov",
+    "Monique Chandler-Waterman",
+    "Nikki Lucas",
+    "Rodneyse Bichotte Hermelyn",
+    "Ron Kim",
+    "Simcha Eichenstein",
+    "Vivian E. Cook",
+    "Yudelka Tapia"
+   ],
+   "name": "Housing",
+   "url": "https://nyassembly.gov/comm/?id=22"
+  },
+  "humantrafficking": {
+   "chair": "Jessica Gonz\u00e1lez-Rojas",
+   "members": [
+    "Jessica Gonz\u00e1lez-Rojas"
+   ],
+   "name": "Human Trafficking",
+   "url": "https://nyassembly.gov/comm/?id=163"
+  },
+  "infrastructure": {
+   "chair": null,
+   "members": [],
+   "name": "Infrastructure",
+   "url": "https://nyassembly.gov/comm/?id=136"
+  },
+  "insurance": {
+   "chair": "David I. Weprin",
+   "members": [
+    "Alex Bores",
+    "Aron Wieder",
+    "Catalina Cruz",
+    "Charles D. Lavine",
+    "David I. Weprin",
+    "Demond Meeks",
+    "Erik M. Dilan",
+    "Grace Lee",
+    "Jake Blumencranz",
+    "Jarett Gandolfo",
+    "Jen Lunsford",
+    "Josh Jensen",
+    "Kalman Yeger",
+    "Ken Blankenbush",
+    "Khaleel M. Anderson",
+    "Pamela J. Hunter",
+    "Patrick J. Chludzinski",
+    "Paula Elaine Kay",
+    "Phara Souffrant Forrest",
+    "Phil Steck",
+    "Sam Berger",
+    "Scott Bendett",
+    "Simcha Eichenstein",
+    "Stephen Hawley",
+    "Vivian E. Cook"
+   ],
+   "name": "Insurance",
+   "url": "https://nyassembly.gov/comm/?id=23"
+  },
+  "insurerinvestmentsmarketpracticesinunderservedareas": {
+   "chair": null,
+   "members": [],
+   "name": "Insurer Investments and Market Practices in Underserved Areas",
+   "url": "https://nyassembly.gov/comm/?id=112"
+  },
+  "intergenerationalcare": {
+   "chair": "Phara Souffrant Forrest",
+   "members": [
+    "Phara Souffrant Forrest"
+   ],
+   "name": "Intergenerational Care",
+   "url": "https://nyassembly.gov/comm/?id=140"
+  },
+  "internetnewtechnology": {
+   "chair": null,
+   "members": [
+    "Jake Blumencranz"
+   ],
+   "name": "Internet and New Technology",
+   "url": "https://nyassembly.gov/comm/?id=151"
+  },
+  "judiciary": {
+   "chair": "Charles D. Lavine",
+   "members": [
+    "Andrew M. Molitor",
+    "Charles D. Lavine",
+    "David I. Weprin",
+    "Doug Smith",
+    "Edward C. Braunstein",
+    "Jen Lunsford",
+    "Jenifer Rajkumar",
+    "Jo Anne Simon",
+    "John K. Mikulin",
+    "Karen McMahon",
+    "Keith P. Brown",
+    "Latrice M. Walker",
+    "Marcela Mitaynes",
+    "Mary Beth Walsh",
+    "MaryJane Shimsky",
+    "Michael Tannousis",
+    "Nader J. Sayegh",
+    "Patrick J. Carroll",
+    "Phil Steck",
+    "Rebecca A. Seawright",
+    "Sam Berger"
+   ],
+   "name": "Judiciary",
+   "url": "https://nyassembly.gov/comm/?id=24"
+  },
+  "labor": {
+   "chair": "Harry B. Bronson",
+   "members": [
+    "Al Taylor",
+    "Alex Bores",
+    "Angelo J. Morinello",
+    "Catalina Cruz",
+    "Daniel J. Norber",
+    "David DiPietro",
+    "George Alvarez",
+    "Harry B. Bronson",
+    "Jodi Giglio",
+    "Joe DeStefano",
+    "Joe Sempolinski",
+    "Jonathan G. Jacobson",
+    "Jonathan Rivera",
+    "Karines Reyes",
+    "Karl Brabenec",
+    "Khaleel M. Anderson",
+    "Matt Slater",
+    "Michael Benedetto",
+    "Michael Durso",
+    "Nikki Lucas",
+    "Nily Rozic",
+    "Noah Burroughs",
+    "Phil Ramos",
+    "Phil Steck",
+    "Stefani Zinerman",
+    "Steven Raga",
+    "Tony Simone",
+    "William Colton",
+    "Yudelka Tapia"
+   ],
+   "name": "Labor",
+   "url": "https://nyassembly.gov/comm/?id=25"
+  },
+  "legislativeethics": {
+   "chair": "Karen McMahon",
+   "members": [
+    "Karen McMahon"
+   ],
+   "name": "Legislative Ethics",
+   "url": "https://nyassembly.gov/comm/?id=48"
+  },
+  "legislativewomenscaucus": {
+   "chair": "Chantel Jackson",
+   "members": [],
+   "name": "Legislative Women's Caucus",
+   "url": "https://nyassembly.gov/comm/?id=85"
+  },
+  "librarieseducationtechnology": {
+   "chair": "Robert C. Carroll",
+   "members": [
+    "Andrea K. Bailey",
+    "Dana Levenberg",
+    "Jen Lunsford",
+    "Jordan J.G. Wright",
+    "Karen McMahon",
+    "Larinda C. Hooks",
+    "Michaelle C. Solages",
+    "Patrick J. Chludzinski",
+    "Robert C. Carroll"
+   ],
+   "name": "Libraries and Education Technology",
+   "url": "https://nyassembly.gov/comm/?id=26"
+  },
+  "localgovernments": {
+   "chair": "Michaelle C. Solages",
+   "members": [
+    "Anil Beephan, Jr.",
+    "Ari Brown",
+    "Aron Wieder",
+    "Brian Manktelow",
+    "Carrie Woerner",
+    "Christopher S. Friend",
+    "Dana Levenberg",
+    "Jeff Gallahan",
+    "Jonathan G. Jacobson",
+    "Jonathan Rivera",
+    "MaryJane Shimsky",
+    "Matthew Simpson",
+    "Michaelle C. Solages",
+    "Phil Ramos",
+    "Rebecca Kassay",
+    "Sarah Clark",
+    "Sarahana Shrestha",
+    "Tommy John Schiavoni",
+    "William Conrad"
+   ],
+   "name": "Local Governments",
+   "url": "https://nyassembly.gov/comm/?id=27"
+  },
+  "mentalhealth": {
+   "chair": "Jo Anne Simon",
+   "members": [
+    "Andrea K. Bailey",
+    "Angelo Santabarbara",
+    "Chantel Jackson",
+    "Chris Eachus",
+    "Doug Smith",
+    "Edward Gibbs",
+    "Jo Anne Simon",
+    "Joe Sempolinski",
+    "Keith P. Brown",
+    "Manny De Los Santos",
+    "Monique Chandler-Waterman",
+    "Sam Berger",
+    "Yudelka Tapia"
+   ],
+   "name": "Mental Health",
+   "url": "https://nyassembly.gov/comm/?id=29"
+  },
+  "microbusiness": {
+   "chair": "Chantel Jackson",
+   "members": [
+    "Chantel Jackson"
+   ],
+   "name": "Micro Business",
+   "url": "https://nyassembly.gov/comm/?id=139"
+  },
+  "minoritymentalhealth": {
+   "chair": null,
+   "members": [],
+   "name": "Minority Mental Health",
+   "url": "https://nyassembly.gov/comm/?id=161"
+  },
+  "museumsculturalinstitutions": {
+   "chair": null,
+   "members": [],
+   "name": "Museums & Cultural Institutions",
+   "url": "https://nyassembly.gov/comm/?id=137"
+  },
+  "newamericans": {
+   "chair": "Phara Souffrant Forrest",
+   "members": [
+    "Andrew Hevesi",
+    "Catalina Cruz",
+    "Dana Levenberg",
+    "Emily Gallagher",
+    "George Alvarez",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Jonathan Rivera",
+    "Karines Reyes",
+    "Khaleel M. Anderson",
+    "Latrice M. Walker",
+    "Manny De Los Santos",
+    "Marcela Mitaynes",
+    "Maritza Davila",
+    "MaryJane Shimsky",
+    "Michaelle C. Solages",
+    "Phara Souffrant Forrest",
+    "Sarah Clark",
+    "Sarahana Shrestha",
+    "Steven Raga",
+    "Tony Simone"
+   ],
+   "name": "New Americans",
+   "url": "https://nyassembly.gov/comm/?id=83"
+  },
+  "newyorkcanadarelations": {
+   "chair": "Michael S. Cashman",
+   "members": [
+    "Karen McMahon",
+    "Michael S. Cashman"
+   ],
+   "name": "New York Canada Relations",
+   "url": "https://nyassembly.gov/comm/?id=167"
+  },
+  "occupationallicenses": {
+   "chair": null,
+   "members": [],
+   "name": "Occupational Licenses",
+   "url": "https://nyassembly.gov/comm/?id=165"
+  },
+  "outreachoversightofseniorcitizenprograms": {
+   "chair": "Simcha Eichenstein",
+   "members": [
+    "Simcha Eichenstein"
+   ],
+   "name": "Outreach and Oversight of Senior Citizen Programs",
+   "url": "https://nyassembly.gov/comm/?id=93"
+  },
+  "oversightanalysisinvestigation": {
+   "chair": "Jonathan G. Jacobson",
+   "members": [
+    "Anil Beephan, Jr.",
+    "Joe Angelino",
+    "Jonathan G. Jacobson",
+    "Patrick J. Carroll",
+    "Phil Steck",
+    "William B. Magnarelli"
+   ],
+   "name": "Oversight, Analysis and Investigation",
+   "url": "https://nyassembly.gov/comm/?id=30"
+  },
+  "oversightofminoritywomenownedbusinessenterprisesmwbes": {
+   "chair": "Rodneyse Bichotte Hermelyn",
+   "members": [
+    "Michael Benedetto",
+    "Rodneyse Bichotte Hermelyn"
+   ],
+   "name": "Oversight of Minority and Women-Owned Business Enterprises (MWBEs)",
+   "url": "https://nyassembly.gov/comm/?id=107"
+  },
+  "peoplewithdisabilities": {
+   "chair": "Angelo Santabarbara",
+   "members": [
+    "Angelo Santabarbara",
+    "Chris Burdick",
+    "Jodi Giglio",
+    "Joe Sempolinski",
+    "Karen McMahon",
+    "Keith Powers",
+    "Khaleel M. Anderson",
+    "Patrick J. Carroll",
+    "Stefani Zinerman"
+   ],
+   "name": "People with Disabilities",
+   "url": "https://nyassembly.gov/comm/?id=158"
+  },
+  "puertoricanhispanic": {
+   "chair": "Karines Reyes",
+   "members": [
+    "Al Taylor",
+    "Alec Brook-Krasny",
+    "Alicia Hyndman",
+    "Amanda Septimo",
+    "Amy Paulin",
+    "Andrew Hevesi",
+    "Brian Maher",
+    "Catalina Cruz",
+    "Chantel Jackson",
+    "Charles D. Fall",
+    "Chris Burdick",
+    "Chris Eachus",
+    "Claire Valdez",
+    "Dana Levenberg",
+    "David I. Weprin",
+    "Demond Meeks",
+    "Diana C. Moreno",
+    "Didi Barrett",
+    "Edward C. Braunstein",
+    "Edward Gibbs",
+    "Em\u00e9rita Torres",
+    "Erik M. Dilan",
+    "Gabriella A. Romero",
+    "George Alvarez",
+    "Grace Lee",
+    "J. Gary Pretlow",
+    "Jaime R. Williams",
+    "Jeffrey Dinowitz",
+    "Jenifer Rajkumar",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "John Zaccaro, Jr.",
+    "Jonathan G. Jacobson",
+    "Jonathan Rivera",
+    "Karines Reyes",
+    "Landon C. Dais",
+    "Larinda C. Hooks",
+    "Latrice M. Walker",
+    "Lester Chang",
+    "Manny De Los Santos",
+    "Marcela Mitaynes",
+    "Marianne Buttenschon",
+    "Maritza Davila",
+    "MaryJane Shimsky",
+    "Michael Benedetto",
+    "Michaelle C. Solages",
+    "Nader J. Sayegh",
+    "Nikki Lucas",
+    "Nily Rozic",
+    "Phil Ramos",
+    "Rebecca A. Seawright",
+    "Rodneyse Bichotte Hermelyn",
+    "Ron Kim",
+    "Stacey Pheffer Amato",
+    "Stefani Zinerman",
+    "Steve Stern",
+    "Steven Otis",
+    "Steven Raga",
+    "Tony Simone",
+    "Vivian E. Cook",
+    "William Colton",
+    "Yudelka Tapia"
+   ],
+   "name": "Puerto Rican/Hispanic",
+   "url": "https://nyassembly.gov/comm/?id=67"
+  },
+  "racingwagering": {
+   "chair": "Carrie Woerner",
+   "members": [
+    "Angelo Santabarbara",
+    "Carrie Woerner",
+    "Clyde Vanel",
+    "Jeff Gallahan",
+    "Jordan J.G. Wright",
+    "Keith Powers",
+    "Michael Durso",
+    "Michaelle C. Solages",
+    "Nader J. Sayegh",
+    "Paula Elaine Kay",
+    "Scott Bendett"
+   ],
+   "name": "Racing and Wagering",
+   "url": "https://nyassembly.gov/comm/?id=31"
+  },
+  "realpropertytaxation": {
+   "chair": "Jaime R. Williams",
+   "members": [
+    "Andrea K. Bailey",
+    "Brian D. Miller",
+    "Chris Tague",
+    "Diana C. Moreno",
+    "Gabriella A. Romero",
+    "George Alvarez",
+    "Jaime R. Williams",
+    "Noah Burroughs",
+    "Simcha Eichenstein"
+   ],
+   "name": "Real Property Taxation",
+   "url": "https://nyassembly.gov/comm/?id=32"
+  },
+  "reentrytransitionalservices": {
+   "chair": null,
+   "members": [],
+   "name": "Reentry & Transitional Services",
+   "url": "https://nyassembly.gov/comm/?id=100"
+  },
+  "regionaltourismdevelopment": {
+   "chair": "Jonathan Rivera",
+   "members": [
+    "Jonathan Rivera"
+   ],
+   "name": "Regional Tourism Development",
+   "url": "https://nyassembly.gov/comm/?id=138"
+  },
+  "regulatedmortgagelenders": {
+   "chair": "Marcela Mitaynes",
+   "members": [
+    "David G. McDonough",
+    "Marcela Mitaynes"
+   ],
+   "name": "Regulated Mortgage Lenders",
+   "url": "https://nyassembly.gov/comm/?id=96"
+  },
+  "retentionofhomeownershipstabilizationofaffordablehousing": {
+   "chair": null,
+   "members": [
+    "Michael Benedetto"
+   ],
+   "name": "Retention of Homeownership and Stabilization of Affordable Housing",
+   "url": "https://nyassembly.gov/comm/?id=111"
+  },
+  "rules": {
+   "chair": "Carl E. Heastie",
+   "members": [
+    "Al Taylor",
+    "Alicia Hyndman",
+    "Amy Paulin",
+    "Andrew Hevesi",
+    "Carl E. Heastie",
+    "Catalina Cruz",
+    "Charles D. Lavine",
+    "Clyde Vanel",
+    "Crystal D. Peoples-Stokes",
+    "Deborah J. Glick",
+    "Donna A. Lupardo",
+    "Doug Smith",
+    "Edward C. Braunstein",
+    "Edward P. Ra",
+    "Harry B. Bronson",
+    "J. Gary Pretlow",
+    "Jarett Gandolfo",
+    "Jeffrey Dinowitz",
+    "Josh Jensen",
+    "Karl Brabenec",
+    "Ken Blankenbush",
+    "Maritza Davila",
+    "Michael Benedetto",
+    "Michael Reilly",
+    "Nily Rozic",
+    "Pamela J. Hunter",
+    "Philip A. Palmesano",
+    "Stephen Hawley",
+    "Vivian E. Cook",
+    "William B. Magnarelli",
+    "William Colton"
+   ],
+   "name": "Rules",
+   "url": "https://nyassembly.gov/comm/?id=33"
+  },
+  "ruralresources": {
+   "chair": "Anna R. Kelles",
+   "members": [
+    "Anna R. Kelles",
+    "Carrie Woerner",
+    "Philip A. Palmesano",
+    "Robert Smullen"
+   ],
+   "name": "Rural Resources",
+   "url": "https://nyassembly.gov/comm/?id=47"
+  },
+  "sciencetechnology": {
+   "chair": "Steven Otis",
+   "members": [
+    "Alex Bores",
+    "Clyde Vanel",
+    "Edward Gibbs",
+    "Jake Blumencranz",
+    "Larinda C. Hooks",
+    "Michael Durso",
+    "Patrick Burke",
+    "Steven Otis",
+    "William Conrad"
+   ],
+   "name": "Science & Technology",
+   "url": "https://nyassembly.gov/comm/?id=159"
+  },
+  "skillsdevelopmentcareereducation": {
+   "chair": "William Conrad",
+   "members": [
+    "Ken Blankenbush",
+    "Michael Durso",
+    "William Conrad"
+   ],
+   "name": "Skills Development and Career Education",
+   "url": "https://nyassembly.gov/comm/?id=52"
+  },
+  "smallbusiness": {
+   "chair": "Marianne Buttenschon",
+   "members": [
+    "Ari Brown",
+    "Chantel Jackson",
+    "Chris Tague",
+    "Daniel J. Norber",
+    "Diana C. Moreno",
+    "Edward Gibbs",
+    "Jenifer Rajkumar",
+    "John Zaccaro, Jr.",
+    "Kalman Yeger",
+    "Landon C. Dais",
+    "Manny De Los Santos",
+    "Marianne Buttenschon",
+    "Michael Novakhov",
+    "Michael S. Cashman",
+    "Rebecca Kassay",
+    "Sarah Clark",
+    "Scott Bendett"
+   ],
+   "name": "Small Business",
+   "url": "https://nyassembly.gov/comm/?id=34"
+  },
+  "socialservices": {
+   "chair": "Maritza Davila",
+   "members": [
+    "Andrea K. Bailey",
+    "Andrew M. Molitor",
+    "Christopher S. Friend",
+    "Claire Valdez",
+    "David G. McDonough",
+    "Diana C. Moreno",
+    "Gabriella A. Romero",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Karines Reyes",
+    "Manny De Los Santos",
+    "Maritza Davila",
+    "Matthew Simpson",
+    "Michaelle C. Solages",
+    "Phara Souffrant Forrest",
+    "Sam Berger",
+    "Simcha Eichenstein",
+    "Steven Raga"
+   ],
+   "name": "Social Services",
+   "url": "https://nyassembly.gov/comm/?id=35"
+  },
+  "solidwastemanagement": {
+   "chair": "Emily Gallagher",
+   "members": [
+    "Emily Gallagher",
+    "Jeff Gallahan",
+    "Matthew Simpson"
+   ],
+   "name": "Solid Waste Management",
+   "url": "https://nyassembly.gov/comm/?id=53"
+  },
+  "statefederalrelations": {
+   "chair": "Demond Meeks",
+   "members": [
+    "Demond Meeks"
+   ],
+   "name": "State-Federal Relations",
+   "url": "https://nyassembly.gov/comm/?id=36"
+  },
+  "statelocalrelations": {
+   "chair": null,
+   "members": [
+    "Anil Beephan, Jr.",
+    "Joe DeStefano"
+   ],
+   "name": "State-Local Relations",
+   "url": "https://nyassembly.gov/comm/?id=54"
+  },
+  "studentswithspecialneeds": {
+   "chair": "Nader J. Sayegh",
+   "members": [
+    "Nader J. Sayegh",
+    "Phil Ramos"
+   ],
+   "name": "Students with Special Needs",
+   "url": "https://nyassembly.gov/comm/?id=102"
+  },
+  "tourismparksartssportsdevelopment": {
+   "chair": "Ron Kim",
+   "members": [
+    "Angelo J. Morinello",
+    "Carrie Woerner",
+    "Charles D. Fall",
+    "Chris Tague",
+    "Claire Valdez",
+    "Didi Barrett",
+    "Edward Gibbs",
+    "Jeff Gallahan",
+    "Joe Angelino",
+    "Jonathan Rivera",
+    "Keith Powers",
+    "MaryJane Shimsky",
+    "Matthew Simpson",
+    "Micah C. Lasher",
+    "Michael S. Cashman",
+    "Patrick Burke",
+    "Robert C. Carroll",
+    "Ron Kim",
+    "Sarahana Shrestha",
+    "Scott Gray",
+    "Stefani Zinerman"
+   ],
+   "name": "Tourism, Parks, Arts and Sports Development",
+   "url": "https://nyassembly.gov/comm/?id=38"
+  },
+  "toxicsubstanceshazardouswastes": {
+   "chair": null,
+   "members": [
+    "Angelo J. Morinello",
+    "Michael Tannousis"
+   ],
+   "name": "Toxic Substances and Hazardous Wastes",
+   "url": "https://nyassembly.gov/comm/?id=56"
+  },
+  "transportation": {
+   "chair": "William B. Magnarelli",
+   "members": [
+    "Brian Cunningham",
+    "Brian D. Miller",
+    "Chris Eachus",
+    "Claire Valdez",
+    "David G. McDonough",
+    "Donna A. Lupardo",
+    "Emily Gallagher",
+    "Gabriella A. Romero",
+    "George Alvarez",
+    "Jaime R. Williams",
+    "Jo Anne Simon",
+    "Jodi Giglio",
+    "Joe DeStefano",
+    "Jordan J.G. Wright",
+    "Karen McMahon",
+    "Larinda C. Hooks",
+    "Manny De Los Santos",
+    "Marcela Mitaynes",
+    "MaryJane Shimsky",
+    "Matt Slater",
+    "Michael Durso",
+    "Noah Burroughs",
+    "Patrick J. Chludzinski",
+    "Sarahana Shrestha",
+    "Scott Bendett",
+    "William B. Magnarelli"
+   ],
+   "name": "Transportation",
+   "url": "https://nyassembly.gov/comm/?id=39"
+  },
+  "trustsestates": {
+   "chair": null,
+   "members": [],
+   "name": "Trusts and Estates",
+   "url": "https://nyassembly.gov/comm/?id=113"
+  },
+  "tuitionassistanceprogram": {
+   "chair": null,
+   "members": [
+    "Linda B. Rosenthal"
+   ],
+   "name": "Tuition Assistance Program",
+   "url": "https://nyassembly.gov/comm/?id=109"
+  },
+  "veteransaffairs": {
+   "chair": "Steve Stern",
+   "members": [
+    "Amanda Septimo",
+    "Angelo J. Morinello",
+    "Brian Manktelow",
+    "Chris Burdick",
+    "Chris Eachus",
+    "Jenifer Rajkumar",
+    "Joe Angelino",
+    "Judy Griffin",
+    "Marianne Buttenschon",
+    "Michael S. Cashman",
+    "Pamela J. Hunter",
+    "Paula Elaine Kay",
+    "Robert Smullen",
+    "Sam Berger",
+    "Stacey Pheffer Amato",
+    "Stephen Hawley",
+    "Steve Stern",
+    "Tommy John Schiavoni"
+   ],
+   "name": "Veterans' Affairs",
+   "url": "https://nyassembly.gov/comm/?id=40"
+  },
+  "volunteeremergencyservices": {
+   "chair": "William Conrad",
+   "members": [
+    "William Conrad"
+   ],
+   "name": "Volunteer Emergency Services",
+   "url": "https://nyassembly.gov/comm/?id=115"
+  },
+  "waysmeans": {
+   "chair": "J. Gary Pretlow",
+   "members": [
+    "Alicia Hyndman",
+    "Amanda Septimo",
+    "Andrew Hevesi",
+    "Brian Manktelow",
+    "Catalina Cruz",
+    "David I. Weprin",
+    "Deborah J. Glick",
+    "Edward C. Braunstein",
+    "Erik M. Dilan",
+    "Harry B. Bronson",
+    "J. Gary Pretlow",
+    "Jeffrey Dinowitz",
+    "Jo Anne Simon",
+    "Jodi Giglio",
+    "Joe DeStefano",
+    "John T. McDonald III",
+    "Ken Blankenbush",
+    "Latrice M. Walker",
+    "Mary Beth Walsh",
+    "Matt Slater",
+    "Michael Benedetto",
+    "Michael J. Fitzpatrick",
+    "Michaelle C. Solages",
+    "Nily Rozic",
+    "Pamela J. Hunter",
+    "Phil Ramos",
+    "Philip A. Palmesano",
+    "Rebecca A. Seawright",
+    "Robert Smullen",
+    "Rodneyse Bichotte Hermelyn",
+    "Stephen Hawley",
+    "Steven Otis",
+    "Vivian E. Cook",
+    "William B. Magnarelli",
+    "William Colton"
+   ],
+   "name": "Ways and Means",
+   "url": "https://nyassembly.gov/comm/?id=41"
+  },
+  "womenshealth": {
+   "chair": null,
+   "members": [
+    "Linda B. Rosenthal"
+   ],
+   "name": "Women's Health",
+   "url": "https://nyassembly.gov/comm/?id=108"
+  },
+  "womensissues": {
+   "chair": "Jessica Gonz\u00e1lez-Rojas",
+   "members": [
+    "Alicia Hyndman",
+    "Amanda Septimo",
+    "Amy Paulin",
+    "Anna R. Kelles",
+    "Carrie Woerner",
+    "Catalina Cruz",
+    "Chantel Jackson",
+    "Crystal D. Peoples-Stokes",
+    "Dana Levenberg",
+    "Deborah J. Glick",
+    "Didi Barrett",
+    "Donna A. Lupardo",
+    "Emily Gallagher",
+    "Jaime R. Williams",
+    "Jen Lunsford",
+    "Jenifer Rajkumar",
+    "Jessica Gonz\u00e1lez-Rojas",
+    "Jo Anne Simon",
+    "Karen McMahon",
+    "Karines Reyes",
+    "Latrice M. Walker",
+    "Linda B. Rosenthal",
+    "Marcela Mitaynes",
+    "Marianne Buttenschon",
+    "Maritza Davila",
+    "Michaelle C. Solages",
+    "Nily Rozic",
+    "Pamela J. Hunter",
+    "Phara Souffrant Forrest",
+    "Rebecca A. Seawright",
+    "Sarah Clark",
+    "Stefani Zinerman",
+    "Vivian E. Cook"
+   ],
+   "name": "Women's Issues",
+   "url": "https://nyassembly.gov/comm/?id=69"
+  },
+  "womenveterans": {
+   "chair": "Pamela J. Hunter",
+   "members": [
+    "Pamela J. Hunter",
+    "Stephen Hawley"
+   ],
+   "name": "Women Veterans",
+   "url": "https://nyassembly.gov/comm/?id=92"
+  },
+  "workplacesafety": {
+   "chair": null,
+   "members": [],
+   "name": "Workplace Safety",
+   "url": "https://nyassembly.gov/comm/?id=123"
+  }
+ },
+ "assemblyMembers": {
+  "al stirpe": {
+   "district": 127,
+   "email": "StirpeA@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Al-Stirpe"
+  },
+  "al taylor": {
+   "district": 71,
+   "email": "taylora@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Al-Taylor"
+  },
+  "alec brook-krasny": {
+   "district": 46,
+   "email": "brook-krasnya@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Alec-Brook-Krasny"
+  },
+  "alex bores": {
+   "district": 73,
+   "email": "boresa@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Alex-Bores"
+  },
+  "alicia hyndman": {
+   "district": 29,
+   "email": "hyndmana@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Alicia-Hyndman"
+  },
+  "amanda septimo": {
+   "district": 84,
+   "email": "septimoa@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Amanda-Septimo"
+  },
+  "amy paulin": {
+   "district": 88,
+   "email": "PaulinA@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Amy-Paulin"
+  },
+  "andrea bailey": {
+   "district": 133,
+   "email": "baileya@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Andrea-K-Bailey"
+  },
+  "andrew hevesi": {
+   "district": 28,
+   "email": "HevesiA@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Andrew-Hevesi"
+  },
+  "andrew molitor": {
+   "district": 150,
+   "email": "molitora@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Andrew-M-Molitor"
+  },
+  "angelo morinello": {
+   "district": 145,
+   "email": "morinelloa@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Angelo-J-Morinello"
+  },
+  "angelo santabarbara": {
+   "district": 111,
+   "email": "SantabarbaraA@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Angelo-Santabarbara"
+  },
+  "anil beephan": {
+   "district": 105,
+   "email": "beephana@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Anil-Beephan-Jr"
+  },
+  "anna kelles": {
+   "district": 125,
+   "email": "kellesa@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Anna-R-Kelles"
+  },
+  "ari brown": {
+   "district": 20,
+   "email": "browna@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Ari-Brown"
+  },
+  "aron wieder": {
+   "district": 97,
+   "email": "wiedera@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Aron-Wieder"
+  },
+  "brian cunningham": {
+   "district": 43,
+   "email": "cunninghamba@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Brian-Cunningham"
+  },
+  "brian maher": {
+   "district": 101,
+   "email": "maherb@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Brian-Maher"
+  },
+  "brian manktelow": {
+   "district": 130,
+   "email": "manktelowb@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Brian-Manktelow"
+  },
+  "brian miller": {
+   "district": 122,
+   "email": "millerb@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Brian-D-Miller"
+  },
+  "carl heastie": {
+   "district": 83,
+   "email": "Speaker@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Carl-E-Heastie"
+  },
+  "carrie woerner": {
+   "district": 113,
+   "email": "woernerc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Carrie-Woerner"
+  },
+  "catalina cruz": {
+   "district": 39,
+   "email": "cruzc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Catalina-Cruz"
+  },
+  "chantel jackson": {
+   "district": 79,
+   "email": "Jacksonc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Chantel-Jackson"
+  },
+  "charles fall": {
+   "district": 61,
+   "email": "fallc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Charles-D-Fall"
+  },
+  "charles lavine": {
+   "district": 13,
+   "email": "LavineC@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Charles-D-Lavine"
+  },
+  "chris burdick": {
+   "district": 93,
+   "email": "burdickc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Chris-Burdick"
+  },
+  "chris eachus": {
+   "district": 99,
+   "email": "eachusc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Chris-Eachus"
+  },
+  "chris tague": {
+   "district": 102,
+   "email": "taguec@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Chris-Tague"
+  },
+  "christopher friend": {
+   "district": 124,
+   "email": "friendc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Christopher-S-Friend"
+  },
+  "claire valdez": {
+   "district": 37,
+   "email": "valdezc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Claire-Valdez"
+  },
+  "clyde vanel": {
+   "district": 33,
+   "email": "vanelc@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Clyde-Vanel"
+  },
+  "crystal peoples-stokes": {
+   "district": 141,
+   "email": "PeopleC@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Crystal-D-Peoples-Stokes"
+  },
+  "dana levenberg": {
+   "district": 95,
+   "email": "levenbergd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Dana-Levenberg"
+  },
+  "daniel norber": {
+   "district": 16,
+   "email": "norberd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Daniel-J-Norber"
+  },
+  "david dipietro": {
+   "district": 147,
+   "email": "DiPietroD@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/David-DiPietro"
+  },
+  "david mcdonough": {
+   "district": 14,
+   "email": "mcdonoughd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/David-G-McDonough"
+  },
+  "david weprin": {
+   "district": 24,
+   "email": "WeprinD@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/David-I-Weprin"
+  },
+  "deborah glick": {
+   "district": 66,
+   "email": "GlickD@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Deborah-J-Glick"
+  },
+  "demond meeks": {
+   "district": 137,
+   "email": "meeksd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Demond-Meeks"
+  },
+  "diana moreno": {
+   "district": 36,
+   "email": "morenod@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Diana-C-Moreno"
+  },
+  "didi barrett": {
+   "district": 106,
+   "email": "barrettd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Didi-Barrett"
+  },
+  "donna lupardo": {
+   "district": 123,
+   "email": "LupardoD@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Donna-A-Lupardo"
+  },
+  "doug smith": {
+   "district": 5,
+   "email": "smithd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Doug-Smith"
+  },
+  "edward braunstein": {
+   "district": 26,
+   "email": "braunsteine@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Edward-C-Braunstein"
+  },
+  "edward gibbs": {
+   "district": 68,
+   "email": "gibbse@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Edward-Gibbs"
+  },
+  "edward ra": {
+   "district": 19,
+   "email": "rae@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Edward-P-Ra"
+  },
+  "emerita torres": {
+   "district": 85,
+   "email": "torrese@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Emerita-Torres"
+  },
+  "emily gallagher": {
+   "district": 50,
+   "email": "gallaghere@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Emily-Gallagher"
+  },
+  "erik dilan": {
+   "district": 54,
+   "email": "DilanE@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Erik-M-Dilan"
+  },
+  "gabriella romero": {
+   "district": 109,
+   "email": "romerog@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Gabriella-A-Romero"
+  },
+  "george alvarez": {
+   "district": 78,
+   "email": "alvarezg@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/George-Alvarez"
+  },
+  "grace lee": {
+   "district": 65,
+   "email": "leeg@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Grace-Lee"
+  },
+  "harry bronson": {
+   "district": 138,
+   "email": "bronsonh@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Harry-B-Bronson"
+  },
+  "j pretlow": {
+   "district": 89,
+   "email": "PretloJ@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/J-Gary-Pretlow"
+  },
+  "jaime williams": {
+   "district": 59,
+   "email": "williamsja@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jaime-R-Williams"
+  },
+  "jake blumencranz": {
+   "district": 15,
+   "email": "blumencranzj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jake-Blumencranz"
+  },
+  "jarett gandolfo": {
+   "district": 7,
+   "email": "gandolfoj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jarett-Gandolfo"
+  },
+  "jeff gallahan": {
+   "district": 131,
+   "email": "gallahanj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jeff-Gallahan"
+  },
+  "jeffrey dinowitz": {
+   "district": 81,
+   "email": "DinowitzJ@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jeffrey-Dinowitz"
+  },
+  "jen lunsford": {
+   "district": 135,
+   "email": "lunsfordj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jen-Lunsford"
+  },
+  "jenifer rajkumar": {
+   "district": 38,
+   "email": "rajkumarj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jenifer-Rajkumar"
+  },
+  "jessica gonzalez-rojas": {
+   "district": 34,
+   "email": "gonzalezrojasj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jessica-Gonzalez-Rojas"
+  },
+  "jo simon": {
+   "district": 52,
+   "email": "simonj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jo-Anne-Simon"
+  },
+  "jodi giglio": {
+   "district": 2,
+   "email": "giglioj2@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jodi-Giglio"
+  },
+  "joe angelino": {
+   "district": 121,
+   "email": "angelinoj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Joe-Angelino"
+  },
+  "joe destefano": {
+   "district": 3,
+   "email": "destefanoj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Joe-DeStefano"
+  },
+  "joe sempolinski": {
+   "district": 148,
+   "email": "sempolinskij@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Joe-Sempolinski"
+  },
+  "john lemondes": {
+   "district": 126,
+   "email": "lemondesj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/John-Lemondes"
+  },
+  "john mcdonald": {
+   "district": 108,
+   "email": "McDonaldJ@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/John-T-McDonald-III"
+  },
+  "john mikulin": {
+   "district": 17,
+   "email": "mikulinj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/John-K-Mikulin"
+  },
+  "john zaccaro": {
+   "district": 80,
+   "email": "zaccaroj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/John-Zaccaro-Jr"
+  },
+  "jonathan jacobson": {
+   "district": 104,
+   "email": "jacobsonj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jonathan-G-Jacobson"
+  },
+  "jonathan rivera": {
+   "district": 149,
+   "email": "riverajd@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jonathan-Rivera"
+  },
+  "jordan wright": {
+   "district": 70,
+   "email": "ad70@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Jordan-J.G-Wright"
+  },
+  "josh jensen": {
+   "district": 134,
+   "email": "jensenj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Josh-Jensen"
+  },
+  "judy griffin": {
+   "district": 21,
+   "email": "griffinj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Judy-Griffin"
+  },
+  "kalman yeger": {
+   "district": 41,
+   "email": "AskKalman@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Kalman-Yeger"
+  },
+  "karen mcmahon": {
+   "district": 146,
+   "email": "mcmahonk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Karen-McMahon"
+  },
+  "karines reyes": {
+   "district": 87,
+   "email": "reyesk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Karines-Reyes"
+  },
+  "karl brabenec": {
+   "district": 98,
+   "email": "brabeneck@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Karl-Brabenec"
+  },
+  "keith brown": {
+   "district": 12,
+   "email": "brownk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Keith-P-Brown"
+  },
+  "keith powers": {
+   "district": 74,
+   "email": "powersk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Keith-Powers"
+  },
+  "ken blankenbush": {
+   "district": 117,
+   "email": "blankenbushk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Ken-Blankenbush"
+  },
+  "khaleel anderson": {
+   "district": 31,
+   "email": "andersonk@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Khaleel-M-Anderson"
+  },
+  "landon dais": {
+   "district": 77,
+   "email": "daisl@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Landon-C-Dais"
+  },
+  "larinda hooks": {
+   "district": 35,
+   "email": "hooksl@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Larinda-C-Hooks"
+  },
+  "latrice walker": {
+   "district": 55,
+   "email": "WalkerL@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Latrice-M-Walker"
+  },
+  "lester chang": {
+   "district": 49,
+   "email": "changl@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Lester-Chang"
+  },
+  "linda rosenthal": {
+   "district": 67,
+   "email": "RosentL@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Linda-B-Rosenthal"
+  },
+  "manny santos": {
+   "district": 72,
+   "email": "delossm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Manny-De-Los-Santos"
+  },
+  "marcela mitaynes": {
+   "district": 51,
+   "email": "mitaynesm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Marcela-Mitaynes"
+  },
+  "marianne buttenschon": {
+   "district": 119,
+   "email": "buttenschonm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Marianne-Buttenschon"
+  },
+  "maritza davila": {
+   "district": 53,
+   "email": "DavilaM@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Maritza-Davila"
+  },
+  "mary walsh": {
+   "district": 112,
+   "email": "walshm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Mary-Beth-Walsh"
+  },
+  "maryjane shimsky": {
+   "district": 92,
+   "email": "shimskym@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/MaryJane-Shimsky"
+  },
+  "matt slater": {
+   "district": 94,
+   "email": "slaterm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Matt-Slater"
+  },
+  "matthew simpson": {
+   "district": 114,
+   "email": "SimpsonM@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Matthew-Simpson"
+  },
+  "micah lasher": {
+   "district": 69,
+   "email": "lasherm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Micah-C-Lasher"
+  },
+  "michael benedetto": {
+   "district": 82,
+   "email": "benedettom@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-Benedetto"
+  },
+  "michael cashman": {
+   "district": 115,
+   "email": "cashmanm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-S-Cashman"
+  },
+  "michael durso": {
+   "district": 9,
+   "email": "dursom@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-Durso"
+  },
+  "michael fitzpatrick": {
+   "district": 8,
+   "email": "FitzpatrickM@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-J-Fitzpatrick"
+  },
+  "michael novakhov": {
+   "district": 45,
+   "email": "novakhovm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-Novakhov"
+  },
+  "michael reilly": {
+   "district": 62,
+   "email": "reillym@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-Reilly"
+  },
+  "michael tannousis": {
+   "district": 64,
+   "email": "tannousism@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michael-Tannousis"
+  },
+  "michaelle solages": {
+   "district": 22,
+   "email": "SolagesM@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Michaelle-C-Solages"
+  },
+  "monique chandler-waterman": {
+   "district": 58,
+   "email": "chandlerwatermanm@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Monique-Chandler-Waterman"
+  },
+  "nader sayegh": {
+   "district": 90,
+   "email": "sayeghn@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Nader-J-Sayegh"
+  },
+  "nikki lucas": {
+   "district": 60,
+   "email": "lucasn@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Nikki-Lucas"
+  },
+  "nily rozic": {
+   "district": 25,
+   "email": "RozicN@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Nily-Rozic"
+  },
+  "noah burroughs": {
+   "district": 18,
+   "email": "burroughsn@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Noah-Burroughs"
+  },
+  "pamela hunter": {
+   "district": 128,
+   "email": "HunterP@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Pamela-J-Hunter"
+  },
+  "patrick burke": {
+   "district": 142,
+   "email": "burkep@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Patrick-Burke"
+  },
+  "patrick carroll": {
+   "district": 96,
+   "email": "carrollp@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Patrick-J-Carroll"
+  },
+  "patrick chludzinski": {
+   "district": 143,
+   "email": "chludzinskip@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Patrick-J-Chludzinski"
+  },
+  "paul bologna": {
+   "district": 144,
+   "email": "bolognap@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Paul-A-Bologna"
+  },
+  "paula kay": {
+   "district": 100,
+   "email": "kayp@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Paula-Elaine-Kay"
+  },
+  "phara forrest": {
+   "district": 57,
+   "email": "souffrantforrestp@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Phara-Souffrant-Forrest"
+  },
+  "phil ramos": {
+   "district": 6,
+   "email": "ramosp@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Phil-Ramos"
+  },
+  "phil steck": {
+   "district": 110,
+   "email": "SteckP@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Phil-Steck"
+  },
+  "philip palmesano": {
+   "district": 132,
+   "email": "palmesanop@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Philip-A-Palmesano"
+  },
+  "rebecca kassay": {
+   "district": 4,
+   "email": "kassayr@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Rebecca-Kassay"
+  },
+  "rebecca seawright": {
+   "district": 76,
+   "email": "SeawrightR@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Rebecca-A-Seawright"
+  },
+  "robert carroll": {
+   "district": 44,
+   "email": "CarrollR@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Robert-C-Carroll"
+  },
+  "robert smullen": {
+   "district": 118,
+   "email": "smullenr@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Robert-Smullen"
+  },
+  "rodneyse hermelyn": {
+   "district": 42,
+   "email": "bichotter@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Rodneyse-Bichotte-Hermelyn"
+  },
+  "ron kim": {
+   "district": 40,
+   "email": "KimR@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Ron-Kim"
+  },
+  "sam berger": {
+   "district": 27,
+   "email": "bergers@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Sam-Berger"
+  },
+  "sam pirozzolo": {
+   "district": 63,
+   "email": "pirozzolos@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Sam-Pirozzolo"
+  },
+  "sarah clark": {
+   "district": 136,
+   "email": "clarks@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Sarah-Clark"
+  },
+  "sarahana shrestha": {
+   "district": 103,
+   "email": "shresthas@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Sarahana-Shrestha"
+  },
+  "scott bendett": {
+   "district": 107,
+   "email": "bendetts@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Scott-Bendett"
+  },
+  "scott gray": {
+   "district": 116,
+   "email": "grays@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Scott-Gray"
+  },
+  "simcha eichenstein": {
+   "district": 48,
+   "email": "EichensteinS@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Simcha-Eichenstein"
+  },
+  "stacey amato": {
+   "district": 23,
+   "email": "amatos@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Stacey-Pheffer-Amato"
+  },
+  "stefani zinerman": {
+   "district": 56,
+   "email": "zinermans@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Stefani-Zinerman"
+  },
+  "stephen hawley": {
+   "district": 139,
+   "email": "HawleyS@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Stephen-Hawley"
+  },
+  "steve stern": {
+   "district": 10,
+   "email": "sterns@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Steve-Stern"
+  },
+  "steven otis": {
+   "district": 91,
+   "email": "OtisS@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Steven-Otis"
+  },
+  "steven raga": {
+   "district": 30,
+   "email": "ragas@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Steven-Raga"
+  },
+  "tommy schiavoni": {
+   "district": 1,
+   "email": "schiavonitj@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Tommy-John-Schiavoni"
+  },
+  "tony simone": {
+   "district": 75,
+   "email": "simonet@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Tony-Simone"
+  },
+  "vivian cook": {
+   "district": 32,
+   "email": "CookV@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Vivian-E-Cook"
+  },
+  "william barclay": {
+   "district": 120,
+   "email": "BarclayW@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/William-A-Barclay"
+  },
+  "william colton": {
+   "district": 47,
+   "email": "ColtonW@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/William-Colton"
+  },
+  "william conrad": {
+   "district": 140,
+   "email": "conradw@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/William-Conrad"
+  },
+  "william magnarelli": {
+   "district": 129,
+   "email": "MagnarW@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/William-B-Magnarelli"
+  },
+  "yudelka tapia": {
+   "district": 86,
+   "email": "tapiay@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Yudelka-Tapia"
+  }
+ },
+ "fetched": "2026-10-22",
+ "senateCommittees": {
+  "aging": {
+   "chair": "Cordell Cleare",
+   "meets": "Tuesdays at 9:00 a.m., Room 904 Legislative Office Building",
+   "members": [
+    "Cordell Cleare",
+    "Brian Kavanagh",
+    "Monica Martinez",
+    "Jos\u00e9 M. Serrano",
+    "Sam Sutton",
+    "Jake Ashby",
+    "Robert Rolison"
+   ],
+   "name": "Aging"
+  },
+  "agriculture": {
+   "chair": "Michelle Hinchey",
+   "meets": "Tuesdays at 1:00 p.m., Room 901 Legislative Office Building",
+   "members": [
+    "Michelle Hinchey",
+    "Samra Brouk",
+    "Patricia Fahy",
+    "Nathalia Fernandez",
+    "Christopher Ryan",
+    "Lea Webb",
+    "George Borrello",
+    "Pamela Helming",
+    "Peter Oberacker"
+   ],
+   "name": "Agriculture"
+  },
+  "alcoholismsubstanceusedisorders": {
+   "chair": "Nathalia Fernandez",
+   "meets": "Wednesdays at 9:30 a.m., Room 813 Legislative Office Building",
+   "members": [
+    "Nathalia Fernandez",
+    "Erik Bottcher",
+    "Pete Harckham",
+    "Monica Martinez",
+    "Gustavo Rivera",
+    "Peter Oberacker",
+    "Robert Rolison"
+   ],
+   "name": "Alcoholism And Substance Use Disorders"
+  },
+  "banks": {
+   "chair": "James Sanders Jr.",
+   "meets": "Tuesdays at 10:30 a.m., Room 710 Legislative Office Building",
+   "members": [
+    "James Sanders Jr.",
+    "Jabari Brisport",
+    "Kevin S. Parker",
+    "Julia Salazar",
+    "Jeremy Zellner",
+    "George Borrello",
+    "Mark Walczyk"
+   ],
+   "name": "Banks"
+  },
+  "budgetrevenue": {
+   "chair": "Andrew Gounardes",
+   "meets": "Tuesdays at 9:30 a.m., Room 912 Legislative Office Building",
+   "members": [
+    "Andrew Gounardes",
+    "Joseph P. Addabbo Jr.",
+    "Leroy Comrie",
+    "Liz Krueger",
+    "Jessica Ramos",
+    "William Weber",
+    "Steve Rhoads"
+   ],
+   "name": "Budget And Revenue"
+  },
+  "childrenfamilies": {
+   "chair": "Jabari Brisport",
+   "meets": "Tuesdays at 1:30 p.m., Room 804 Legislative Office Building",
+   "members": [
+    "Jabari Brisport",
+    "Samra Brouk",
+    "Kristen Gonzalez",
+    "Zellnor Myrie",
+    "Roxanne J. Persaud",
+    "Robert Rolison",
+    "William Weber"
+   ],
+   "name": "Children And Families"
+  },
+  "cities": {
+   "chair": "Christopher Ryan",
+   "meets": "Tuesdays at 9:30 a.m., Room 945 Legislative Office Building",
+   "members": [
+    "Christopher Ryan",
+    "April Baskin",
+    "Patricia Fahy",
+    "Rachel May",
+    "Lea Webb",
+    "Mark Walczyk",
+    "Joseph A. Griffo"
+   ],
+   "name": "Cities 2"
+  },
+  "civilservicepensions": {
+   "chair": "Robert Jackson",
+   "meets": "Mondays at 1:00 p.m., Room 123 Capitol",
+   "members": [
+    "Robert Jackson",
+    "Erik Bottcher",
+    "Jeremy Cooney",
+    "Kevin S. Parker",
+    "Jessica Scarcella-Spanton",
+    "Alexis Weik",
+    "Mario Mattera"
+   ],
+   "name": "Civil Service And Pensions"
+  },
+  "codes": {
+   "chair": "Zellnor Myrie",
+   "meets": "Tuesdays at 9:30 a.m., Room 124 Capitol",
+   "members": [
+    "Zellnor Myrie",
+    "Jamaal Bailey",
+    "Jabari Brisport",
+    "Jeremy Cooney",
+    "Andrew Gounardes",
+    "Brian Kavanagh",
+    "Roxanne J. Persaud",
+    "Julia Salazar",
+    "Luis R. Sep\u00falveda",
+    "Anthony H. Palumbo",
+    "Patrick M. Gallivan",
+    "Thomas F. O'Mara",
+    "Dean Murray"
+   ],
+   "name": "Codes"
+  },
+  "commerceeconomicdevelopmentsmallbusiness": {
+   "chair": "April Baskin",
+   "meets": "Wednesdays at 9:30 a.m., Room 945 Legislative Office Building",
+   "members": [
+    "April Baskin",
+    "Monica Martinez",
+    "Jessica Ramos",
+    "Christopher Ryan",
+    "James Sanders Jr.",
+    "Jeremy Zellner",
+    "Dean Murray",
+    "George Borrello",
+    "Stephen T. Chan"
+   ],
+   "name": "Commerce, Economic Development And Small Business"
+  },
+  "consumerprotection": {
+   "chair": "Rachel May",
+   "meets": "Tuesdays at 10:30 a.m., Room 804 Legislative Office Building",
+   "members": [
+    "Rachel May",
+    "Siela Bynoe",
+    "Kristen Gonzalez",
+    "Zellnor Myrie",
+    "Christopher Ryan",
+    "Patricia Canzoneri-Fitzpatrick",
+    "William Weber"
+   ],
+   "name": "Consumer Protection"
+  },
+  "corporationsauthoritiescommissions": {
+   "chair": "Leroy Comrie",
+   "meets": "Tuesdays at 10:30 a.m., Room 912 Legislative Office Building",
+   "members": [
+    "Leroy Comrie",
+    "Erik Bottcher",
+    "Cordell Cleare",
+    "Jessica Ramos",
+    "James Skoufis",
+    "Mario Mattera",
+    "Jack M. Martins"
+   ],
+   "name": "Corporations, Authorities And Commissions"
+  },
+  "crimevictimscrimecorrection": {
+   "chair": "Julia Salazar",
+   "meets": "Tuesdays at 12:30 p.m., Room 123 Capitol",
+   "members": [
+    "Julia Salazar",
+    "Jamaal Bailey",
+    "Pete Harckham",
+    "Gustavo Rivera",
+    "Luis R. Sep\u00falveda",
+    "Robert Rolison",
+    "Dean Murray"
+   ],
+   "name": "Crime Victims, Crime And Correction"
+  },
+  "culturalaffairstourismparksrecreation": {
+   "chair": "Jos\u00e9 M. Serrano",
+   "meets": "Tuesdays at 12:30 p.m., Room 123 Capitol",
+   "members": [
+    "Jos\u00e9 M. Serrano",
+    "April Baskin",
+    "Jeremy Cooney",
+    "Michelle Hinchey",
+    "Jessica Scarcella-Spanton",
+    "James Tedisco",
+    "Pamela Helming"
+   ],
+   "name": "Cultural Affairs, Tourism, Parks And Recreation"
+  },
+  "disabilities": {
+   "chair": "Patricia Fahy",
+   "meets": "Mondays at 1:30 p.m., Room 945 Legislative Office Building",
+   "members": [
+    "Patricia Fahy",
+    "Monica Martinez",
+    "Roxanne J. Persaud",
+    "Jessica Scarcella-Spanton",
+    "Sam Sutton",
+    "William Weber",
+    "Jake Ashby"
+   ],
+   "name": "Disabilities"
+  },
+  "education": {
+   "chair": "Shelley Mayer",
+   "meets": "Tuesdays at 10:00 a.m., Room 510 Legislative Office Building",
+   "members": [
+    "Shelley Mayer",
+    "Joseph P. Addabbo Jr.",
+    "Siela Bynoe",
+    "Cordell Cleare",
+    "Robert Jackson",
+    "John Liu",
+    "Monica Martinez",
+    "Julia Salazar",
+    "Toby Ann Stavisky",
+    "Sam Sutton",
+    "James Tedisco",
+    "William Weber",
+    "Alexis Weik",
+    "Dan Stec",
+    "Stephen T. Chan"
+   ],
+   "name": "Education"
+  },
+  "elections": {
+   "chair": "Kristen Gonzalez",
+   "meets": "Mondays at 12:00 p.m., Room 124 Capitol",
+   "members": [
+    "Kristen Gonzalez",
+    "Samra Brouk",
+    "Brian Kavanagh",
+    "Shelley Mayer",
+    "Zellnor Myrie",
+    "Mark Walczyk",
+    "George Borrello"
+   ],
+   "name": "Elections"
+  },
+  "energytelecommunications": {
+   "chair": "Kevin S. Parker",
+   "meets": "Tuesdays at 11:00 a.m., Room 124 Capitol",
+   "members": [
+    "Kevin S. Parker",
+    "Kristen Gonzalez",
+    "Michelle Hinchey",
+    "Brian Kavanagh",
+    "Rachel May",
+    "Christopher Ryan",
+    "Mario Mattera",
+    "Thomas F. O'Mara",
+    "Mark Walczyk"
+   ],
+   "name": "Energy And Telecommunications"
+  },
+  "environmentalconservation": {
+   "chair": "Pete Harckham",
+   "meets": "Tuesdays at 11:30 a.m., Room 123 Capitol",
+   "members": [
+    "Pete Harckham",
+    "Erik Bottcher",
+    "Siela Bynoe",
+    "Patricia Fahy",
+    "Michelle Hinchey",
+    "Brian Kavanagh",
+    "Rachel May",
+    "Jos\u00e9 M. Serrano",
+    "Dan Stec",
+    "Patricia Canzoneri-Fitzpatrick",
+    "Anthony H. Palumbo"
+   ],
+   "name": "Environmental Conservation"
+  },
+  "ethicsinternalgovernance": {
+   "chair": "Shelley Mayer",
+   "meets": "Mondays at 12:00 p.m., Room 124 Capitol",
+   "members": [
+    "Shelley Mayer",
+    "Jeremy Cooney",
+    "Andrew Gounardes",
+    "Toby Ann Stavisky",
+    "Steve Rhoads",
+    "Anthony H. Palumbo",
+    "Andrew J. Lanza"
+   ],
+   "name": "Ethics And Internal Governance"
+  },
+  "finance": {
+   "chair": "Liz Krueger",
+   "meets": "Tuesdays at 11:00 a.m., Room 124 Capitol",
+   "members": [
+    "Liz Krueger",
+    "Jamaal Bailey",
+    "Leroy Comrie",
+    "Jeremy Cooney",
+    "Andrew Gounardes",
+    "Michelle Hinchey",
+    "John Liu",
+    "Shelley Mayer",
+    "Kevin S. Parker",
+    "Jessica Ramos",
+    "Gustavo Rivera",
+    "Julia Salazar",
+    "Luis R. Sep\u00falveda",
+    "James Skoufis",
+    "Toby Ann Stavisky",
+    "Thomas F. O'Mara",
+    "Joseph A. Griffo",
+    "Patrick M. Gallivan",
+    "Pamela Helming",
+    "Peter Oberacker",
+    "William Weber",
+    "George Borrello"
+   ],
+   "name": "Finance"
+  },
+  "health": {
+   "chair": "Gustavo Rivera",
+   "meets": "Tuesdays at 12:00 p.m., Room 124 Capitol",
+   "members": [
+    "Gustavo Rivera",
+    "Samra Brouk",
+    "Kristen Gonzalez",
+    "Robert Jackson",
+    "Rachel May",
+    "Zellnor Myrie",
+    "Kevin S. Parker",
+    "Christopher Ryan",
+    "Sam Sutton",
+    "Lea Webb",
+    "Patrick M. Gallivan",
+    "Jake Ashby",
+    "Jack M. Martins",
+    "Dan Stec",
+    "Steve Rhoads"
+   ],
+   "name": "Health"
+  },
+  "highereducation": {
+   "chair": "Toby Ann Stavisky",
+   "meets": "Tuesdays at 10:30 a.m., Room 124 Capitol",
+   "members": [
+    "Toby Ann Stavisky",
+    "Patricia Fahy",
+    "Andrew Gounardes",
+    "Robert Jackson",
+    "John Liu",
+    "Rachel May",
+    "Gustavo Rivera",
+    "Lea Webb",
+    "Joseph A. Griffo",
+    "Dean Murray",
+    "Peter Oberacker"
+   ],
+   "name": "Higher Education"
+  },
+  "housingconstructioncommunitydevelopment": {
+   "chair": "Brian Kavanagh",
+   "meets": "Mondays at 11:00 a.m., Room 511 Legislative Office Building",
+   "members": [
+    "Brian Kavanagh",
+    "Jabari Brisport",
+    "Cordell Cleare",
+    "Robert Jackson",
+    "Rachel May",
+    "Gustavo Rivera",
+    "Julia Salazar",
+    "Jeremy Zellner",
+    "Jack M. Martins",
+    "Pamela Helming",
+    "Mark Walczyk"
+   ],
+   "name": "Housing, Construction And Community Development"
+  },
+  "insurance": {
+   "chair": "Jamaal Bailey",
+   "meets": "Mondays at 11:30 a.m., Room 123 Capitol",
+   "members": [
+    "Jamaal Bailey",
+    "Joseph P. Addabbo Jr.",
+    "Jeremy Cooney",
+    "Nathalia Fernandez",
+    "Andrew Gounardes",
+    "Pete Harckham",
+    "James Sanders Jr.",
+    "James Skoufis",
+    "Pamela Helming",
+    "Jake Ashby",
+    "Thomas F. O'Mara"
+   ],
+   "name": "Insurance"
+  },
+  "internettechnology": {
+   "chair": "Kristen Gonzalez",
+   "meets": "Mondays at 10:30 a.m., Room 123 Capitol",
+   "members": [
+    "Kristen Gonzalez",
+    "Andrew Gounardes",
+    "Michelle Hinchey",
+    "Kevin S. Parker",
+    "Jeremy Zellner",
+    "Dan Stec",
+    "Mark Walczyk"
+   ],
+   "name": "Internet And Technology"
+  },
+  "investigationsgovernmentoperations": {
+   "chair": "James Skoufis",
+   "meets": "Mondays at 12:00 p.m., Room 611 Legislative Office Building",
+   "members": [
+    "James Skoufis",
+    "Erik Bottcher",
+    "Siela Bynoe",
+    "Cordell Cleare",
+    "Rachel May",
+    "Thomas F. O'Mara",
+    "Stephen T. Chan"
+   ],
+   "name": "Investigations And Government Operations"
+  },
+  "judiciary": {
+   "chair": "Luis R. Sep\u00falveda",
+   "meets": "Tuesdays at 10:00 a.m., Room 124 Capitol",
+   "members": [
+    "Luis R. Sep\u00falveda",
+    "Jamaal Bailey",
+    "Erik Bottcher",
+    "Jeremy Cooney",
+    "Andrew Gounardes",
+    "John Liu",
+    "Shelley Mayer",
+    "Zellnor Myrie",
+    "Kevin S. Parker",
+    "Jessica Ramos",
+    "James Skoufis",
+    "Toby Ann Stavisky",
+    "Jeremy Zellner",
+    "Anthony H. Palumbo",
+    "Patricia Canzoneri-Fitzpatrick",
+    "Andrew J. Lanza",
+    "Jack M. Martins",
+    "Thomas F. O'Mara",
+    "Steve Rhoads"
+   ],
+   "name": "Judiciary"
+  },
+  "labor": {
+   "chair": "Jessica Ramos",
+   "meets": "Tuesdays at 1:00 p.m., Room 308 Legislative Office Building",
+   "members": [
+    "Jessica Ramos",
+    "Nathalia Fernandez",
+    "Robert Jackson",
+    "Shelley Mayer",
+    "Christopher Ryan",
+    "James Sanders Jr.",
+    "Jessica Scarcella-Spanton",
+    "James Skoufis",
+    "Jeremy Zellner",
+    "Steve Rhoads",
+    "Mario Mattera",
+    "Peter Oberacker",
+    "Robert Rolison"
+   ],
+   "name": "Labor"
+  },
+  "libraries": {
+   "chair": "Siela Bynoe",
+   "meets": "Wednesdays at 9:00 a.m., Room 901 Legislative Office Building",
+   "members": [
+    "Siela Bynoe",
+    "Erik Bottcher",
+    "Jabari Brisport",
+    "Jos\u00e9 M. Serrano",
+    "Jeremy Zellner",
+    "Dean Murray",
+    "James Tedisco"
+   ],
+   "name": "Libraries"
+  },
+  "localgovernment": {
+   "chair": "Monica Martinez",
+   "meets": "Mondays at 11:30 a.m., Room 904 Legislative Office Building",
+   "members": [
+    "Monica Martinez",
+    "April Baskin",
+    "Samra Brouk",
+    "Patricia Fahy",
+    "James Skoufis",
+    "Alexis Weik",
+    "Robert Rolison"
+   ],
+   "name": "Local Government"
+  },
+  "mentalhealth": {
+   "chair": "Samra Brouk",
+   "meets": "Wednesdays at 9:00 a.m., Room 813 Legislative Office Building",
+   "members": [
+    "Samra Brouk",
+    "Siela Bynoe",
+    "Nathalia Fernandez",
+    "Gustavo Rivera",
+    "Lea Webb",
+    "Patricia Canzoneri-Fitzpatrick",
+    "Anthony H. Palumbo"
+   ],
+   "name": "Mental Health"
+  },
+  "newyorkcityeducation": {
+   "chair": "John Liu",
+   "meets": "Tuesdays at 9:00 a.m., Room 916 Legislative Office Building",
+   "members": [
+    "John Liu",
+    "Robert Jackson",
+    "Roxanne J. Persaud",
+    "Luis R. Sep\u00falveda",
+    "Sam Sutton",
+    "Stephen T. Chan",
+    "James Tedisco"
+   ],
+   "name": "New York City Education"
+  },
+  "procurementcontracts": {
+   "chair": "Jeremy Zellner",
+   "meets": "Mondays at 1:30 p.m., Room 801 Legislative Office Building",
+   "members": [
+    "Jeremy Zellner",
+    "April Baskin",
+    "Jabari Brisport",
+    "Leroy Comrie",
+    "Lea Webb",
+    "Jack M. Martins",
+    "Steve Rhoads"
+   ],
+   "name": "Procurement And Contracts"
+  },
+  "racinggamingwagering": {
+   "chair": "Joseph P. Addabbo Jr.",
+   "meets": "Tuesdays at 11:00 a.m., Room 810 Legislative Office Building",
+   "members": [
+    "Joseph P. Addabbo Jr.",
+    "Leroy Comrie",
+    "Patricia Fahy",
+    "James Sanders Jr.",
+    "Toby Ann Stavisky",
+    "James Tedisco",
+    "Pamela Helming"
+   ],
+   "name": "Racing, Gaming And Wagering"
+  },
+  "rules": {
+   "chair": "Andrea Stewart-Cousins",
+   "meets": null,
+   "members": [
+    "Andrea Stewart-Cousins",
+    "Joseph P. Addabbo Jr.",
+    "Jamaal Bailey",
+    "Leroy Comrie",
+    "Nathalia Fernandez",
+    "Kristen Gonzalez",
+    "Pete Harckham",
+    "Liz Krueger",
+    "John Liu",
+    "Shelley Mayer",
+    "Zellnor Myrie",
+    "Kevin S. Parker",
+    "Luis R. Sep\u00falveda",
+    "Robert Ortt",
+    "Andrew J. Lanza",
+    "Patrick M. Gallivan",
+    "Joseph A. Griffo",
+    "Pamela Helming",
+    "Dan Stec",
+    "James Tedisco"
+   ],
+   "name": "Rules"
+  },
+  "socialservices": {
+   "chair": "Roxanne J. Persaud",
+   "meets": "Tuesdays at 10:30 a.m., Room 410 Legislative Office Building",
+   "members": [
+    "Roxanne J. Persaud",
+    "Cordell Cleare",
+    "Brian Kavanagh",
+    "Jos\u00e9 M. Serrano",
+    "Sam Sutton",
+    "Dean Murray",
+    "Alexis Weik"
+   ],
+   "name": "Social Services"
+  },
+  "transportation": {
+   "chair": "Jeremy Cooney",
+   "meets": "Tuesdays at 12:30 p.m., Room 801 Legislative Office Building",
+   "members": [
+    "Jeremy Cooney",
+    "Siela Bynoe",
+    "Nathalia Fernandez",
+    "Pete Harckham",
+    "Michelle Hinchey",
+    "John Liu",
+    "Monica Martinez",
+    "Roxanne J. Persaud",
+    "Jessica Ramos",
+    "Peter Oberacker",
+    "Patrick M. Gallivan",
+    "Joseph A. Griffo",
+    "Mario Mattera"
+   ],
+   "name": "Transportation"
+  },
+  "veteranshomelsecuritymilitaryaffairs": {
+   "chair": "Jessica Scarcella-Spanton",
+   "meets": "Mondays at 12:30 p.m., Room 944 Legislative Office Building",
+   "members": [
+    "Jessica Scarcella-Spanton",
+    "Joseph P. Addabbo Jr.",
+    "April Baskin",
+    "Pete Harckham",
+    "James Sanders Jr.",
+    "Jos\u00e9 M. Serrano",
+    "Jake Ashby",
+    "Dan Stec",
+    "Alexis Weik"
+   ],
+   "name": "Veterans, Homeland Security And Military Affairs"
+  },
+  "womensissues": {
+   "chair": "Lea Webb",
+   "meets": "Mondays at 11:00 a.m., Room 801 Legislative Office Building",
+   "members": [
+    "Lea Webb",
+    "April Baskin",
+    "Jessica Scarcella-Spanton",
+    "Jos\u00e9 M. Serrano",
+    "Toby Ann Stavisky",
+    "Alexis Weik",
+    "Patricia Canzoneri-Fitzpatrick"
+   ],
+   "name": "Women's Issues"
+  }
+ },
+ "session": 2025
+}

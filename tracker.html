@@ -40,6 +40,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -217,8 +218,8 @@ table.oc th { vertical-align: bottom; }
 .view-tab { appearance: none; border: 0; background: none; padding: 8px 14px; font: 700 16px var(--display); font-stretch: 85%; color: var(--ink-2); cursor: pointer; border-radius: 5px 5px 0 0; }
 .view-tab:hover { color: var(--ink); background: var(--chip); }
 .view-tab[aria-selected="true"] { background: var(--ink); color: var(--paper); }
-.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
-.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding: 4px 4px 16px 0; }
+.layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 32px; align-items: start; }
+.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding: 4px 22px 16px 0; border-right: 1px solid var(--rule); }
 .side-toggle { display: none; }
 .side-body { display: grid; gap: 16px; }
 .group { display: grid; gap: 8px; }
@@ -240,13 +241,13 @@ table.oc th { vertical-align: bottom; }
 .srow:hover { background: var(--chip); }
 .srow[aria-pressed="true"] { background: var(--navy); color: var(--sheet); }
 .srow .sl { font-size: 13.5px; }
-.srow .sn { font: 700 14px var(--mono); font-variant-numeric: tabular-nums; }
+.srow .sn { font: 600 12px/1.5 var(--body); font-variant-numeric: tabular-nums; color: var(--ink-2); background: var(--chip); border-radius: 999px; padding: 0 8px; align-self: center; }
 .srow .ss { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-2); }
 .srow[aria-pressed="true"] .ss { color: var(--sheet); opacity: .85; }
 .srow[data-k="3"] .sn, .srow[data-k="4"] .sn { color: var(--gold); }
 .srow[data-k="5"] .sn { color: var(--signed); }
 .srow[data-k="6"] .sn { color: var(--veto); }
-.srow[aria-pressed="true"] .sn { color: var(--sheet); }
+.srow[aria-pressed="true"] .sn { color: var(--navy); background: var(--sheet); }
 
 /* Active filters */
 .active { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -270,9 +271,44 @@ table.oc th { vertical-align: bottom; }
 .notes { display: grid; gap: 8px; max-width: 80ch; color: var(--ink-2); font-size: 14px; }
 .notes p { margin: 0; }
 
+/* What's next, in each bill's details */
+.next { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; max-width: 78ch; }
+.next h4 { margin: 0; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.next p { margin: 0; }
+.next .when { font-weight: 600; }
+.next ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13.5px; }
+.next li { display: grid; gap: 1px; }
+.next li .role { font-size: 12px; color: var(--ink-2); }
+.next .contact { overflow-wrap: anywhere; }
+.next .phone { font-family: var(--mono); font-size: 12.5px; user-select: all; }
+.next .ours { color: var(--signed); font-weight: 600; font-size: 12px; }
+
+/* Weigh in tab */
+.actview { display: grid; gap: 22px; }
+.actview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
+.actview h3 { margin: 0; font: 700 16px var(--display); font-stretch: 90%; }
+.actview p { margin: 0; max-width: 78ch; }
+.act-sec { display: grid; gap: 10px; }
+.act-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.act-btn { appearance: none; border: 1px solid var(--navy); background: var(--sheet); color: var(--navy); border-radius: 5px; padding: 7px 12px; font: 600 13.5px var(--body); cursor: pointer; }
+.act-btn:hover { background: var(--chip); }
+.soon { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--rule); }
+.soon li { display: grid; grid-template-columns: 120px 110px minmax(0, 1fr); gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 13.5px; align-items: baseline; }
+.soon .due { font-weight: 600; color: var(--gold); }
+.soon .bn { font: 700 12.5px var(--mono); }
+.act-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 14px; }
+.stagehelp { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+.stagehelp th { text-align: left; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+.stagehelp td { padding: 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.stagehelp td:first-child { font-weight: 600; white-space: nowrap; }
+@media (max-width: 620px) { .soon li { grid-template-columns: 100px minmax(0, 1fr); } .soon li .t { grid-column: 1 / -1; } }
+
 @media (max-width: 900px) {
   .layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .side { position: static; max-height: none; overflow: visible; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); padding: 0; }
+  .act-grid { grid-template-columns: minmax(0, 1fr); }
   .side-toggle { display: flex; justify-content: space-between; cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; }
   .side-toggle span { font: 600 12.5px var(--body); color: var(--navy); }
   .side-body { padding: 4px 14px 14px; }
@@ -298,6 +334,7 @@ table.oc th { vertical-align: bottom; }
     <button class="view-tab" role="tab" type="button" data-view="bills" aria-selected="true">Bills</button>
     <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
     <button class="view-tab" role="tab" type="button" data-view="how" aria-selected="false">How it works</button>
+    <button class="view-tab" role="tab" type="button" data-view="act" aria-selected="false">Weigh in</button>
   </nav>
 
   <!-- Bills: filters in a sidebar, results beside them -->
@@ -395,12 +432,71 @@ table.oc th { vertical-align: bottom; }
     </section>
   </section>
 
+  <!-- Weigh in -->
+  <section class="actview" id="view-act" hidden>
+    <div class="act-sec" id="openNow"></div>
+
+    <div class="act-sec">
+      <h2>Who can weigh in, and how</h2>
+      <div class="act-grid">
+        <div class="card">
+          <h3>Residents</h3>
+          <ul>
+            <li>Contact your own state senator and Assembly member first. They vote on every bill that reaches the floor, and they can press committee chairs and leaders. Look them up with the Senate's <a href="https://www.nysenate.gov/find-my-senator" target="_blank" rel="noopener">Find My Senator</a> and the Assembly's <a href="https://nyassembly.gov/mem/search/" target="_blank" rel="noopener">member search</a>.</li>
+            <li>A short, specific message works best: the bill number, whether you support or oppose it, and one or two reasons in your own words.</li>
+            <li>While a bill is in committee, write to the committee chair, who decides what goes on the agenda.</li>
+            <li>Once a bill has passed both houses, write to the governor's office (contact details below).</li>
+            <li>Committees sometimes hold public hearings on an issue and take testimony, written or in person.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Organizations and businesses</h3>
+          <ul>
+            <li>Send a memo of support or opposition: a one- or two-page letter with the bill number, your position, and the reasons. Send it to the sponsors and the committee chairs while the bill is moving, and to the governor's counsel after it passes both houses.</li>
+            <li>Joining with others carries more weight: coalitions, trade associations, and statewide groups often send memos together.</li>
+            <li>Anyone who expects to spend or be paid more than $5,000 a year on lobbying has to register with the state <a href="https://ethics.ny.gov/lobbyist-and-public-corporation-registration-instructions" target="_blank" rel="noopener">Commission on Ethics and Lobbying in Government</a>.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Counties, cities, towns and villages</h3>
+          <ul>
+            <li>Pass a resolution supporting or opposing a bill and send it to your state legislators, the sponsors, and the governor.</li>
+            <li>After a bill passes both houses, a letter from the local government to the counsel to the governor goes into the bill's official file (the “bill jacket”), which her staff reviews before she signs or vetoes.</li>
+            <li>A bill that applies only to one locality generally needs that local government's request (a “home rule request”) before the Legislature can pass it: a vote of two-thirds of the local legislative body, or the chief executive's request with a majority vote.</li>
+            <li>Statewide associations, such as the New York State Association of Counties, track bills and send memos for their members.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="act-sec">
+      <h2>What helps at each stage</h2>
+      <div class="tablewrap"><table class="stagehelp">
+        <thead><tr><th>Stage</th><th>Who decides</th><th>Who to contact</th></tr></thead>
+        <tbody>
+          <tr><td>In committee</td><td>The committee chair decides which bills go on the agenda; the committee votes.</td><td>The chair, committee members (especially your own legislators), and the sponsors.</td></tr>
+          <tr><td>Awaiting a floor vote</td><td>Each house's leaders decide which bills come up for a vote; the calendar comes out the day of the vote.</td><td>Your own senator and Assembly member, and the sponsors.</td></tr>
+          <tr><td>Passed one house</td><td>The other house, starting with its committee.</td><td>The committee chair in the other house, the sponsor there, and your legislator in that house.</td></tr>
+          <tr><td>Passed both, not yet sent</td><td>The governor's office decides when to ask for the bill, any day through December.</td><td>The governor's office and counsel. Sponsors can urge the governor's office to take up the bill.</td></tr>
+          <tr><td>On the governor's desk</td><td>The governor has 10 days, not counting Sundays, to sign or veto.</td><td>The governor's office and counsel, quickly.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="act-sec">
+      <h2>Governor's office</h2>
+      <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message to the governor</a></p>
+      <p>Phone: <span class="phone">(518) 474-8390</span>, 9 a.m. to 5 p.m.</p>
+      <p>Mail: Governor of New York State, NYS State Capitol Building, Albany, NY 12224. Letters about a bill that has passed both houses can be addressed to the Counsel to the Governor at the same address.</p>
+    </div>
+  </section>
+
   <!-- How it works -->
   <section class="howview" id="view-how" hidden>
     <h2>How a bill becomes law in New York</h2>
     <ol class="steps">
       <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee there. Most bills never get out of committee.</li>
-      <li><b>Floor.</b> When a committee reports a bill, it goes on that house's calendar (“third reading”) to wait for a vote of the full house.</li>
+      <li><b>Floor.</b> When a committee approves a bill (“reports” it), the bill goes on that house's calendar (“third reading”) to wait for a vote of the full house. Party leaders decide which bills come up for a vote, and floor calendars are published the day of the vote.</li>
       <li><b>The other house.</b> A bill that passes one house goes to the other. Most bills have a matching (“same as”) bill in the other house. When the passed bill arrives, the other house usually swaps it in for its own version and votes on it. Both houses have to pass identical text.</li>
       <li><b>Waiting to be sent.</b> A bill that has passed both houses stays with the Legislature until the governor's office asks for it. Her office requests bills in batches through the rest of the year, and nothing is required of her until then.</li>
       <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
@@ -424,14 +520,14 @@ table.oc th { vertical-align: bottom; }
 // pipe = stage boxes, long = bill status and history, chart = stats panel bars.
 const STAGE_TEXT = {
   live: {
-    pipe: ["In committee", "Reported to the floor", "Passed one house", "Passed both houses", "On the governor's desk", "Signed into law", "Vetoed"],
-    long: ["In committee", "Reported to the floor", "Passed one house", "Passed both houses, not yet sent to the governor", "On the governor's desk", "Signed into law", "Vetoed"],
-    chart: ["In committee", "On the floor", "Passed one house", "Passed both, not sent", "Governor's desk", "Signed", "Vetoed"],
+    pipe: ["In committee", "Awaiting a floor vote", "Passed one house", "Passed both houses", "On the governor's desk", "Signed into law", "Vetoed"],
+    long: ["In committee", "Awaiting a floor vote", "Passed one house", "Passed both houses, not yet sent to the governor", "On the governor's desk", "Signed into law", "Vetoed"],
+    chart: ["In committee", "Awaiting floor vote", "Passed one house", "Passed both, not sent", "Governor's desk", "Signed", "Vetoed"],
   },
   final: {
-    pipe: ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses", "Sent to the governor", "Signed into law", "Vetoed"],
-    long: ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses, never sent to the governor", "Sent to the governor, no action recorded", "Signed into law", "Vetoed"],
-    chart: ["Died in committee", "Died on the floor", "Passed one house", "Passed both, not sent", "Sent, no action", "Signed", "Vetoed"],
+    pipe: ["Died in committee", "Died awaiting a floor vote", "Passed one house only", "Passed both houses", "Sent to the governor", "Signed into law", "Vetoed"],
+    long: ["Died in committee", "Died awaiting a floor vote", "Passed one house only", "Passed both houses, never sent to the governor", "Sent to the governor, no action recorded", "Signed into law", "Vetoed"],
+    chart: ["Died in committee", "Died awaiting vote", "Passed one house", "Passed both, not sent", "Sent, no action", "Signed", "Vetoed"],
   },
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
@@ -548,6 +644,7 @@ function renderPipeline() {
     if (b.stage === 4 && b.due && b.due >= today && (!nextDue || b.due < nextDue)) nextDue = b.due;
   }
   const subs = {
+    1: "Approved by committee",
     2: `Senate ${num(oneHouse.Senate)} · Assembly ${num(oneHouse.Assembly)}`,
     3: DATA.current ? "Not yet sent to the governor" : "Never sent to the governor",
     4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No action recorded",
@@ -613,11 +710,101 @@ function statusText(b) {
   return `<div class="st s${b.stage}">${esc(t)}<small>${esc(small)}</small></div>`;
 }
 
+// ---- What's next and who to contact (current session only) ----
+const GOV = `<li><span class="role">Governor's office</span><span class="contact"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
+const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
+const HOUSE = { S: "Senate", A: "Assembly" };
+
+function personLink(name, title) {
+  const p = (DATA.contacts?.people || {})[name] || {};
+  const label = `${title} ${esc(name)}`;
+  const link = p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${label}</a>` : label;
+  return p.email ? `${link} · <span class="phone">${esc(p.email)}</span>` : link;
+}
+
+function committeeContact(house, name) {
+  const c = (DATA.contacts?.committees || {})[`${house}:${commKey(name)}`];
+  if (!c) return "";
+  const title = house === "S" ? "Sen." : "Asm.";
+  const ours = c.ours.length ? ` <span class="ours">${c.ours.map((n) => `${title} ${esc(n)}`).join(", ")} ${c.ours.length > 1 ? "are members" : "is a member"}</span>` : "";
+  const cname = c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${HOUSE[house]} ${esc(c.name)} Committee</a>` : `${HOUSE[house]} ${esc(c.name)} Committee`;
+  return `<li><span class="role">Chair, ${cname}${c.meets ? ` · meets ${esc(c.meets)} during session` : ""}</span>
+    <span class="contact">${c.chair ? personLink(c.chair, title) : "Chair not listed"}${ours}</span></li>`;
+}
+
+function sponsorsList(b, houses = ["S", "A"]) {
+  return b.vers.filter((v) => v.sponsor && houses.includes(v.p[0])).map((v) =>
+    `<li><span class="role">Sponsor of ${esc(v.p)} (${HOUSE[v.p[0]]})</span><span class="contact">${personLink(v.sponsor, v.p[0] === "S" ? "Sen." : "Asm.")}</span></li>`).join("");
+}
+
+function ourReps(houses = ["S", "A"]) {
+  return (DATA.contacts?.reps || []).filter((r) => houses.includes(r.house)).map((r) =>
+    `<li><span class="role">Your ${r.house === "S" ? "state senator" : "Assembly member"}</span><span class="contact">${personLink(r.name, r.title)}</span></li>`).join("");
+}
+
+function nextSteps(b) {
+  if (!DATA.current || !DATA.contacts) return "";
+  const today = isoToday(), y2 = DATA.session + 1;
+  const lv = DATA.lastVote || "", quiet = lv && (new Date(today) - new Date(lv)) / 864e5 > 21;
+  const adjourned = today > `${y2}-12-31` || (quiet && lv.startsWith(String(y2)));
+  const recess = !adjourned && quiet && today.startsWith(String(DATA.session));
+  const stalled = adjourned
+    ? `The Legislature has finished voting for this session, so this bill can move only if lawmakers return for a special session. If it doesn't pass both houses by December 31, ${y2}, it dies and would have to be reintroduced.`
+    : recess ? `The Legislature is out until January ${y2}, when committees and floor votes resume.` : "";
+  let what = "", who = "";
+  const inComm = b.vers.filter((v) => v.committee && /committee/i.test(v.statusDesc || ""));
+  if (b.stage === 0) {
+    what = `<p class="when">Next: a vote in committee.</p><p>${stalled || "The chair decides which bills go on the committee's agenda. Senate agendas are posted on nysenate.gov about a week ahead."}</p>`;
+    who = inComm.map((v) => committeeContact(v.p[0], v.committee)).join("") + sponsorsList(b) + ourReps();
+  } else if (b.stage === 1) {
+    what = `<p class="when">Next: a vote by the full ${b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => HOUSE[v.p[0]]).join(" and ") || "house"}.</p><p>${stalled || "Party leaders decide which bills come up, and the calendar is published the day of the vote, so there's little advance notice."}</p>`;
+    who = sponsorsList(b) + ourReps();
+  } else if (b.stage === 2) {
+    const other = b.passedIn === "Senate" ? "A" : "S";
+    const twin = b.vers.find((v) => v.p[0] === other);
+    what = `<p class="when">Next: the ${HOUSE[other]} has to pass it too.</p><p>${stalled || (twin ? `The ${HOUSE[other]} version, ${esc(twin.p)}, is ${twin.committee ? `in the ${esc(twin.committee)} Committee` : "waiting there"}.` : `There's no matching ${HOUSE[other]} bill, so the ${HOUSE[other]} would have to take up this one.`)}</p>`;
+    who = (twin && twin.committee ? committeeContact(other, twin.committee) : "") + sponsorsList(b, [other]) + ourReps([other]) + sponsorsList(b, [other === "S" ? "A" : "S"]);
+  } else if (b.stage === 3) {
+    what = `<p class="when">Next: the governor's office asks for the bill, then has 10 days (not counting Sundays) to act.</p><p>It can be requested any day through December, so now is the time to weigh in. A county or other local government can send a letter to the Counsel to the Governor for the bill's official file.</p>`;
+    who = GOV + sponsorsList(b) + ourReps();
+  } else if (b.stage === 4) {
+    what = `<p class="when">Next: the governor signs or vetoes it${b.due ? ` by about ${fmtDate(b.due)}` : ""}.</p><p>That's 10 days after it was delivered, not counting Sundays. Comments need to reach her office before then.</p>`;
+    who = GOV + sponsorsList(b);
+  } else if (b.stage === 5) {
+    what = `<p class="when">This bill is law${b.chapter ? ` (Chapter ${b.chapter} of ${fmtDate(b.dates.signed).slice(-4)})` : ""}.</p><p>Changing it would take a new bill. Some bills are signed with an agreement to amend them the next year.</p>`;
+    who = sponsorsList(b);
+  } else if (b.stage === 6) {
+    what = `<p class="when">The governor vetoed this bill.</p><p>The sponsors can reintroduce it in the next session. The Legislature can override a veto with a two-thirds vote in each house, which is rare.</p>`;
+    who = sponsorsList(b);
+  }
+  return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
+}
+
+// Bills where comment can still change the outcome this year, soonest deadline first.
+function renderOpenNow() {
+  if (!DATA.current) {
+    $("openNow").innerHTML = `<h2>This session is over</h2><p>Every bill in the ${span(DATA.session)} session has been decided or has died. Switch to the current session to see bills that are still open for comment.</p>`;
+    return;
+  }
+  const pool = BILLS.filter((b) => matches(b, "stage"));
+  const desk = pool.filter((b) => b.stage === 4).sort((a, b) => (a.due || "").localeCompare(b.due || ""));
+  const waiting = pool.filter((b) => b.stage === 3);
+  const filtered = activeFilters().filter(([k]) => k !== "stage").length;
+  const rows = desk.slice(0, 12).map((b) => `<li><span class="due">Due ${fmtDate(b.due)}</span><span class="bn">${esc(b.nums[0])}</span><span class="t">${esc(b.title)}</span></li>`).join("");
+  $("openNow").innerHTML = `<h2>Open for comment now</h2>
+    <p>${num(desk.length)} bill${desk.length === 1 ? " is" : "s are"} on the governor's desk, and ${num(waiting.length)} more passed both houses and can be sent to her any day.${filtered ? " These counts use the filters you've set on the Bills tab." : ""}</p>
+    <div class="act-buttons">
+      <button class="act-btn" type="button" data-open="4">See the ${num(desk.length)} on her desk, by deadline</button>
+      <button class="act-btn" type="button" data-open="3">See the ${num(waiting.length)} not yet sent</button>
+    </div>
+    ${rows ? `<h3>Soonest deadlines</h3><ul class="soon">${rows}</ul>` : ""}`;
+}
+
 function keyDates(b) {
   const D = b.dates;
   const items = [
     [D.intro, "Introduced"],
-    [D.floor, "First reported to the floor"],
+    [D.floor, "Approved by committee and sent to the floor"],
     ...D.passSAll.map((d, i) => [d, i ? "Passed the Senate again" : "Passed the Senate"]),
     ...D.passAAll.map((d, i) => [d, i ? "Passed the Assembly again" : "Passed the Assembly"]),
     [D.died, "Sent back to committee for the new year (had to pass again)"],
@@ -842,6 +1029,7 @@ function render() {
   renderTopics();
   renderActive();
   renderList();
+  renderOpenNow();
   const saved = {};
   for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
   store("filters", saved);
@@ -855,15 +1043,16 @@ function fillDetail(el) {
   d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
+    ${nextSteps(b)}
     ${keyDates(b)}
     ${lineage(b)}
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
 
 function showView(v) {
-  if (!["bills", "stats", "how"].includes(v)) v = "bills";
+  if (!["bills", "stats", "how", "act"].includes(v)) v = "bills";
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
-  for (const id of ["bills", "stats", "how"]) $("view-" + id).hidden = id !== v;
+  for (const id of ["bills", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
   try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
 
@@ -906,6 +1095,11 @@ function wire() {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
+  $("openNow").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-open]"); if (!btn) return;
+    state.stage = +btn.dataset.open; state.sort = btn.dataset.open === "4" ? "due" : "recent"; state.shown = PAGE;
+    syncControls(); render(); showView("bills"); window.scrollTo(0, 0);
+  });
   $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
   $("ocTopic").addEventListener("change", renderOutcomes);
   $("chartTabs").addEventListener("click", (e) => {
@@ -1042,7 +1236,7 @@ function hydrate(raw) {
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
   let view = "bills";
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
-  if (["stats", "how"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (["stats", "how", "act"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   showView(view);
   renderOutcomes();
   render();

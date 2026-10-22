@@ -11,6 +11,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `fetch_bills.py SESSION` downloads every bill in a session (about 4 minutes) to `data/bills_SESSION.json`.
 - `build_data.py --github _site` builds one page per session with the data embedded:
   `index.html` for the current session and `YEAR.html` for past ones.
+- `fetch_contacts.py SESSION` collects committee chairs, members and meeting times (Senate from the API,
+  Assembly from nyassembly.gov) and legislators' page links into `data/contacts_SESSION.json`, used for
+  the "What's next and who to contact" box under each bill.
 - `tracker.html` is the page template; topic rules and the sponsor checkboxes are at the top of `build_data.py`.
 - `.github/workflows/update.yml` runs both every day and deploys to GitHub Pages. The note at
   the top of the page (end of votes, governor's remaining bills, session over) is worked out
