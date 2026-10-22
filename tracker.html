@@ -329,7 +329,7 @@ table.oc th { vertical-align: bottom; }
           </div>
           <div class="field">
             <label for="law">Law amended</label>
-            <input type="search" id="law" list="lawOptions" placeholder="Type to find a law" autocomplete="off">
+            <input type="search" id="law" list="lawOptions" placeholder="Type part of a law's name" autocomplete="off">
             <datalist id="lawOptions"></datalist>
           </div>
           <div class="field">
@@ -509,7 +509,7 @@ function matches(b, skip) {
   if (skip !== "topic" && state.topics.size) {
     for (const t of state.topics) if (!b.topics.includes(t)) return false;
   }
-  if (state.law && !b.laws.includes(state.law)) return false;
+  if (state.law) { const w = state.law.toLowerCase(); if (!b.laws.some((l) => l.toLowerCase().includes(w))) return false; }
   if (state.comm && !b.comms.includes(state.comm)) return false;
   if (state.progress && !PROGRESS[state.progress].test(b)) return false;
   if (state.house && b.house !== state.house) return false;
@@ -813,7 +813,7 @@ function activeFilters() {
   if (state.sen) out.push(["sen", null, "Sponsor", $("senLabel").textContent.replace("Sponsored by ", "")]);
   if (state.asm) out.push(["asm", null, "Sponsor", $("asmLabel").textContent.replace("Sponsored by ", "")]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
-  if (state.law) out.push(["law", null, "Law", state.law]);
+  if (state.law) out.push(["law", null, "Law", `contains “${state.law}”`]);
   if (state.comm) out.push(["comm", null, "Committee", state.comm]);
   if (state.house) out.push(["house", null, "Version in", opt("house", state.house)]);
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
@@ -885,12 +885,16 @@ function wire() {
   let timer;
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
   for (const id of ["comm", "progress", "house", "hist", "intro", "sort"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
-  // The law box filters only once its text matches a law name (ignoring case); clearing it removes the filter.
+  // The law box matches any law whose name contains the typed text (3+ characters),
+  // so "cannabis" finds the Cannabis Law and "conservation" the Environmental Conservation Law.
+  let lawTimer;
   $("law").addEventListener("input", (e) => {
-    const text = e.target.value.trim().toLowerCase();
-    const hit = text ? DATA.lawList.find(([l]) => l.toLowerCase() === text) : null;
-    const next = hit ? hit[0] : "";
-    if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
+    clearTimeout(lawTimer);
+    lawTimer = setTimeout(() => {
+      const text = e.target.value.trim();
+      const next = text.length >= 3 ? text : "";
+      if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
+    }, 200);
   });
   for (const id of ["sen", "asm"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
   for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {

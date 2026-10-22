@@ -165,6 +165,12 @@ def load_session(session):
     bills = {b["printNo"]: b for b in raw["bills"] if not b["resolution"]}
     deleg = DELEGATION.get(session, {})
 
+    # The API names some laws two ways ("Cannabis" and "Cannabis Law"); use the full name.
+    law_names = {b["lawSection"] for b in bills.values() if b["lawSection"]}
+    for b in bills.values():
+        if b["lawSection"] and b["lawSection"] + " Law" in law_names:
+            b["lawSection"] = b["lawSection"] + " Law"
+
     # Union-find over "same as" and substitution links.
     parent = {p: p for p in bills}
 
