@@ -741,7 +741,21 @@ def insights(loaded, hist, current):
         rows = [x for x in tries if has(cur_recs[x[1]], t)][:12]
         persistent[t] = [[cur_recs[i]["nums"][0], cur_recs[i]["title"], n, first, best, cur_recs[i]["stage"]] for n, i, first, best in rows]
 
+    # Co-sponsor counts and outcomes, past sessions: [bills, passed both houses, became law] per range.
+    cosp_bins = [(0, 0), (1, 4), (5, 9), (10, 19), (20, 39), (40, 10 ** 6)]
+    cosp = {t: [[0, 0, 0] for _ in cosp_bins] for t in topics}
+    for s in past:
+        for r in loaded[s][0]:
+            j = next(i for i, (lo, hi) in enumerate(cosp_bins) if lo <= r["cosp"] <= hi)
+            for t in topics:
+                if has(r, t):
+                    c = cosp[t][j]
+                    c[0] += 1
+                    c[1] += r["stage"] >= 3
+                    c[2] += r["stage"] == 5
+
     return {
+        "cosponsors": cosp,
         "fate": fate,
         "persistent": persistent,
         "pastSessions": past,
