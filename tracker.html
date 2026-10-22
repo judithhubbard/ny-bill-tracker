@@ -290,17 +290,37 @@ table.oc th { vertical-align: bottom; }
 .statsview { display: grid; gap: 26px; }
 .statsview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .statsview p { margin: 0; max-width: 80ch; font-size: 14.5px; }
+.statsview .act-btn { justify-self: start; }
 .statsview .note { color: var(--ink-2); font-size: 13px; }
 .stattopic { max-width: 300px; }
 table.st { min-width: 0; }
 table.st td:first-child { font-family: var(--body); font-weight: 600; }
-table.st td.bar { width: 220px; }
-table.st th.barh { text-align: left; }
-table.st th.grp { text-align: center; border-bottom: 1px solid var(--rule); }
-table.st.comm { min-width: 720px; }
-table.st { width: auto; }
-table.st td, table.st th { padding-left: 14px; padding-right: 14px; }
-.sharebar i { max-width: 140px; }
+/* Statistics tables: fixed columns, names left, numbers right, bars start under their label. */
+table.st { table-layout: fixed; width: 100%; }
+table.st.odds { max-width: 560px; }
+table.st.comm { max-width: 900px; min-width: 700px; }
+table.st col.c-num { width: 104px; }
+table.st col.c-bar { width: 190px; }
+table.st.odds col.c-name { width: auto; }
+table.st th, table.st td { padding: 7px 10px; }
+table.st th { text-align: right; vertical-align: bottom; }
+table.st th:first-child, table.st td:first-child { text-align: left; }
+table.st th.barh, table.st td.bar { text-align: left; padding-left: 18px; }
+table.st th.grp { text-align: center; border-bottom: 1px solid var(--rule); padding-bottom: 4px; }
+table.st td.bar .sharebar i { max-width: 110px; }
+table.st col.c-two { width: 280px; }
+.twobar { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.twobar .track { position: relative; width: 140px; height: 10px; background: var(--pip-off); border-radius: 2px; flex: none; }
+.twobar .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
+.twobar .a { background: var(--navy); }
+.twobar .l { background: var(--signed); }
+.twobar b { font-weight: 600; min-width: 34px; color: var(--navy); }
+.twobar em { font-style: normal; color: var(--signed); font-weight: 600; }
+.key { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-2); margin: 0; }
+.key span { display: inline-flex; align-items: center; gap: 6px; }
+.key i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
+.key .k-appr { background: var(--navy); }
+.key .k-law { background: var(--signed); }
 .tablewrap.tall { max-height: 520px; overflow-y: auto; }
 .odds { margin: 0; font-size: 13px; color: var(--ink-2); }
 .peers summary { cursor: pointer; font: 600 13.5px var(--body); color: var(--navy); }
@@ -1059,6 +1079,10 @@ function oddsLine(b) {
   return `Of bills that ${label} in ${pastSpan()}, ${pctOf(law, n)}% became law.`;
 }
 
+// One bar: full length is the share approved by committee; the darker part, the share that became law.
+const twoBar = (appr, law) => `<div class="twobar"><span class="track"><i class="a" style="width:${appr}%"></i><i class="l" style="width:${law}%"></i></span><b>${appr}%</b><em>${law}%</em></div>`;
+
+let commAll = false;
 function renderStats() {
   const I = DATA.insights;
   if (!I) return;
@@ -1070,7 +1094,9 @@ function renderStats() {
   const odds = I.odds[t] || {};
   $("statOdds").innerHTML = `<h2>What usually happens next</h2>
     <p class="note">Of ${topicName} that reached each point in ${pastSpan()}, the share that became law.</p>
-    <div class="tablewrap"><table class="oc st"><thead><tr><th>Got as far as</th><th>Bills</th><th class="barh">Became law</th></tr></thead><tbody>
+    <div class="tablewrap"><table class="oc st odds">
+      <colgroup><col class="c-name"><col class="c-num"><col class="c-bar"></colgroup>
+      <thead><tr><th>Got as far as</th><th>Bills</th><th class="barh">Became law</th></tr></thead><tbody>
     ${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0]; return `<tr><td>${l}</td><td>${num(n)}</td><td class="bar">${bar(pctOf(law, n))}</td></tr>`; }).join("")}
     </tbody></table></div>`;
 
@@ -1082,13 +1108,17 @@ function renderStats() {
     nowN: cur[k] ? cur[k][0] : 0, nowOut: cur[k] ? pctOf(cur[k][1], cur[k][0]) : null,
   })).sort((a, b) => a.out - b.out || b.perSession - a.perSession);
   $("statComm").innerHTML = `<h2>Where bills die</h2>
+    <p class="key"><span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span></p>
     <p class="note">How often each committee approved ${topicName} referred to it, averaged over ${pastSpan()} (${nPast} sessions). “Approved” means sent on to the floor or to another committee. Committees with few bills are left out. S = Senate, A = Assembly.</p>
-    <div class="tablewrap tall"><table class="oc st comm"><thead>
-      <tr><th rowspan="2">Committee</th><th colspan="3" class="grp">Past sessions, ${pastSpan()}</th><th colspan="2" class="grp">This session so far</th></tr>
-      <tr><th>Bills a session</th><th class="barh">Approved by committee</th><th>Became law</th><th>Bills</th><th>Approved</th></tr>
+    <div class="tablewrap"><table class="oc st comm">
+      <colgroup><col class="c-name"><col class="c-num"><col class="c-two"><col class="c-num"><col class="c-num"></colgroup>
+      <thead>
+      <tr><th rowspan="2">Committee</th><th colspan="2" class="grp">Past sessions, ${pastSpan()}</th><th colspan="2" class="grp">This session so far</th></tr>
+      <tr><th>Bills a session</th><th class="barh">Approved by committee / became law</th><th>Bills</th><th>Approved</th></tr>
     </thead><tbody>
-    ${rows.map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.perSession)}</td><td class="bar">${bar(r.out)}</td><td>${r.law}%</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
-    </tbody></table></div>`;
+    ${rows.slice(0, commAll ? rows.length : 15).map((r) => `<tr><td>${esc(r.k.replace(/ And /g, " and "))}</td><td>${num(r.perSession)}</td><td class="bar">${twoBar(r.out, r.law)}</td><td>${r.nowN ? num(r.nowN) : "–"}</td><td>${r.nowOut == null ? "–" : r.nowOut + "%"}</td></tr>`).join("")}
+    </tbody></table></div>
+    ${rows.length > 15 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
 
   // Timing
   const years = I.timing.filter((y) => y.year !== 2020);
@@ -1621,6 +1651,7 @@ function wire() {
     openShown += 25; renderOpenNow();
   });
   $("statTopic").addEventListener("change", renderStats);
+  $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
