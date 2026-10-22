@@ -306,6 +306,23 @@ table.oc th { vertical-align: bottom; }
 .wcard details.morebill > summary { display: block; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; font-size: 13px; color: var(--navy); font-weight: 600; }
 .wcard details.morebill > summary:hover { background: none; text-decoration: underline; }
 .wcard details.morebill .detail { padding: 10px 0 0; }
+.wcard .why { margin: 0; font-size: 13.5px; color: var(--ink-2); border-left: 3px solid var(--rule); padding: 2px 0 2px 12px; max-width: 85ch; }
+.log { display: grid; gap: 6px; justify-items: start; }
+.logged { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 13px; }
+.logged time { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.logged .note { color: var(--ink-2); }
+.x { appearance: none; border: 0; background: none; color: var(--ink-2); cursor: pointer; font-size: 15px; line-height: 1; padding: 0 4px; }
+.x:hover { color: var(--veto); }
+.logform { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 10px; width: 100%; }
+.logform label { display: grid; gap: 3px; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.logform label.wide { flex: 1 1 220px; }
+.logform input, .logform select { font: 13px var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 5px; padding: 5px 7px; text-transform: none; letter-spacing: 0; }
+.act-btn.ghost { border-color: var(--rule); color: var(--ink-2); }
+.logtable { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 620px; }
+.logtable th { text-align: left; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+.logtable td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.logtable td:first-child { white-space: nowrap; font-family: var(--mono); font-size: 12.5px; }
+.logtable .bn { font: 700 12px var(--mono); }
 .multi { margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 .watchview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .watchview .list { border-top: 1px solid var(--rule); }
@@ -951,7 +968,19 @@ function planFor(b, stance = "support") {
     b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
   }
   const actionable = b.stage <= 4 && (live || b.stage >= 3);
-  return { what, gov, due, book, actionable, opp };
+  // Why nothing can be done now, in plain words.
+  let reason = "";
+  if (b.stage === 5) reason = `Signed into law${b.chapter ? ` as Chapter ${b.chapter}` : ""}. Changing it would take a new bill.`;
+  else if (b.stage === 6) reason = `Vetoed${b.veto ? ` (veto memo ${b.veto})` : ""}. To revive it, the sponsors would reintroduce it next session.`;
+  else if (!actionable && adjourned) {
+    const other = b.passedIn === "Senate" ? "Assembly" : "Senate";
+    const where = b.stage === 2 ? `It passed the ${b.passedIn} but not the ${other}.`
+      : b.stage === 1 ? "It never got a floor vote." : "It never got out of committee.";
+    reason = today > `${y2}-12-31`
+      ? `The session ended December 31, ${y2}. ${where} It would have to be reintroduced.`
+      : `Floor votes for this session ended ${fmtDate(lv)}. ${where} It can move only if lawmakers return for a special session; otherwise it dies December 31, ${y2}.`;
+  }
+  return { what, gov, due, book, actionable, opp, reason };
 }
 
 function nextSteps(b) {
@@ -1245,6 +1274,38 @@ function shareLink() {
 }
 const sharedStance = (b) => { for (const n of b.nums) if (SHARED.has(baseNum(n))) return SHARED.get(baseNum(n)); return null; };
 
+// ---- Personal log of actions taken (kept in this browser, never shared) ----
+const LOG_STORE = "abt:log";
+let LOG = {}; // "2025:S1234" -> [{ id, d: "2026-10-22", who, how, note }]
+const HOWS = ["Email", "Phone call", "Letter", "Meeting", "Testimony", "Social media", "Other"];
+function loadLog() { try { LOG = JSON.parse(localStorage.getItem(LOG_STORE) || "{}"); } catch (e) { LOG = {}; } }
+function saveLog() { try { localStorage.setItem(LOG_STORE, JSON.stringify(LOG)); } catch (e) {} }
+const logOf = (b) => keysOf(b).flatMap((k) => LOG[k] || []).sort((x, y) => y.d.localeCompare(x.d) || y.id - x.id);
+function addLog(b, entry) { const k = billKey(b); (LOG[k] ||= []).push({ id: Date.now(), ...entry }); saveLog(); }
+function removeLog(id) { for (const k of Object.keys(LOG)) { LOG[k] = LOG[k].filter((e) => e.id !== id); if (!LOG[k].length) delete LOG[k]; } saveLog(); }
+
+function logBlock(x) {
+  const { b } = x;
+  const entries = logOf(b);
+  const who = [];
+  if (x.key) who.push(titleOf(x.key));
+  for (const r of x.reps) who.push(titleOf(r));
+  for (const p of x.plan?.book?.entries() || []) { const tt = `${p.house === "S" ? "Sen." : "Asm."} ${p.name}`; if (!who.some((w) => lastName(w) === lastName(tt))) who.push(tt); }
+  if (!who.includes("Governor's office")) who.push("Governor's office");
+  who.push("Someone else");
+  return `<div class="log">
+    ${entries.length ? `<ul class="logged">${entries.map((e) => `<li><time>${fmtDate(e.d)}</time> <b>${esc(e.how)}</b> · ${esc(e.who)}${e.note ? ` · <span class="note">${esc(e.note)}</span>` : ""} <button class="x" type="button" data-unlog="${e.id}" title="Delete this entry">×</button></li>`).join("")}</ul>` : ""}
+    <button class="act-btn small" type="button" data-logopen="${b.idx}">+ Log an action</button>
+    <form class="logform" data-logform="${b.idx}" hidden>
+      <label>Date <input type="date" name="d" value="${isoToday()}" required></label>
+      <label>Who <select name="who">${who.map((w) => `<option>${esc(w)}</option>`).join("")}</select></label>
+      <label>How <select name="how">${HOWS.map((h) => `<option>${h}</option>`).join("")}</select></label>
+      <label class="wide">Note <input type="text" name="note" placeholder="Optional, e.g. left a voicemail"></label>
+      <span class="btns"><button class="act-btn small" type="submit">Save</button> <button class="act-btn small ghost" type="button" data-logcancel>Cancel</button></span>
+    </form>
+  </div>`;
+}
+
 // The Watchlist tab: one card per bill with what it does, where it stands, and the one
 // action that matters most now.
 function keyAction(b, stance) {
@@ -1289,7 +1350,7 @@ function renderWatchView() {
   } else {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
     card.innerHTML = `<h2>My watchlist</h2>
-      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."} Saved in this browser only.${back}</p>
+      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>` : ""}`;
   }
 
@@ -1323,12 +1384,25 @@ function renderWatchView() {
       ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
       ${action}
+      ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
+      ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
     </article>`;
   };
   $("wlList").innerHTML = !list.length ? "" : `
     ${active.length ? `<h2>Needs action</h2><div class="wcards">${active.map(cardFor).join("")}</div>` : ""}
-    ${idle.length ? `<h2>Can't move right now</h2><p class="muted">Out of session, or already decided.</p><div class="wcards">${idle.map(cardFor).join("")}</div>` : ""}`;
+    ${idle.length ? `<h2>Can't move right now</h2><div class="wcards">${idle.map(cardFor).join("")}</div>` : ""}
+    ${SHARED ? "" : actionRecord(list)}`;
+}
+
+// Every action logged on the watched bills, newest first.
+function actionRecord(list) {
+  const rows = list.flatMap((b) => logOf(b).map((e) => ({ b, e }))).sort((x, y) => y.e.d.localeCompare(x.e.d) || y.e.id - x.e.id);
+  if (!rows.length) return "";
+  return `<h2>Your actions</h2>
+    <div class="tablewrap"><table class="logtable"><thead><tr><th>Date</th><th>Bill</th><th>How</th><th>Who</th><th>Note</th><th></th></tr></thead><tbody>
+    ${rows.map(({ b, e }) => `<tr><td>${fmtDate(e.d)}</td><td><span class="bn">${esc(b.nums[0])}</span> ${esc(b.title.length > 60 ? b.title.slice(0, 57) + "…" : b.title)}</td><td>${esc(e.how)}</td><td>${esc(e.who)}</td><td>${esc(e.note || "")}</td><td><button class="x" type="button" data-unlog="${e.id}" title="Delete this entry">×</button></td></tr>`).join("")}
+    </tbody></table></div>`;
 }
 
 // A short, plain email: one person, one or more bills.
@@ -1465,12 +1539,25 @@ function wire() {
     try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
     catch (err) { btn.insertAdjacentHTML("afterend", `<textarea class="draft" rows="9" readonly>${esc(text)}</textarea>`); btn.remove(); }
   };
+  $("wlList").addEventListener("submit", (e) => {
+    const f = e.target.closest("[data-logform]"); if (!f) return;
+    e.preventDefault();
+    const data = new FormData(f);
+    addLog(BILLS[+f.dataset.logform], { d: data.get("d") || isoToday(), who: data.get("who"), how: data.get("how"), note: (data.get("note") || "").trim() });
+    renderWatchView();
+  });
   $("wlActions").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-multi]"); if (!btn) return;
     const xs = $("wlActions")._multi[btn.dataset.multi];
     copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
   });
   $("wlList").addEventListener("click", (e) => {
+    const open = e.target.closest("[data-logopen]");
+    if (open) { const f = $("wlList").querySelector(`[data-logform="${open.dataset.logopen}"]`); f.hidden = false; open.hidden = true; return; }
+    const cancel = e.target.closest("[data-logcancel]");
+    if (cancel) { const f = cancel.closest("form"); f.hidden = true; f.previousElementSibling.hidden = false; return; }
+    const del = e.target.closest("[data-unlog]");
+    if (del) { removeLog(+del.dataset.unlog); renderWatchView(); return; }
     const btn = e.target.closest("[data-email]"); if (!btn) return;
     const x = $("wlActions")._items.find((i) => i.b.idx === +btn.dataset.email);
     if (x) copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }]));
@@ -1677,6 +1764,7 @@ function hydrate(raw) {
 
   setupLegislators(raw);
   loadWatch();
+  loadLog();
   const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.-]+)$/);
   if (m && +m[1] === raw.session) SHARED = new Map(m[2].split(".").filter(Boolean).map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])));
   const saved = recall("filters");
