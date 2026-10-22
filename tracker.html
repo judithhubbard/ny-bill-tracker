@@ -1352,12 +1352,15 @@ function drawNet({ nodes, links, loose }) {
   if (!nodes.length) { el.innerHTML = `<p class="muted">No bills to show.</p>`; return; }
   const W = Math.min(900, el.clientWidth || 900), H = Math.round(W * (netHouse === "B" ? 0.75 : 0.6));
   const r = (x) => 3 + Math.sqrt(x.n) * 0.55;
+  // Start each party on its own side so loosely tied members don't settle in a stray spot;
+  // the forces still pull members with strong cross-party ties toward the other side.
+  nodes.forEach((x, i) => { x.x = W / 2 + (x.party === "R" ? 1 : -1) * W * 0.2 + Math.cos(i * 2.4) * 40; x.y = H / 2 + Math.sin(i * 2.4) * 60 + (x.L.house === "S" && netHouse === "B" ? -20 : 0); });
   const sim = d3.forceSimulation(nodes)
     .force("link", d3.forceLink(links).id((x) => x.id).distance((l) => 30 + 60 * (1 - Math.min(1, l.share))).strength((l) => 0.2 + 0.6 * Math.min(1, l.share)))
     .force("charge", d3.forceManyBody().strength(-38))
     .force("x", d3.forceX(W / 2).strength(0.06)).force("y", d3.forceY(H / 2).strength(0.09))
     .force("collide", d3.forceCollide((x) => r(x) + 1.5)).stop();
-  for (let i = 0; i < 320; i++) sim.tick();
+  for (let i = 0; i < 600; i++) sim.tick();
   // Stretch the finished layout to fill the box, keeping its shape.
   const pad = 16, xs = nodes.map((x) => x.x), ys = nodes.map((x) => x.y);
   const x0 = Math.min(...xs), y0 = Math.min(...ys), k = Math.min((W - 2 * pad) / Math.max(1, Math.max(...xs) - x0), (H - 2 * pad) / Math.max(1, Math.max(...ys) - y0));
