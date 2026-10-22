@@ -17,8 +17,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - On GitHub Pages each current legislator also has a page filtered to their bills, at
   `/<last name>/` (or `/<first>-<last>/` when a last name is shared, with `/<last name>/` then
   offering a choice). The list comes from the nightly contacts refresh, so it follows elections.
-- `/watchlist/` shows the visitor's starred bills. Watchlists are kept in each browser
-  (localStorage); the share link (`/watchlist/#w=2025.S1234.A5678`) carries a copy.
+- The Watchlist tab (also `/watchlist/`) shows the visitor's starred bills, each marked Support or
+  Oppose, with a "What to do" list grouped by person and email drafts. Watchlists are kept in each
+  browser (localStorage); the share link (`/watchlist/#w=2025.S1234.-A5678`, "-" = oppose) carries a copy.
 - Floor leaders (Senate Majority Leader, Assembly Speaker) are set in `LEADERS` in
   `build_data.py`; check them after leadership votes each January of odd years.
 - Votes: Senate floor and committee votes come from the API; Assembly floor votes from

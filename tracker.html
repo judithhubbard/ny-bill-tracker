@@ -278,6 +278,27 @@ table.oc th { vertical-align: bottom; }
 .watchbtn[aria-pressed="true"] { color: var(--gold); }
 .watchbtn:hover { color: var(--gold); }
 .news { display: inline-block; font: 600 11px var(--body); background: var(--gold-soft); color: var(--ink); border-radius: 3px; padding: 1px 6px; vertical-align: 2px; }
+.stance { appearance: none; border: 1px solid var(--rule); background: var(--chip); color: var(--ink-2); border-radius: 999px; padding: 1px 7px; font: 600 10.5px var(--body); cursor: pointer; margin-top: 4px; justify-self: start; }
+.stance.support { color: var(--signed); border-color: var(--signed); }
+.stance.oppose { color: var(--veto); border-color: var(--veto); }
+.watchview { display: grid; gap: 20px; }
+.watchview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
+.watchview .list { border-top: 1px solid var(--rule); }
+.todo { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.todo-g { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.todo-g.key { border-left: 3px solid var(--gold); }
+.todo-g h3 { margin: 0; font: 700 16px var(--display); font-stretch: 90%; }
+.todo-g .star { color: var(--gold); }
+.todo-g .reach { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+.todo-g .phone { font-family: var(--mono); color: var(--ink); }
+.todo-g ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+.todo-g .bn { font: 700 12px var(--mono); }
+.todo-g .ask { font-weight: 600; }
+.todo-g .sidetag { font-size: 11px; font-weight: 600; }
+.todo-g .sidetag.support { color: var(--signed); } .todo-g .sidetag.oppose { color: var(--veto); }
+.todo-g .act-btn { justify-self: start; }
+.draft { width: 100%; font: 12.5px var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 8px; }
+.watchview .muted { color: var(--ink-2); font-size: 13px; margin: 0; }
 .watchtoggle { display: flex; gap: 8px; align-items: center; font: 600 14px var(--body); cursor: pointer; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
 .watchtoggle .wcount { color: var(--ink-2); font-weight: 400; }
 .wl { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
@@ -361,11 +382,11 @@ table.oc th { vertical-align: bottom; }
     </div>
     <p class="notice" id="notice" hidden></p>
     <div class="person" id="person" hidden></div>
-    <div class="wl" id="wl" hidden></div>
   </header>
 
   <nav class="views" role="tablist" aria-label="Page sections">
     <button class="view-tab" role="tab" type="button" data-view="bills" aria-selected="true">Bills</button>
+    <button class="view-tab" role="tab" type="button" data-view="watch" aria-selected="false">★ Watchlist<span id="watchTabCount"></span></button>
     <button class="view-tab" role="tab" type="button" data-view="act" aria-selected="false">Weigh in</button>
     <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
     <button class="view-tab view-tab-end" role="tab" type="button" data-view="how" aria-selected="false">How a bill becomes law in New York</button>
@@ -376,7 +397,6 @@ table.oc th { vertical-align: bottom; }
     <details class="side" id="side" open>
       <summary class="side-toggle">Filters <span id="filterCount"></span></summary>
       <div class="side-body">
-        <label class="watchtoggle" for="watch"><input type="checkbox" id="watch"> <span>★ My watchlist</span> <span class="wcount" id="watchCount"></span></label>
         <div class="group">
           <div class="group-h">Where it is now</div>
           <div id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
@@ -465,6 +485,13 @@ table.oc th { vertical-align: bottom; }
       <p class="note">“Passed both houses” includes bills later signed or vetoed. “Became law” is bills signed out of all bills introduced. “Governor signed” is bills signed out of bills she signed or vetoed. The current session's numbers change until December 31.</p>
     </section>
     </div>
+  </section>
+
+  <!-- Watchlist -->
+  <section class="watchview" id="view-watch" hidden>
+    <div class="wl" id="wl"></div>
+    <div class="act-sec" id="wlActions"></div>
+    <div class="act-sec" id="wlList"></div>
   </section>
 
   <!-- Weigh in -->
@@ -565,8 +592,8 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "watch"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", watch: false, shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", shown: PAGE });
 let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
@@ -592,7 +619,7 @@ function deadline(iso) {
 }
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
-const storeKey = (k) => `abt:${DATA.session}:${PRESET?.who ? "who:" + PRESET.who + ":" : PRESET?.watch ? "watch:" : ""}${k}`;
+const storeKey = (k) => `abt:${DATA.session}:${PRESET?.who ? "who:" + PRESET.who + ":" : ""}${k}`;
 function store(k, v) { try { localStorage.setItem(storeKey(k), JSON.stringify(v)); } catch (e) {} }
 function recall(k) { try { const v = localStorage.getItem(storeKey(k)); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
 
@@ -678,7 +705,6 @@ function matches(b, skip) {
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
   if (state.party && b.parties !== state.party) return false;
-  if (state.watch && !(SHARED ? SHARED.has(billKey(b)) || b.nums.some((n) => SHARED.has(baseNum(n))) : isWatched(b))) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     for (const w of words) if (!b._hay.includes(w)) return false;
@@ -788,7 +814,7 @@ const HOUSE = { S: "Senate", A: "Assembly" };
 const lastName = (n) => (n || "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
 
 // Collects the people to contact about a bill, one entry each, with every role they play.
-function contactBook(b, canMove = true) {
+function contactBook(b, canMove = true, oppose = false) {
   const book = new Map();
   // Keyed by house and last name, so "Anna Kelles" and "Anna R. Kelles" are one person.
   const add = (name, house, role, ask, star) => {
@@ -807,7 +833,7 @@ function contactBook(b, canMove = true) {
       const c = (DATA.contacts?.committees || {})[`${house}:${commKey(cname)}`];
       if (!c || !c.chair) return;
       add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`, ask, star);
-      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, "vote yes in committee"); }
+      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, canMove ? (oppose ? "vote no in committee" : "vote yes in committee") : ""); }
     },
     leader(house, ask, star) {
       const L = (DATA.contacts?.leaders || {})[house];
@@ -819,9 +845,10 @@ function contactBook(b, canMove = true) {
         const sponsors = b.vers.some((v) => v.p[0] === r.house && lastName(v.sponsor) === r.last);
         const theirs = sponsors || b.vers.some((v) => v.p[0] === r.house && v.cosponsors.some((n) => lastName(n) === r.last));
         add(r.name, r.house, r.house === "S" ? "your state senator" : "your Assembly member",
-          sponsors ? "" : ask || (theirs || !canMove ? "" : "sign on as a co-sponsor"));
+          sponsors ? "" : ask || (theirs || !canMove || oppose ? "" : "sign on as a co-sponsor"));
       }
     },
+    entries() { return [...book.values()]; },
     html(gov) {
       const items = [...book.values()].map((p) => {
         const people = DATA.contacts?.people || {};
@@ -843,8 +870,12 @@ function contactBook(b, canMove = true) {
   };
 }
 
-function nextSteps(b) {
-  if (!DATA.current || !DATA.contacts) return "";
+// What happens next for a bill, who decides it, and what to ask each person. Asks follow
+// the reader's side: supporters by default, opponents for bills marked Oppose on the watchlist.
+function planFor(b, stance = "support") {
+  if (!DATA.current || !DATA.contacts) return null;
+  const opp = stance === "oppose";
+  const A = (yes, no) => (opp ? no : yes);
   const today = isoToday(), y2 = DATA.session + 1;
   const lv = DATA.lastVote || "", quiet = lv && (new Date(today) - new Date(lv)) / 864e5 > 21;
   const adjourned = today > `${y2}-12-31` || (quiet && lv.startsWith(String(y2)));
@@ -852,48 +883,59 @@ function nextSteps(b) {
   const stalled = adjourned
     ? `Floor votes are over for this session. Unless lawmakers return for a special session, it dies December 31, ${y2}.`
     : recess ? `The Legislature is out until January ${y2}.` : "";
-  let what = "", gov = "";
   const live = !stalled || recess; // can anything move before the session ends?
-  const book = contactBook(b, live || b.stage >= 3);
+  const book = contactBook(b, live || b.stage >= 3, opp);
   const inComm = b.vers.filter((v) => v.committee && /committee/i.test(v.statusDesc || ""));
+  let what = "", gov = null, due = null;
+  const L = (x) => (live ? x : "");
   if (b.stage === 0) {
     what = `<p class="when">Next: a committee vote.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    inComm.forEach((v) => book.chair(v.p[0], v.committee, live ? "put it on the committee agenda" : "", live));
-    b.vers.forEach((v) => book.sponsor(v, live ? "press the chair to put it on the agenda" : "reintroduce it next session"));
-    book.reps();
+    inComm.forEach((v) => book.chair(v.p[0], v.committee, L(A("put it on the committee agenda", "keep it off the committee agenda")), live));
+    b.vers.forEach((v) => book.sponsor(v, live ? A("press the chair to put it on the agenda", "") : A("reintroduce it next session", "")));
+    book.reps(["S", "A"], L(A("", "oppose it")));
   } else if (b.stage === 1) {
     const houses = b.vers.filter((v) => /floor/i.test(v.statusDesc || "")).map((v) => v.p[0]);
     what = `<p class="when">Next: a vote of the full ${houses.map((h) => HOUSE[h]).join(" and ") || "house"}.</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    houses.forEach((h) => book.leader(h, live ? "bring it to a floor vote" : "", live));
-    b.vers.forEach((v) => book.sponsor(v, live ? "press leadership to bring it to a vote" : "reintroduce it next session"));
-    book.reps(houses.length ? houses : ["S", "A"], live ? "vote yes" : "");
+    houses.forEach((h) => book.leader(h, L(A("bring it to a floor vote", "keep it from coming to a floor vote")), live));
+    b.vers.forEach((v) => book.sponsor(v, live ? A("press leadership to bring it to a vote", "") : A("reintroduce it next session", "")));
+    book.reps(houses.length ? houses : ["S", "A"], L(A("vote yes", "vote no")));
   } else if (b.stage === 2) {
     const other = b.passedIn === "Senate" ? "A" : "S";
     const twin = b.vers.find((v) => v.p[0] === other);
     what = `<p class="when">Next: the ${HOUSE[other]} has to pass it.${twin ? "" : ` It has no ${HOUSE[other]} version.`}</p>${stalled ? `<p>${stalled}</p>` : ""}`;
-    if (twin && twin.committee) book.chair(other, twin.committee, live ? "put it on the committee agenda" : "", live);
-    else book.leader(other, live ? "bring it to a floor vote" : "", live);
-    b.vers.filter((v) => v.p[0] === other).forEach((v) => book.sponsor(v, live ? `push for it in the ${HOUSE[other]}` : "reintroduce it next session"));
-    book.reps([other], live ? "vote yes" : "");
-    b.vers.filter((v) => v.p[0] !== other).forEach((v) => book.sponsor(v, live ? `press the ${HOUSE[other]} to take it up` : "reintroduce it next session"));
+    if (twin && twin.committee) book.chair(other, twin.committee, L(A("put it on the committee agenda", "keep it off the committee agenda")), live);
+    else book.leader(other, L(A("bring it to a floor vote", "keep it from coming to a floor vote")), live);
+    b.vers.filter((v) => v.p[0] === other).forEach((v) => book.sponsor(v, live ? A(`push for it in the ${HOUSE[other]}`, "") : A("reintroduce it next session", "")));
+    book.reps([other], L(A("vote yes", "vote no")));
+    b.vers.filter((v) => v.p[0] !== other).forEach((v) => book.sponsor(v, live ? A(`press the ${HOUSE[other]} to take it up`, "") : A("reintroduce it next session", "")));
   } else if (b.stage === 3) {
     what = `<p class="when">Next: the governor's office requests it (any day through December), then she has 10 days to act.</p>`;
-    gov = govItem("request the bill and sign it");
-    b.vers.forEach((v) => book.sponsor(v, "urge the governor's office to request it"));
-    book.reps(["S", "A"], "urge the governor to sign it");
+    gov = A("request the bill and sign it", "veto it");
+    b.vers.forEach((v) => book.sponsor(v, A("urge the governor's office to request it", "")));
+    book.reps(["S", "A"], A("urge the governor to sign it", "urge the governor to veto it"));
   } else if (b.stage === 4) {
+    due = b.due;
     what = `<p class="when">Next: the governor signs or vetoes it${b.due ? `, by about ${fmtDate(b.due)}` : ""}.</p>`;
-    gov = govItem(`sign it${b.due ? ` by ${fmtDate(b.due)}` : ""}`);
-    b.vers.forEach((v) => book.sponsor(v, "urge the governor to sign it"));
+    gov = A("sign it", "veto it") + (b.due ? ` by ${fmtDate(b.due)}` : "");
+    b.vers.forEach((v) => book.sponsor(v, A("urge the governor to sign it", "")));
+    book.reps(["S", "A"], A("urge the governor to sign it", "urge the governor to veto it"));
   } else if (b.stage === 5) {
     what = `<p class="when">Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}.</p>`;
     b.vers.forEach((v) => book.sponsor(v));
   } else if (b.stage === 6) {
     what = `<p class="when">Vetoed. The sponsors can reintroduce it next session.</p>`;
-    b.vers.forEach((v) => book.sponsor(v, "reintroduce it next session"));
+    b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
   }
-  if (b.stage <= 4 && (live || b.stage >= 3)) what += `<p class="hint">★ decides the next step. Asks are for supporters; if you oppose the bill, ask for the opposite.</p>`;
-  const who = book.html(gov);
+  const actionable = b.stage <= 4 && (live || b.stage >= 3);
+  return { what, gov, due, book, actionable, opp };
+}
+
+function nextSteps(b) {
+  const plan = planFor(b, watchStance(b) || "support");
+  if (!plan) return "";
+  let what = plan.what;
+  if (plan.actionable) what += `<p class="hint">★ decides the next step. ${plan.opp ? "Asks assume you oppose this bill (set on your watchlist)." : "Asks assume you support the bill; to oppose it, star it and choose Oppose."}</p>`;
+  const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
 
@@ -1139,7 +1181,6 @@ function activeFilters() {
   if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
   for (const t of state.topics) out.push(["topics", t, "Topic", TOPICS[t]]);
   if (state.party) out.push(["party", null, "Party", PARTIES[state.party]]);
-  if (state.watch) out.push(["watch", null, "Showing", SHARED ? "shared watchlist" : "my watchlist"]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
   if (state.law) out.push(["law", null, "Law", `contains “${state.law}”`]);
   if (state.who && LEG_BY_ID[state.who]) out.push(["who", null, state.whoCos ? "Sponsor or co-sponsor" : "Sponsor", LEG_BY_ID[state.who].label]);
@@ -1153,7 +1194,7 @@ function activeFilters() {
 function renderActive() {
   const list = activeFilters();
   // On a legislator's page their sponsor filter is fixed: shown, but not removable.
-  const fixed = (k) => (PRESET?.who && k === "who") || (PRESET?.watch && k === "watch");
+  const fixed = (k) => PRESET?.who && k === "who";
   const removable = list.filter(([k]) => !fixed(k)).length;
   const html = list.length ? list.map(([k, v, label, val]) => fixed(k)
     ? `<span class="chipx fixed"><b>${esc(label)}:</b> ${esc(val)}</span>`
@@ -1173,53 +1214,121 @@ function clearFilter(k, v) {
 
 // ---- Watchlist: kept in this browser; a share link carries a copy to someone else ----
 const WATCH_STORE = "abt:watch";
-let WATCH = new Map(); // "2025:S1234" -> date of the last action seen
-let SHARED = null;      // a watchlist opened from a share link (#w=2025.S1234.A5678)
+let WATCH = new Map(); // "2025:S1234" -> { seen: date of the last action seen, stance: "support" | "oppose" }
+let SHARED = null;      // a watchlist opened from a share link: base number -> stance
 const baseNum = (n) => n.replace(/[A-Z]$/, "");
 const billKey = (b) => `${DATA.session}:${baseNum(b.nums[0])}`;
 const keysOf = (b) => b.nums.map((n) => `${DATA.session}:${baseNum(n)}`);
-function loadWatch() { try { WATCH = new Map(Object.entries(JSON.parse(localStorage.getItem(WATCH_STORE) || "{}"))); } catch (e) { WATCH = new Map(); } }
+function loadWatch() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(WATCH_STORE) || "{}");
+    WATCH = new Map(Object.entries(raw).map(([k, v]) => [k, typeof v === "string" ? { seen: v, stance: "support" } : v]));
+  } catch (e) { WATCH = new Map(); }
+}
 function saveWatch() { try { localStorage.setItem(WATCH_STORE, JSON.stringify(Object.fromEntries(WATCH))); } catch (e) {} }
-const isWatched = (b) => keysOf(b).some((k) => WATCH.has(k));
+const watchEntry = (b) => { for (const k of keysOf(b)) if (WATCH.has(k)) return WATCH.get(k); return null; };
+const isWatched = (b) => !!watchEntry(b);
+const watchStance = (b) => watchEntry(b)?.stance || null;
 const WATCH_COUNT = () => BILLS.filter(isWatched).length;
-function seenDate(b) { for (const k of keysOf(b)) if (WATCH.has(k)) return WATCH.get(k); return null; }
-const hasNews = (b) => { const s = seenDate(b); return !!s && (b.last || "") > s; };
-function toggleWatch(b) {
-  if (isWatched(b)) keysOf(b).forEach((k) => WATCH.delete(k));
-  else WATCH.set(billKey(b), b.last || "");
-  saveWatch();
-}
-function markSeen(b) { if (!isWatched(b)) return; keysOf(b).forEach((k) => WATCH.delete(k)); WATCH.set(billKey(b), b.last || ""); saveWatch(); }
+const hasNews = (b) => { const e = watchEntry(b); return !!e && (b.last || "") > (e.seen || ""); };
+function setWatch(b, entry) { keysOf(b).forEach((k) => WATCH.delete(k)); if (entry) WATCH.set(billKey(b), entry); saveWatch(); }
+function toggleWatch(b) { setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
+function markSeen(b) { const e = watchEntry(b); if (e) setWatch(b, { ...e, seen: b.last || "" }); }
 function watchButton(b) {
-  const on = isWatched(b);
-  return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${on}" title="${on ? "Remove from" : "Add to"} my watchlist">${on ? "★" : "☆"}</button>`;
+  const e = watchEntry(b);
+  return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${!!e}" title="${e ? "Remove from" : "Add to"} my watchlist">${e ? "★" : "☆"}</button>`
+    + (e ? `<button class="stance ${e.stance}" type="button" data-stance="${b.idx}" title="Switch between support and oppose">${e.stance === "oppose" ? "Oppose" : "Support"}</button>` : "");
 }
-function shareLink(list) {
-  const nums = BILLS.filter(list).map((b) => baseNum(b.nums[0]));
-  const root = location.href.replace(/[#?].*$/, "").replace(/(watchlist\/|[a-z-]+\/)?(index\.html|\d{4}\.html)?$/, "");
+function shareLink() {
+  const nums = BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
+  const root = new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
   return `${root}watchlist/#w=${DATA.session}.${nums.join(".")}`;
 }
-function renderWatchCard() {
+const sharedStance = (b) => { for (const n of b.nums) if (SHARED.has(baseNum(n))) return SHARED.get(baseNum(n)); return null; };
+
+// The Watchlist tab: what to do (grouped by person), then the bills.
+function renderWatchView() {
+  const tabCount = WATCH_COUNT();
+  $("watchTabCount").textContent = tabCount ? ` (${tabCount})` : "";
+  if ($("view-watch").hidden) return;
+  const list = SHARED ? BILLS.filter((b) => sharedStance(b)) : BILLS.filter(isWatched);
+  const stanceOf = (b) => (SHARED ? sharedStance(b) : watchStance(b)) || "support";
   const card = $("wl");
-  if (!state.watch) { card.hidden = true; return; }
-  const mine = WATCH_COUNT();
   if (SHARED) {
-    const n = BILLS.filter((b) => b.nums.some((x) => SHARED.has(baseNum(x)))).length;
-    card.innerHTML = `<h2>Shared watchlist</h2><p>${num(n)} bill${n === 1 ? "" : "s"} someone shared with you.</p>
+    card.innerHTML = `<h2>Shared watchlist</h2><p>${num(list.length)} bill${list.length === 1 ? "" : "s"} someone shared with you.</p>
       <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else {
-    const link = /^https?:/.test(location.href) && !location.href.startsWith("https://claude.ai") ? shareLink(isWatched) : "";
+    const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
     card.innerHTML = `<h2>My watchlist</h2>
-      <p>${mine ? `${num(mine)} bill${mine === 1 ? "" : "s"}. Bills marked “New activity” have changed since you last opened them.` : "No bills yet. Click ☆ next to any bill to add it."}</p>
-      <p class="muted">Saved in this browser only. To share it or move it to another device, copy this link:</p>
-      ${mine && link ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(link)}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy link</button></p>` : ""}`;
+      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."} Saved in this browser only.</p>
+      ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>` : ""}`;
   }
-  card.hidden = false;
+
+  // Group every ask by the person to contact, so one message covers all their bills.
+  const groups = new Map();
+  let idle = 0;
+  const people = DATA.contacts?.people || {};
+  for (const b of list) {
+    const plan = planFor(b, stanceOf(b));
+    if (!plan || !plan.actionable) { idle++; continue; }
+    if (plan.gov) {
+      if (!groups.has("gov")) groups.set("gov", { key: "gov", name: "Governor's office", star: true, items: [] });
+      groups.get("gov").items.push({ b, due: plan.due, ask: plan.gov, star: true });
+    }
+    for (const p of plan.book.entries()) {
+      if (!p.asks.length) continue;
+      const key = `${p.house}:${lastName(p.name)}`;
+      if (!groups.has(key)) groups.set(key, { key, name: p.name, house: p.house, star: false, items: [],
+        info: people[p.name] || Object.entries(people).find(([n]) => lastName(n) === lastName(p.name))?.[1] || {} });
+      const g = groups.get(key);
+      if (p.star) g.star = true;
+      g.items.push({ b, due: plan.due, ask: p.asks.join("; "), star: p.star });
+    }
+  }
+  const soonest = (g) => g.items.map((i) => i.due || "9999").sort()[0];
+  const ordered = [...groups.values()].sort((a, b) => (b.key === "gov") - (a.key === "gov") || b.star - a.star
+    || soonest(a).localeCompare(soonest(b)) || b.items.length - a.items.length);
+  $("wlActions").innerHTML = !list.length ? "" : `<h2>What to do</h2>
+    ${ordered.length ? `<div class="todo">${ordered.map((g, gi) => {
+      const title = g.key === "gov" ? "Governor's office" : `${g.house === "S" ? "Sen." : "Asm."} ${esc(g.name)}`;
+      const reach = g.key === "gov"
+        ? `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`
+        : [g.info.url && `<a href="${esc(g.info.url)}" target="_blank" rel="noopener">Official page</a>`, g.info.email && `<span class="phone">${esc(g.info.email)}</span>`,
+           g.info.phone && `<span class="phone">${esc(g.info.phone)}</span>`].filter(Boolean).join(" · ");
+      const items = g.items.sort((x, y) => (x.due || "9999").localeCompare(y.due || "9999")).map((i) =>
+        `<li><span class="bn">${esc(i.b.nums.join(" / "))}</span> ${esc(i.b.title)}<br><span class="ask">${i.star ? "★ " : ""}Ask: ${esc(i.ask)}</span> <span class="sidetag ${stanceOf(i.b)}">${stanceOf(i.b) === "oppose" ? "you oppose" : "you support"}</span></li>`).join("");
+      return `<div class="todo-g${g.star ? " key" : ""}"><h3>${g.star ? `<span class="star">★</span> ` : ""}${title}</h3><p class="reach">${reach}</p><ul>${items}</ul>
+        <button class="act-btn" type="button" data-draft="${gi}">Copy email draft</button></div>`;
+    }).join("")}</div>` : `<p>Nothing to do right now.</p>`}
+    ${idle ? `<p class="muted">${num(idle)} of these bills can't move right now (out of session, or already decided).</p>` : ""}`;
+  $("wlActions")._groups = ordered;
+  const sorted = list.slice().sort((a, b) => hasNews(b) - hasNews(a) || rankOf(b.stage) - rankOf(a.stage));
+  $("wlList").innerHTML = list.length ? `<h2>${SHARED ? "Bills" : "Your bills"}</h2><div class="list">${sorted.map(billRow).join("")}</div>` : "";
+}
+
+// A short, plain email for one person, listing each bill and the ask.
+function draftFor(g) {
+  const greet = g.key === "gov" ? "Dear Governor," : `Dear ${g.house === "S" ? "Senator" : "Assemblymember"} ${g.name.split(" ").pop()},`;
+  const lines = g.items.map((i) => `- ${i.b.nums.join(" / ")}, ${i.b.title}: please ${i.ask}.`).join("\n");
+  return `${greet}\n\nI'm writing about ${g.items.length === 1 ? "this bill" : "these bills"}:\n\n${lines}\n\nThank you,\n[Your name]\n[Your address]`;
+}
+
+function refreshWatchButtons(b) {
+  for (const el of document.querySelectorAll(`.nums [data-watch="${b.idx}"]`)) {
+    const box = el.parentElement;
+    box.querySelectorAll(".watchbtn, .stance").forEach((x) => x.remove());
+    box.insertAdjacentHTML("beforeend", watchButton(b));
+  }
+  for (const d of document.querySelectorAll(`.bill[data-idx="${b.idx}"] .detail`)) {
+    delete d.dataset.done;
+    const el = d.closest(".bill");
+    if (el.open) fillDetail(el);
+  }
+  renderWatchView();
 }
 
 function render() {
-  renderWatchCard();
-  $("watchCount").textContent = WATCH.size ? `(${WATCH_COUNT()})` : "";
+  renderWatchView();
   renderChart();
   renderPipeline();
   renderTopics();
@@ -1249,9 +1358,10 @@ function fillDetail(el) {
 }
 
 function showView(v) {
-  if (!["bills", "stats", "how", "act"].includes(v)) v = "bills";
+  if (!["bills", "watch", "stats", "how", "act"].includes(v)) v = "bills";
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
-  for (const id of ["bills", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
+  for (const id of ["bills", "watch", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
+  if (v === "watch") renderWatchView();
   $("filtered").hidden = !["bills", "stats"].includes(v);
   try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
@@ -1259,7 +1369,7 @@ function showView(v) {
 function syncControls() {
   $("q").value = state.q;
   for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).value = state[id];
-  for (const id of ["whoCos", "watch"]) $(id).checked = state[id];
+  for (const id of ["whoCos"]) $(id).checked = state[id];
   $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
 
@@ -1286,7 +1396,7 @@ function wire() {
       if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
     }, 200);
   });
-  for (const id of ["whoCos", "watch"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  for (const id of ["whoCos"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
   $("who").addEventListener("input", (e) => {
     const text = e.target.value.trim().toLowerCase();
     const hit = LEGS.find((L) => L.label.toLowerCase() === text);
@@ -1296,40 +1406,51 @@ function wire() {
   for (const id of ["active", "activeStats"]) $(id).addEventListener("click", (e) => {
     const chip = e.target.closest("button"); if (!chip) return;
     if (chip.dataset.clear === "all") { ONE = null; if (/^#[SA]\d/i.test(location.hash)) clearHash(location.pathname + location.search); }
-    if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }, PRESET?.who ? { who: PRESET.who, whoCos: state.whoCos } : {}, PRESET?.watch ? { watch: true } : {}); syncControls(); render(); return; }
+    if (chip.dataset.clear === "all") { Object.assign(state, blank(), { sort: state.sort }, PRESET?.who ? { who: PRESET.who, whoCos: state.whoCos } : {}); syncControls(); render(); return; }
     clearFilter(chip.dataset.k, chip.dataset.v);
   });
   document.querySelector(".views").addEventListener("click", (e) => {
     const tab = e.target.closest(".view-tab"); if (tab) showView(tab.dataset.view);
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
-  for (const id of ["list", "openNow"]) $(id).addEventListener("click", (e) => {
+  for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("click", (e) => {
+    const s = e.target.closest(".stance");
+    if (s) {
+      e.preventDefault(); e.stopPropagation();
+      const b = BILLS[+s.dataset.stance], en = watchEntry(b);
+      setWatch(b, { ...en, stance: en.stance === "oppose" ? "support" : "oppose" });
+      refreshWatchButtons(b); return;
+    }
     const btn = e.target.closest(".watchbtn"); if (!btn) return;
     e.preventDefault(); e.stopPropagation();
     const b = BILLS[+btn.dataset.watch]; toggleWatch(b);
-    for (const el of document.querySelectorAll(`.watchbtn[data-watch="${b.idx}"]`)) el.outerHTML = watchButton(b);
-    $("watchCount").textContent = WATCH.size ? `(${WATCH_COUNT()})` : "";
-    if (state.watch) render(); else renderWatchCard();
+    refreshWatchButtons(b);
   });
-  for (const id of ["list", "openNow"]) $(id).addEventListener("click", async (e) => {
+  for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-copylink]"); if (!btn) return;
     const input = btn.previousElementSibling;
     try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
   });
   window.addEventListener("hashchange", () => { if (openFromHash()) { render(); openOne(); } });
+  $("wlActions").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-draft]"); if (!btn) return;
+    const text = draftFor($("wlActions")._groups[+btn.dataset.draft]);
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch (err) { btn.insertAdjacentHTML("afterend", `<textarea class="draft" rows="9" readonly>${esc(text)}</textarea>`); btn.remove(); }
+  });
   $("wl").addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
     if (btn.dataset.wl === "copy") {
       const input = $("shareLink");
       try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
     } else if (btn.dataset.wl === "import") {
-      for (const b of BILLS) if (b.nums.some((x) => SHARED.has(baseNum(x))) && !isWatched(b)) WATCH.set(billKey(b), b.last || "");
+      for (const b of BILLS) { const st = sharedStance(b); if (st && !isWatched(b)) WATCH.set(billKey(b), { seen: b.last || "", stance: st }); }
       saveWatch(); SHARED = null; clearHash(location.pathname); render();
     } else if (btn.dataset.wl === "mine") {
       SHARED = null; clearHash(location.pathname); render();
     }
   });
-  for (const id of ["list", "openNow"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
+  for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
   $("openNow").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-more]"); if (!btn) return;
     openShown += 25; renderOpenNow();
@@ -1517,8 +1638,8 @@ function hydrate(raw) {
 
   setupLegislators(raw);
   loadWatch();
-  const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.]+)$/);
-  if (m && +m[1] === raw.session) { SHARED = new Set(m[2].split(".")); state.watch = true; }
+  const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.-]+)$/);
+  if (m && +m[1] === raw.session) SHARED = new Map(m[2].split(".").filter(Boolean).map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])));
   const saved = recall("filters");
   if (saved) {
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
@@ -1527,8 +1648,6 @@ function hydrate(raw) {
     if (state.sort === "due" && !raw.current) state.sort = "recent";
     syncControls();
   }
-  if (PRESET?.watch) { if (!saved) Object.assign(state, blank()); state.watch = true; syncControls(); $("watch").closest("label").hidden = true; }
-  if (SHARED) state.watch = true;
   if (PRESET?.who) {
     // A legislator's page: start from their bills, keeping only filters saved on this page.
     if (!saved) Object.assign(state, blank());
@@ -1543,7 +1662,8 @@ function hydrate(raw) {
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
   let view = "bills";
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
-  if (["stats", "how", "act"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (PRESET?.watch || SHARED) view = "watch";
   showView(view);
   renderOpenNow();
   const one = openFromHash();
