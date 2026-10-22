@@ -1186,6 +1186,18 @@ def main():
 
         party_of = parties(session, recs)
         resolve = assembly_resolver(session)
+        # Senate committee agendas (current session only): when a committee takes up the bill.
+        apath = os.path.join(HERE, "data", f"agendas_{session}.json")
+        agendas = json.load(open(apath)) if session == current and os.path.exists(apath) else {}
+
+        def agenda_of(r):
+            seen = []
+            for v in r["vers"]:
+                for c, w in agendas.get(re.sub(r"[A-Z]$", "", v["p"]), []):
+                    entry = [c.replace(" And ", " and "), w]
+                    if entry not in seen:
+                        seen.append(entry)
+            return sorted(seen, key=lambda x: x[1])
 
         def member_id(m):
             house, who = m
@@ -1209,7 +1221,8 @@ def main():
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
                          S(r["program"]), S(r["law"]), vers, max(session, int((r["first"] or str(session))[:4])), h,
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
-                         bill_parties(r, party_of), enc_votes(r["votes"])])
+                         bill_parties(r, party_of), enc_votes(r["votes"]),
+                         [[S(c), w] for c, w in agenda_of(r)]])
 
         data = {
             "session": session,

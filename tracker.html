@@ -228,7 +228,7 @@ table.oc th { vertical-align: bottom; }
 .view-tab { appearance: none; border: 0; background: none; padding: 8px 14px; font: 700 16px var(--display); font-stretch: 85%; color: var(--ink-2); cursor: pointer; border-radius: 5px 5px 0 0; }
 .view-tab:hover { color: var(--ink); background: var(--chip); }
 .view-tab-end { margin-left: auto; }
-.view-tab[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.view-tab[aria-current="page"] { background: var(--ink); color: var(--paper); }
 .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 32px; align-items: start; }
 .side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding: 4px 22px 16px 0; border-right: 1px solid var(--rule); }
 .side-toggle { display: none; }
@@ -304,6 +304,14 @@ table.oc th { vertical-align: bottom; }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
 .net svg { display: block; max-width: 900px; }
+.repfind { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 8px 0 2px; }
+.repfind label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--ink-2); }
+.repfind input { width: min(420px, 80vw); }
+.repsel { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-top: 6px; }
+.repsel label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--ink-2); }
+.repsel select { width: auto; max-width: 80vw; }
+.resultbar .csv { padding: 4px 10px; font-size: 12.5px; }
+.netsel { min-height: 1.4em; font-size: 13.5px; margin: 4px 0; }
 .net line { stroke: var(--ink-2); stroke-opacity: .35; }
 .net circle, .net rect { stroke: var(--paper); stroke-width: 1; cursor: pointer; fill: var(--ink-2); }
 .net .dem, .key .k-dem { fill: #3b6fd1; background: #3b6fd1; }
@@ -555,6 +563,11 @@ table.st col.c-m { width: 80px; }
 .next li .ask { font-size: 13px; font-weight: 600; }
 .next li.key { border-left: 3px solid var(--gold); padding-left: 8px; margin-left: -11px; }
 .next .star { color: var(--gold); }
+.decides { font: 600 10.5px var(--body); letter-spacing: .04em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); border-radius: 3px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 5px; overflow: hidden; vertical-align: middle; margin: 0 3px; }
+.seg button { font: inherit; font-size: 12.5px; padding: 3px 10px; min-height: 28px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.textlink { margin: 6px 0; font-size: 13.5px; }
 .next .hint { font-size: 12px; color: var(--ink-2); }
 
 /* Weigh in tab */
@@ -598,12 +611,12 @@ table.st col.c-m { width: 80px; }
   </header>
 
   <nav class="views" role="tablist" aria-label="Page sections">
-    <button class="view-tab" role="tab" type="button" data-view="bills" aria-selected="true">Bills</button>
-    <button class="view-tab" role="tab" type="button" data-view="watch" aria-selected="false">★ Watchlist<span id="watchTabCount"></span></button>
-    <button class="view-tab" role="tab" type="button" data-view="act" aria-selected="false">Weigh in</button>
-    <button class="view-tab" role="tab" type="button" data-view="stats" aria-selected="false">Statistics</button>
-    <button class="view-tab" role="tab" type="button" data-view="person" aria-selected="false" hidden>Their numbers</button>
-    <button class="view-tab view-tab-end" role="tab" type="button" data-view="how" aria-selected="false">How a bill becomes law in New York</button>
+    <button class="view-tab" type="button" data-view="bills">Bills</button>
+    <button class="view-tab" type="button" data-view="watch">★ Watchlist<span id="watchTabCount"></span></button>
+    <button class="view-tab" type="button" data-view="act">Weigh in</button>
+    <button class="view-tab" type="button" data-view="stats">Statistics</button>
+    <button class="view-tab" type="button" data-view="person" hidden>Their numbers</button>
+    <button class="view-tab view-tab-end" type="button" data-view="how">How a bill becomes law in New York</button>
   </nav>
 
   <!-- Bills and Statistics share the filter sidebar -->
@@ -656,6 +669,14 @@ table.st col.c-m { width: 80px; }
             <label for="intro">Year introduced</label>
             <select id="intro"><option value="">Either year</option></select>
           </div>
+          <div class="field">
+            <label for="area">Places named</label>
+            <select id="area"><option value="">Anywhere</option></select>
+          </div>
+          <div class="field" id="changedField">
+            <label for="changed">New activity</label>
+            <select id="changed"><option value="">Any time</option></select>
+          </div>
         </div>
       </div>
     </details>
@@ -664,6 +685,7 @@ table.st col.c-m { width: 80px; }
       <div class="resultbar">
         <input type="search" id="q" class="q" placeholder="Search bills: number, words, sponsor" autocomplete="off" aria-label="Search bills">
         <span id="count"></span>
+        <button class="act-btn csv" type="button" id="csv" title="Download the bills shown, as a spreadsheet file">Download</button>
         <label class="sortby" for="sort">Sort
           <select id="sort">
             <option value="recent">Latest action</option>
@@ -718,6 +740,7 @@ table.st col.c-m { width: 80px; }
 
   <!-- Weigh in -->
   <section class="actview" id="view-act" hidden>
+    <div class="act-sec" id="myReps"></div>
 
     <div class="act-sec">
       <h2>How to weigh in</h2>
@@ -816,8 +839,26 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "area", "changed"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", area: "", changed: "", shown: PAGE });
+
+// Bills that name Tompkins County or a place in it, in the title or summary.
+const AREAS = {
+  // Town names that are also common words or other places count only as "town/village of".
+  tompkins: { label: "Tompkins County", re: /\b(Tompkins|Ithaca|Dryden|Trumansburg|Cayuga Heights|Freeville|(town|village)s? of (Lansing|Groton|Caroline|Danby|Enfield|Newfield|Ulysses))\b/i },
+};
+// The day of this browser's previous visit, for "new activity since your last visit".
+let LAST_VISIT = "";
+try {
+  const today = new Date().toISOString().slice(0, 10), seen = localStorage.getItem("abt:visit");
+  LAST_VISIT = seen && seen < today ? seen : localStorage.getItem("abt:visitPrev") || "";
+  if (seen !== today) { if (seen) localStorage.setItem("abt:visitPrev", seen); localStorage.setItem("abt:visit", today); }
+} catch (e) {}
+const CHANGED = {
+  visit: { label: () => `Since your last visit${LAST_VISIT ? ` (${fmtDate(LAST_VISIT)})` : ""}`, test: (b) => !!LAST_VISIT && (b.last || "") > LAST_VISIT },
+  week: { label: () => "In the last 7 days", test: (b) => (b.last || "") >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) },
+  month: { label: () => "In the last 30 days", test: (b) => (b.last || "") >= new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10) },
+};
 let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "", ROOT = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
@@ -936,6 +977,8 @@ function matches(b, skip) {
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
   if (state.party && b.parties !== state.party) return false;
+  if (state.area && !AREAS[state.area].re.test(`${b.title} ${b.summary}`)) return false;
+  if (state.changed && !CHANGED[state.changed].test(b)) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     for (const w of words) if (!b._hay.includes(w)) return false;
@@ -993,15 +1036,30 @@ function track(b) {
   return `<div class="track" aria-hidden="true">${[0,1,2,3,4,5].map((i) => `<span class="pip ${i < filled ? "on " + cls : ""}"></span>`).join("")}</div>`;
 }
 
+// "Energy And Telecommunications" -> "Energy and Telecommunications".
+const commPlain = (n) => (n || "").replace(/ And /g, " and ").replace(/ Committee$/, "");
+
+// The API's action log is in capitals with abbreviations: "ORDERED TO THIRD READING RULES CAL.897".
+function plainAction(t) {
+  let s = (t || "").toLowerCase()
+    .replace(/\b([sa])(\d+[a-z]?)\b/g, (m, h, n) => h.toUpperCase() + n.toUpperCase())
+    .replace(/\bcal\.(\d+)/g, "calendar $1").replace(/\bchap\.(\d+)/g, "chapter $1")
+    .replace(/\b(memo|veto)\.(\d+)/g, "$1 $2").replace(/\b(senate|assembly|governor|rules)\b/g, (w) => w[0].toUpperCase() + w.slice(1))
+    .replace(/\bthird reading (Rules) calendar/, "third reading, $1 calendar");
+  // Committee names after "referred to" and similar read as names.
+  s = s.replace(/^((?:re-)?referred to|recommitted to|committed to|reported and committed to|reference changed to|held for consideration in|amend and recommit to) (.+)$/, (m, v, c) => `${v} ${c.replace(/\b[a-z]/g, (x) => x.toUpperCase()).replace(/ And /g, " and ")}`);
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function statusText(b) {
   const D = b.dates, live = DATA.current;
   let t = TEXT.long[b.stage], small = `Last action ${fmtDate(b.last)}`;
   if (b.stage === 0) {
-    t = `${live ? "In" : "Died in"} ${b.comm || "committee"}`;
+    t = `${live ? "In" : "Died in"} ${b.comm ? `the ${commPlain(b.comm)} Committee` : "committee"}`;
     const passed = D.passS ? "Senate" : D.passA ? "Assembly" : null;
     if (passed && D.died) small = `Passed ${passed} ${fmtDate((D.passSAll[0] || D.passAAll[0]))}; sent back to committee ${fmtMonth(D.died)}`;
   } else if (b.stage === 2 && b.passedIn) {
-    t = `Passed ${b.passedIn}${live ? "" : " only"}`;
+    t = `Passed one house${live ? "" : " only"} (${b.passedIn})`;
     small = fmtDate(b.passedIn === "Senate" ? D.passS : D.passA);
   } else if (b.stage === 3) {
     t = "Passed both houses";
@@ -1020,11 +1078,71 @@ function statusText(b) {
 }
 
 // ---- What's next and who to contact (current session only) ----
-const govItem = (ask) => `<li class="key"><span class="contact"><span class="star" title="Decides the next step">★</span> Governor's office</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
+const govItem = (ask) => `<li class="key"><span class="contact">Governor's office <span class="decides">Decides</span></span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
 const lastName = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z\s-]/g, "").split(/\s+/).filter((w) => !["jr", "sr", "ii", "iii"].includes(w)).pop() || "";
+
+// ---- Your legislators: chosen by address or from a list, kept in this browser; otherwise
+// the defaults the site was built with (Tompkins County: Sen. Webb, Asm. Kelles). ----
+const REPS_STORE = "abt:reps";
+function chosenReps() { try { return JSON.parse(localStorage.getItem(REPS_STORE) || "null"); } catch (e) { return null; } }
+function myReps() {
+  const c = chosenReps();
+  if (!c || !LEGS.length) return DATA.contacts?.reps || [];
+  return ["S", "A"].map((h) => LEGS.find((L) => L.id === `${h}:${c[h]}`)).filter(Boolean)
+    .map((L) => ({ title: L.title, name: L.name, house: L.house, last: lastName(L.name) }));
+}
+function renderMyReps() {
+  const box = $("myReps");
+  if (!box) return;
+  if (!DATA.current || !LEGS.length || PRESET?.who) { box.hidden = true; return; }
+  const reps = myReps(), c = chosenReps();
+  const opts = (h) => LEGS.filter((L) => L.house === h).sort((a, b) => a.district - b.district)
+    .map((L) => `<option value="${L.district}"${reps.some((r) => r.house === h && lastName(L.name) === r.last) ? " selected" : ""}>District ${L.district}: ${esc(L.name)}</option>`).join("");
+  box.innerHTML = `<h2>Your legislators</h2>
+    <p>${reps.map((r) => `<b>${esc(r.title)} ${esc(r.name)}</b>`).join(" and ") || "Not set"}${c ? "" : " (Tompkins County)"}. Contact suggestions throughout the site use these.</p>
+    <form class="repfind" id="repFind"><label>Find by address <input type="search" id="repAddr" placeholder="Street, town, NY" autocomplete="street-address"></label> <button class="act-btn" type="submit">Look up</button></form>
+    <p class="muted" id="repMsg">The address goes to the U.S. Census Bureau's address lookup; only the district numbers are kept, in this browser.</p>
+    <div class="repsel"><label>Senate <select id="repS">${opts("S")}</select></label> <label>Assembly <select id="repA">${opts("A")}</select></label>${c ? ` <button class="act-btn" type="button" id="repReset">Back to Tompkins County</button>` : ""}</div>`;
+}
+function setReps(s, a) {
+  try { localStorage.setItem(REPS_STORE, JSON.stringify({ S: +s, A: +a })); } catch (e) {}
+  renderMyReps(); renderOpenNow(); render();
+}
+// The Census geocoder answers in JSONP, so it works from a static page.
+function lookUpReps(address) {
+  const msg = $("repMsg");
+  msg.textContent = "Looking up…";
+  const cb = `abtGeo${Date.now()}`, s = document.createElement("script");
+  const done = (text) => { msg.textContent = text; delete window[cb]; s.remove(); };
+  const timer = setTimeout(() => done("The lookup didn't answer. Choose your districts from the lists below."), 15000);
+  window[cb] = (data) => {
+    clearTimeout(timer);
+    const g = data?.result?.addressMatches?.[0]?.geographies || {};
+    const pick = (re) => { const k = Object.keys(g).find((x) => re.test(x)); return k && g[k][0] ? +g[k][0].BASENAME : null; };
+    const sd = pick(/Upper/), ad = pick(/Lower/);
+    if (!sd || !ad) return done("That address wasn't found in New York. Try adding the town and ZIP code, or choose from the lists below.");
+    done("");
+    setReps(sd, ad);
+  };
+  s.src = `https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&vintage=Current_Current&layers=56,58&format=jsonp&callback=${cb}`;
+  s.onerror = () => { clearTimeout(timer); done("The address lookup isn't available here. Choose your districts from the lists below."); };
+  document.head.appendChild(s);
+}
+
+// The bills now shown, as a CSV file for a spreadsheet.
+function downloadCsv() {
+  const rows = BILLS.filter((b) => matches(b));
+  const cell = (x) => `"${String(x ?? "").replace(/"/g, '""')}"`;
+  const lines = [["Bill", "Same as", "Title", "Where it is", "Last action", "Sponsors", "Link"].map(cell).join(",")];
+  for (const b of rows) lines.push([b.nums[0], b.nums.slice(1).join(" "), b.title, TEXT.long[b.stage], b.last, b.vers.map((v) => v.sponsor).filter(Boolean).join("; "), billLink(b)].map(cell).join(","));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv" }));
+  a.download = `ny-bills-${DATA.session}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
 
 // Collects the people to contact about a bill, one entry each, with every role they play.
 function contactBook(b, canMove = true, oppose = false) {
@@ -1055,14 +1173,19 @@ function contactBook(b, canMove = true, oppose = false) {
       if (!c || !c.chair) return;
       const mine = backs(c.chair, house) && !oppose;
       add(c.chair, house, `chair of the ${HOUSE[house]} ${c.name} Committee${c.meets ? ` (meets ${c.meets} during session)` : ""}`, mine ? "" : ask, star && !mine);
-      for (const n of c.ours) { const r = (DATA.contacts.reps || []).find((x) => x.house === house && x.last === n.toLowerCase()); if (r) add(r.name, house, `member of the ${c.name} Committee`, canMove && !backs(r.name, house) ? (oppose ? "vote no in committee" : "vote yes in committee") : ""); }
+      // Your own legislators who sit on this committee get a vote there.
+      for (const r of myReps().filter((x) => x.house === house)) {
+        const L = LEGS.find((x) => x.house === house && lastName(x.name) === r.last && x.name === r.name) || LEGS.find((x) => x.house === house && lastName(x.name) === r.last);
+        if (L && (L.committees || []).some((m) => commKey(m.name) === commKey(c.name)))
+          add(r.name, house, `member of the ${c.name} Committee`, canMove && !backs(r.name, house) ? (oppose ? "vote no in committee" : "vote yes in committee") : "");
+      }
     },
     leader(house, ask, star) {
       const L = (DATA.contacts?.leaders || {})[house];
       if (L && !(backs(L.name, house) && !oppose)) add(L.name, house, L.role.charAt(0).toLowerCase() + L.role.slice(1) + ", decides which bills come to the floor", ask, star);
     },
     reps(houses = ["S", "A"], ask) {
-      for (const r of DATA.contacts?.reps || []) if (houses.includes(r.house)) {
+      for (const r of myReps()) if (houses.includes(r.house)) {
         // Nothing to ask our legislators if they already sponsor or co-sponsor it; otherwise the
         // stage's ask, or to sign on.
         const theirs = b.vers.some((v) => v.p[0] === r.house && (lastName(v.sponsor) === r.last || v.cosponsors.some((n) => lastName(n) === r.last)));
@@ -1085,7 +1208,7 @@ function contactBook(b, canMove = true, oppose = false) {
         const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, phonesHtml(info)].filter(Boolean).join(" · ");
         const roles = p.roles.join("; ");
         const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
-        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${p.star ? `<span class="star" title="Decides the next step">★</span> ` : ""}${name}${status}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
+        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` <span class="decides">Decides</span>` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
       });
       items.sort((x, y) => y.star - x.star);
       return (gov ? gov : "") + items.map((x) => x.html).join("");
@@ -1162,13 +1285,32 @@ function planFor(b, stance = "support") {
   return { what, gov, due, book, actionable, opp, reason };
 }
 
+// Support or oppose, for the asks: from the watchlist if the bill is starred, else as last
+// chosen in the bill panel (kept in this browser).
+const STANCE_STORE = "abt:stance";
+function panelStances() { try { return JSON.parse(localStorage.getItem(STANCE_STORE) || "{}"); } catch (e) { return {}; } }
+const panelStance = (b) => watchStance(b) || panelStances()[billKey(b)] || "support";
+function setPanelStance(b, st) {
+  if (isWatched(b)) { setWatch(b, { ...watchEntry(b), stance: st }); refreshWatchButtons(b); return; }
+  const all = panelStances();
+  if (st === "oppose") all[billKey(b)] = st; else delete all[billKey(b)];
+  try { localStorage.setItem(STANCE_STORE, JSON.stringify(all)); } catch (e) {}
+}
+
 function nextSteps(b) {
-  const plan = planFor(b, watchStance(b) || "support");
+  const plan = planFor(b, panelStance(b));
   if (!plan) return "";
   let what = plan.what;
+  // An upcoming Senate committee meeting with this bill on the agenda.
+  const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16);
+  const meet = DATA.current && b.agenda.find((a) => a.when >= now);
+  if (meet) {
+    const d = new Date(meet.when);
+    what += `<p class="when">On the agenda: Senate ${esc(meet.committee)} Committee, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>`;
+  }
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
-  if (plan.actionable && who) what += `<p class="hint">★ decides the next step. ${plan.opp ? "Asks assume you oppose this bill (set on your watchlist)." : "Asks assume you support the bill; to oppose it, star it and choose Oppose."}</p>`;
+  if (plan.actionable && who) what += `<p class="hint">Asks if you <span class="seg">${["support", "oppose"].map((s) => `<button type="button" data-panelstance="${s}" data-idx="${b.idx}" aria-pressed="${(plan.opp ? "oppose" : "support") === s}">${s}</button>`).join("")}</span> this bill</p>`;
   return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
 }
 
@@ -1208,7 +1350,7 @@ function voteOf(v, L) {
 }
 function votesBlock(b) {
   if (!b.votes.length) return "";
-  const people = [...(DATA.contacts?.reps || []).map((r) => LEGS.find((L) => L.house === r.house && lastName(L.name) === r.last)).filter(Boolean)];
+  const people = [...myReps().map((r) => LEGS.find((L) => L.house === r.house && lastName(L.name) === r.last)).filter(Boolean)];
   const page = PRESET?.who && LEG_BY_ID[PRESET.who];
   if (page && !people.includes(page)) people.unshift(page);
   const rows = b.votes.map((v) => {
@@ -1246,10 +1388,10 @@ function oddsLine(b) {
   if (b.stage === 3 && w && w.n >= 30) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    return `Of bills in ${pastSpan()} still waiting for the governor's office to request them on ${day} of a session's ${w.year ? "second" : "first"} year, ${pctOf(w.law, w.n)}% became law.`;
+    return `Past sessions: ${pctOf(w.law, w.n)}% of bills still waiting for the governor's request on ${day} became law.`;
   }
   const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
-  return `Of bills that ${label} in ${pastSpan()}, ${pctOf(law, n)}% became law.`;
+  return `Past sessions: ${pctOf(law, n)}% of bills that ${label} became law.`;
 }
 
 // One bar: full length is the share approved by committee; the darker part, the share that became law.
@@ -1372,7 +1514,8 @@ function renderNet() {
     <datalist id="netNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
     <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span>${both ? `<span>■ Senate</span><span>● Assembly</span><span><i class="k-cross"></i>Carry the same bills in the two houses</span>` : ""}<span>Bigger: more bills sponsored</span></p>
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
-    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gold lines join a senator and an Assembly member who sponsor the two versions of the same bills; gray lines join members of one house when one co-sponsors many of the other's bills." : "A line joins two members when one co-sponsors a large share of the other's bills."} Each member's ${both ? "three" : "four"} strongest ties${both ? " in each kind" : ""} are drawn (counting only ties of 3 or more bills), so members who are many colleagues' closest partners have more lines. Members close together work together often; the directions have no meaning. Hover or find a name to highlight; click to see a member's bills.</p>`;
+    <p class="netsel" id="netSel"></p>
+    <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} bills` : "All bills"}, ${span_}. ${both ? "Gray lines: one co-sponsors many of the other's bills. Gold lines: they carry the same bills in the two houses." : "Lines join members when one co-sponsors many of the other's bills (each member's strongest ties, of 3 or more bills)."} Members close together work together often; directions mean nothing. Tap or click a member to highlight them.</p>`;
   loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
 function drawNet({ nodes, links }) {
@@ -1420,12 +1563,20 @@ function drawNet({ nodes, links }) {
   const node = (e) => e.target.closest("circle, rect");
   svg.addEventListener("mouseover", (e) => { const c = node(e); focus(c ? c.dataset.id : netPinned); });
   svg.addEventListener("mouseleave", () => focus(netPinned));
-  svg.addEventListener("click", (e) => {
-    const c = node(e); if (!c) return;
-    const L = LEG_BY_ID[c.dataset.id]; if (!L) return;
-    if (ROOT && L.slug) { location.href = `${ROOT}${L.slug}/`; return; }
-    Object.assign(state, blank()); state.who = L.id; syncControls(); showView("bills"); render();
-  });
+  // Click or tap highlights a member (there's no hover on phones); a link below opens their bills.
+  const select = (id) => {
+    netPinned = id;
+    focus(id);
+    const x = nodes.find((n) => n.id === id), L = id && LEG_BY_ID[id];
+    $("netSel").innerHTML = x ? `<b>${esc(x.L.label)}</b> · ${num(x.n)} bills · ${L && ROOT && L.slug && DATA.current ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : L ? `<a href="#" data-netbills="${esc(id)}">Their bills</a>` : ""}` : "";
+    if (x) find.value = x.L.label;
+  };
+  svg.addEventListener("click", (e) => { const c = node(e); select(c ? c.dataset.id : null); if (!c) find.value = ""; });
+  $("netSel").onclick = (e) => {
+    const a = e.target.closest("[data-netbills]"); if (!a) return;
+    e.preventDefault();
+    Object.assign(state, blank()); state.who = a.dataset.netbills; syncControls(); showView("bills"); render();
+  };
   // Find: a typed name stays highlighted until cleared.
   const find = $("netFind");
   const pin = () => {
@@ -1434,9 +1585,8 @@ function drawNet({ nodes, links }) {
     netPinned = hit ? hit.id : null;
     focus(netPinned);
   };
-  find.addEventListener("input", pin);
-  const pinned = nodes.find((x) => x.id === netPinned);
-  if (pinned) { find.value = pinned.L.label; focus(netPinned); } else netPinned = null;
+  find.addEventListener("input", () => { pin(); select(netPinned); });
+  if (nodes.some((x) => x.id === netPinned)) select(netPinned); else netPinned = null;
 }
 
 const inTen = (n, d) => (d ? Math.round((n / d) * 10) : 0);
@@ -1524,11 +1674,10 @@ function renderStats() {
   // What usually happens next: a funnel. Bar length is how many bills got that far; green is how many of them became law.
   const odds = I.odds[t] || {};
   const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
-  const maxN = Math.max(1, ...ODDS_POINTS.map(([k]) => (odds[k] || [0])[0]));
   $("statOdds").innerHTML = `<h2>Odds of becoming law</h2>
-    <p class="key"><span><i class="k-appr"></i>Bills that got this far</span><span><i class="k-law"></i>Of those, became law</span></p>
+    <p class="key"><span><i class="k-law"></i>Share that became law</span></p>
     <div class="vlist">${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0];
-      return vrow(l, `${num(n)} bills`, [[(n / maxN) * 100, "a"], [(law / maxN) * 100, "l"]], `<b class="big">${pctOf(law, n)}%</b> became law`); }).join("")}</div>
+      return vrow(l, `${num(n)} bills`, [[pctOf(law, n), "l"]], `<b class="big">${pctOf(law, n)}%</b> became law`); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}.</p>`;
 
   // Where bills die: Assembly and Senate committees in separate lists.
@@ -1547,12 +1696,13 @@ function renderStats() {
   };
   rows.sort(bySort[commSort] || bySort.bills);
   const counts = commMode === "count";
-  const scale = Math.max(1, ...rows.map((r) => counts ? Math.max(r.perSession, r.nowN) : Math.max(r.out, r.nowOut || 0)));
+  // Shares run 0-100%; counts run to the busiest committee.
+  const scale = counts ? Math.max(1, ...rows.map((r) => Math.max(r.perSession, r.nowN))) : 100;
   const pos = (x) => (x / scale) * 100;
   const shareRow = (r) => [
     [[pos(r.out), "a"], [pos(r.law), "l"]],
     `<b class="big">${r.out}%</b> approved · ${r.law}% law${r.nowOut != null ? `<small>This session so far: ${r.nowOut}% approved · ${r.nowLaw}% law</small>` : ""}`,
-    r.nowOut != null ? [[pos(r.nowOut), "a", `This session so far: ${r.nowOut}% approved`], [pos(r.nowLaw), "l", `This session so far: ${r.nowLaw}% law`]] : null];
+    null];
   const countRow = (r) => [
     [[pos(r.perSession), "n"], [pos(r.outN), "a"], [pos(r.lawN), "l"]],
     `<b class="big">${num(r.perSession)}</b> bills · ${num(r.outN)} approved · ${num(r.lawN)} law${r.nowN ? `<small>This session so far: ${num(r.nowN)} bills · ${num(r.nowOutN)} approved · ${num(r.nowLawN)} law</small>` : ""}`,
@@ -1567,7 +1717,7 @@ function renderStats() {
   $("statComm").innerHTML = `<h2>Committees</h2>
     <div class="commctl"><label class="commsort">Show <select data-commmode>${Object.entries(COMM_MODES).map(([k, l]) => `<option value="${k}"${k === commMode ? " selected" : ""}>${l}</option>`).join("")}</select></label>
     <label class="commsort">Sort by <select data-commsort>${Object.entries(COMM_SORTS).map(([k, l]) => `<option value="${k}"${k === commSort ? " selected" : ""}>${l}</option>`).join("")}</select></label></div>
-    <p class="key">${counts ? `<span><i class="k-n"></i>Referred</span>` : ""}<span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span>${counts ? "" : `<span>This session so far:</span><span><i class="k-tick a"></i>approved</span><span><i class="k-tick l"></i>law</span>`}</p>
+    <p class="key">${counts ? `<span><i class="k-n"></i>Referred</span>` : ""}<span><i class="k-appr"></i>Approved by committee</span><span><i class="k-law"></i>Became law</span></p>
     <p class="note">${counts ? `Average bills a session for ${topicName}` : `Share of ${topicName} referred to each committee`}, ${pastSpan()}. Committees with few bills left out.</p>
     <div class="houses">${houseList("A", "Assembly committees")}${houseList("S", "Senate committees")}</div>
     ${rows.length > 16 ? `<button class="act-btn" type="button" data-commall>${commAll ? "Show fewer" : `Show all ${rows.length} committees`}</button>` : ""}`;
@@ -1610,24 +1760,22 @@ function renderStats() {
   const cs = I.cosponsors?.[t] || [];
   const PARTY = [["DR", "Both parties"], ["D", "Democrats only"], ["R", "Republicans only"]];
   const pPast = I.party?.past?.[t] || {}, pNow = I.party?.current?.[t] || {};
-  const csMax = Math.max(1, ...cs.map(([n, both]) => pctOf(both, n)));
-  const passRate = (c) => (c ? pctOf(c[1], c[0]) : 0);
-  const mixMax = Math.max(1, ...PARTY.map(([k]) => Math.max(passRate(pPast[k]), passRate(pNow[k]))));
+  const mixMax = 100;
   $("statCosp").innerHTML = `<h2>Co-sponsors and party</h2>
-    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span><span>This session so far:</span><span><i class="k-tick a"></i>passed</span><span><i class="k-tick l"></i>law</span></p>
+    <p class="key"><span><i class="k-appr"></i>Passed both houses</span><span><i class="k-law"></i>Became law</span></p>
     <h3 class="sub">By number of co-sponsors</h3>
-    <div class="vlist">${cs.map(([n, both, law], i) => vrow(CB[i], `${num(n)} bills`, [[(pctOf(both, n) / csMax) * 100, "a"], [(pctOf(law, n) / csMax) * 100, "l"]],
+    <div class="vlist">${cs.map(([n, both, law], i) => vrow(CB[i], `${num(n)} bills`, [[pctOf(both, n), "a"], [pctOf(law, n), "l"]],
       `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law`)).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}, by the most co-sponsors either version had.</p>
     <h3 class="sub">By party of sponsors and co-sponsors</h3>
     <div class="vlist">${PARTY.map(([k, l]) => { const [n, both, law] = pPast[k] || [0, 0, 0]; const now = pNow[k];
       return vrow(l, `${num(n)} bills`, [[(pctOf(both, n) / mixMax) * 100, "a"], [(pctOf(law, n) / mixMax) * 100, "l"]],
         `${pctOf(both, n)}% passed · <b class="big">${pctOf(law, n)}%</b> law${now ? `<small>This session so far: ${pctOf(now[1], now[0])}% passed · ${pctOf(now[2], now[0])}% law</small>` : ""}`,
-        now ? [[(pctOf(now[1], now[0]) / mixMax) * 100, "a", `This session so far: ${pctOf(now[1], now[0])}% passed`], [(pctOf(now[2], now[0]) / mixMax) * 100, "l", `This session so far: ${pctOf(now[2], now[0])}% law`]] : null); }).join("")}</div>
+        null); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. “Both parties”: at least one sponsor or co-sponsor from each party on either version. Party from Open States.</p>`;
 
   renderOutcomes();
-  if (statSec === "statNet") renderNet();
+  if (statSec === "statNet" && !$("view-stats").hidden) renderNet();
 }
 
 function renderOutcomes() {
@@ -1696,6 +1844,11 @@ function renderPersonStats(L) {
   const partnerRows = [...partners].sort((a, b) => b[1] - a[1]).slice(0, 10)
     .map(([n, c]) => vrow(legLink(other, n), "", [[pctOf(c, mine.length), "a"]], `on <b class="big">${num(c)}</b> of ${num(mine.length)} bills`)).join("");
 
+  // What they work on: their bills by topic (a bill can have several).
+  const byTopic = Object.keys(TOPICS).map((k) => { const xs = mine.filter((b) => b.topics.includes(k)); return [k, xs.length, xs.filter((b) => b.stage === 5).length]; })
+    .filter(([, n]) => n).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const topicRows = byTopic.map(([k, n, law]) => vrow(esc(TOPICS[k]), "", [[pctOf(n, mine.length), "a"], [pctOf(law, mine.length), "l"]], `<b class="big">${num(n)}</b> bills · ${num(law)} law`)).join("");
+
   // Past sessions.
   const hist = (me.history || []).slice().sort((a, b) => b[0] - a[0]);
   const histRows = hist.map(([s, h, n, both, law, tn, tb, tl]) => `<tr><td>${span(s)}${s === DATA.session && DATA.current ? " (so far)" : ""}</td><td>${h === "S" ? "Senate" : "Assembly"}</td>
@@ -1715,6 +1868,10 @@ function renderPersonStats(L) {
     ${hist.length > 1 ? `<h3 class="sub">By session</h3>
     <div class="tablewrap"><table class="oc st"><thead><tr><th>Session</th><th>House</th><th>Bills sponsored</th><th>Passed both houses</th><th>Became law</th></tr></thead><tbody>${histRows}</tbody></table></div>
     <p class="note">In parentheses: the typical member of their party in that house that session.</p>` : ""}
+    ${topicRows ? `<h3 class="sub">Topics of their bills</h3>
+    <p class="key"><span><i class="k-appr"></i>Bills</span><span><i class="k-law"></i>Became law</span></p>
+    <div class="vlist">${topicRows}</div>
+    <p class="note">Share of the ${num(mine.length)} bills they sponsor this session; a bill can count under more than one topic.</p>` : ""}
     ${commRows ? `<h3 class="sub">Committees their bills go to first</h3>
     <p class="key"><span><i class="k-n"></i>Referred</span><span><i class="k-appr"></i>Approved</span><span><i class="k-law"></i>Became law</span></p>
     <div class="vlist">${commRows}</div>` : ""}
@@ -1722,11 +1879,11 @@ function renderPersonStats(L) {
     <p class="note">${num(withTwin)} of their ${num(mine.length)} bills have a ${otherName} version; a bill needs one to pass both houses.</p>` : ""}
     ${cosRows ? `<h3 class="sub">Most frequent co-sponsors in the ${HOUSE[L.house]}</h3><div class="vlist">${cosRows}</div>
     <p class="note">${num(me.otherParty)} of their bills (${pctOf(me.otherParty, me.sponsored)}%) have a sponsor or co-sponsor from the other party${peer ? `; typical: ${pctOf(peer.otherParty, peer.sponsored)}%` : ""}.</p>` : ""}
-    <h3 class="sub">Floor votes this session</h3>
+    ${fv ? `<h3 class="sub">Floor votes this session</h3>
     <div class="tablewrap"><table class="oc st"><thead><tr><th></th><th>${last}</th>${peer ? `<th>Typical</th>` : ""}</tr></thead><tbody>
-      <tr><td>Floor votes</td><td>${num(fv)}</td>${peer ? `<td>${num(Math.round(peer.floorVotes))}</td>` : ""}</tr>
       <tr><td>Voted no</td><td>${num(no)}</td>${peer ? `<td>–</td>` : ""}</tr>
-      <tr><td>Didn't vote</td><td>${num(away)}</td>${peer ? `<td>${num(Math.round(peer.missed))}</td>` : ""}</tr></tbody></table></div>`;
+      <tr><td>Excused or absent</td><td>${num(away)}</td>${peer ? `<td>${num(Math.round(peer.missed))}</td>` : ""}</tr></tbody></table></div>
+    <p class="note">Out of ${num(fv)} floor votes. The records don't give a reason for an absence.</p>` : ""}`;
 }
 function keyDates(b) {
   const D = b.dates;
@@ -1762,11 +1919,11 @@ function historyTags(b) {
 
 function verBlock(v) {
   if (!v) return "";
-  const acts = v.actions.slice().reverse().map((a) => `<li><time>${esc(a[0])}</time><span>${esc(a[1])}</span></li>`).join("");
+  const acts = v.actions.slice().reverse().map((a) => `<li><time>${esc(a[0])}</time><span>${esc(plainAction(a[1]))}</span></li>`).join("");
   return `<div class="ver">
     <h3><span>${esc(v.p)}</span><a href="${billUrl(v.p)}" target="_blank" rel="noopener">Bill text and memo ↗</a></h3>
     <div class="who">${esc(v.sponsor || "No sponsor listed")}${v.cosp ? ` · ${v.cosp} cosponsor${v.cosp === 1 ? "" : "s"}` : ""}</div>
-    <div class="who"><b>${esc(v.statusDesc)}</b>${v.committee ? " · " + esc(v.committee) : ""}</div>
+    <div class="who"><b>${esc(v.statusDesc)}</b>${v.committee ? " · " + esc(commPlain(v.committee)) : ""}</div>
     <ol>${acts}</ol>
   </div>`;
 }
@@ -1842,6 +1999,8 @@ function activeFilters() {
   if (state.house) out.push(["house", null, "Version in", opt("house", state.house)]);
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
   if (state.intro) out.push(["intro", null, "Introduced", state.intro]);
+  if (state.area) out.push(["area", null, "Names", AREAS[state.area].label]);
+  if (state.changed) out.push(["changed", null, "New activity", CHANGED[state.changed].label()]);
   return out;
 }
 
@@ -1998,7 +2157,7 @@ function renderWatchView() {
     const summary = b.summary && b.summary !== b.title ? `<p class="sum">${esc(b.summary.length > 260 ? b.summary.slice(0, 257) + "…" : b.summary)}</p>` : "";
     const action = x.key ? `
       <div class="do">
-        <p class="who"><span class="star">★</span> <b>${esc(titleOf(x.key))}</b>: ${esc(x.key.ask)}</p>
+        <p class="who"><b>${esc(titleOf(x.key))}</b> <span class="decides">Decides</span> ${esc(x.key.ask)}</p>
         <p class="reach">${reachOf(x.key)} <button class="act-btn small" type="button" data-email="${b.idx}">Copy email</button></p>
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
@@ -2076,7 +2235,7 @@ function fillDetail(el) {
   const inCard = el.classList.contains("morebill");
   d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
-    ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
+    <p class="textlink"><a href="${esc(billUrl(b.vers[0].p))}" target="_blank" rel="noopener">Full text and sponsor's memo ↗</a></p>
     <div class="linkrow"><span>Link to this bill:</span><input type="text" readonly value="${esc(billLink(b))}" aria-label="Link to this bill" onclick="this.select()"><button class="act-btn" type="button" data-copylink>Copy</button></div>
     ${inCard ? "" : nextSteps(b)}
     ${keyDates(b)}
@@ -2085,20 +2244,29 @@ function fillDetail(el) {
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
 
-function showView(v) {
-  if (!["bills", "watch", "stats", "how", "act", "person"].includes(v)) v = "bills";
+const VIEWS = ["bills", "watch", "stats", "how", "act", "person"];
+function showView(v, push = true) {
+  if (!VIEWS.includes(v)) v = "bills";
   if (PRESET?.who ? ["watch", "stats", "how"].includes(v) : v === "person") v = "bills";
-  for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
+  // A finished session has nothing to watch or weigh in on.
+  if (!DATA.current && ["watch", "act"].includes(v)) v = "bills";
+  // The tab goes in the address bar, so Back moves between tabs and links keep the tab.
+  const here = location.hash.slice(1);
+  if (push && here !== v && !(v === "bills" && !VIEWS.includes(here))) {
+    try { history.pushState(null, "", v === "bills" ? location.pathname + location.search : `#${v}`); } catch (err) {}
+  }
+  for (const tab of document.querySelectorAll(".view-tab")) {
+    if (tab.dataset.view === v) tab.setAttribute("aria-current", "page"); else tab.removeAttribute("aria-current");
+  }
   for (const id of ["bills", "watch", "stats", "how", "act", "person"]) $("view-" + id).hidden = id !== v;
   if (v === "watch") renderWatchView();
+  if (v === "stats" && statSec === "statNet") renderNet();
   $("filtered").hidden = v !== "bills";
-  // Only the main page remembers its tab; the watchlist and legislator pages have their own.
-  if (!PRESET) try { localStorage.setItem("abt:view", v); } catch (err) {}
 }
 
 function syncControls() {
   $("q").value = state.q;
-  for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).value = state[id];
+  for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party", "area", "changed"]) $(id).value = state[id];
   for (const id of ["whoCos"]) $(id).checked = state[id];
   $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
@@ -2114,7 +2282,8 @@ function wire() {
   });
   let timer;
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
-  for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
+  for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party", "area", "changed"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
+  $("csv").addEventListener("click", downloadCsv);
   // The law box matches any law whose name contains the typed text (3+ characters),
   // so "cannabis" finds the Cannabis Law and "conservation" the Environmental Conservation Law.
   let lawTimer;
@@ -2144,6 +2313,15 @@ function wire() {
   });
   $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("click", (e) => {
+    const ps = e.target.closest("[data-panelstance]");
+    if (ps) {
+      e.preventDefault(); e.stopPropagation();
+      const b = BILLS[+ps.dataset.idx];
+      setPanelStance(b, ps.dataset.panelstance);
+      const box = ps.closest(".next");
+      if (box) box.outerHTML = nextSteps(b);
+      return;
+    }
     const s = e.target.closest(".stance");
     if (s) {
       e.preventDefault(); e.stopPropagation();
@@ -2162,6 +2340,8 @@ function wire() {
     try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
   });
   window.addEventListener("hashchange", () => { if (openFromHash()) { showView("bills"); render(); openOne(); } });
+  // Back and Forward between tabs.
+  window.addEventListener("popstate", () => { const h = location.hash.slice(1); if (VIEWS.includes(h) || !h) showView(h || "bills", false); });
   // Copy an email: one bill (button on its card) or several bills for the same person.
   const copyText = async (btn, text) => {
     try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
@@ -2210,6 +2390,13 @@ function wire() {
   $("statTopic").addEventListener("change", renderStats);
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
+  $("myReps").addEventListener("submit", (e) => { e.preventDefault(); const a = $("repAddr").value.trim(); if (a) lookUpReps(a); });
+  $("myReps").addEventListener("change", (e) => { if (e.target.id === "repS" || e.target.id === "repA") setReps($("repS").value, $("repA").value); });
+  $("myReps").addEventListener("click", (e) => {
+    if (e.target.id !== "repReset") return;
+    try { localStorage.removeItem(REPS_STORE); } catch (err) {}
+    renderMyReps(); renderOpenNow(); render();
+  });
   $("statNet").addEventListener("change", (e) => {
     if (e.target.matches("[data-nethouse]")) netHouse = e.target.value;
     else if (e.target.matches("[data-netperiod]")) netPeriod = e.target.value;
@@ -2233,7 +2420,7 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda] = r;
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -2246,6 +2433,7 @@ function decode(raw) {
       title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates,
       partyCount: Array.isArray(parties) ? parties : [0, 0],
       parties: Array.isArray(parties) ? (parties[0] && parties[1] ? "DR" : parties[0] ? "D" : parties[1] ? "R" : "") : parties || "",
+      agenda: (agenda || []).map(([c, when]) => ({ committee: str(c), when })),
       votes: (votes || []).map(([house, kind, cm, date, yes, no, ny]) => ({
         house, kind, committee: str(cm), date: day(date), yes, no, notYes: new Map(ny.map(([m, code]) => [T[m], code])),
       })),
@@ -2306,13 +2494,6 @@ function setupLegislators(raw) {
   $("whoOptions").innerHTML = LEGS.map((L) => `<option value="${esc(L.label)}"></option>`).join("");
 }
 
-function floorVotes(L) {
-  let n = 0, no = 0, away = 0;
-  for (const b of BILLS) for (const v of b.votes) if (v.kind === "F" && v.house === L.house) {
-    const x = voteOf(v, L); if (!x) continue; n++; if (x === "No") no++; else if (x === "Excused" || x === "Absent") away++;
-  }
-  return n ? ` Floor votes: ${num(n)}, voted no on ${num(no)}${away ? `, didn't vote on ${num(away)}` : ""}.` : "";
-}
 
 function openOne() {
   const el = document.querySelector(`#list .bill[data-idx="${ONE}"]`);
@@ -2336,7 +2517,7 @@ function renderPerson(L) {
       <p>${[L.party, `${house} District ${L.district}`, since].filter(Boolean).map(esc).join(" · ")}</p>
       ${chairs.length ? `<p><b>Chairs:</b> ${chairs.map(esc).join(", ")}</p>` : ""}
       ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
-      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.${floorVotes(L)}</p>
+      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.</p>
       <p>${reach}</p>
       <p><a href="${esc(BASE || "./")}">All bills</a></p>
     </div>`;
@@ -2389,6 +2570,12 @@ function hydrate(raw) {
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.house === k).length)})</option>`).join("");
   $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => `<option value="${esc(c)}">${esc((COMM_LABELS[c] || c).replace(/ And /g, " and "))} (${num(n)})</option>`).join("");
+  $("area").innerHTML = `<option value="">Anywhere</option>` + Object.entries(AREAS)
+    .map(([k, a]) => `<option value="${k}">${esc(a.label)} (${num(BILLS.filter((b) => a.re.test(`${b.title} ${b.summary}`)).length)})</option>`).join("");
+  $("changed").innerHTML = `<option value="">Any time</option>` + Object.entries(CHANGED)
+    .filter(([k]) => k !== "visit" || LAST_VISIT).map(([k, c]) => `<option value="${k}">${esc(c.label())} (${num(BILLS.filter(c.test).length)})</option>`).join("");
+  $("changedField").hidden = !raw.current;
+  if (!raw.current) state.changed = "";
   $("hist").innerHTML = `<option value="">Any history</option>` + Object.entries(HIST_FILTERS)
     .filter(([, f]) => !f.past || !raw.current)
     .map(([k, f]) => `<option value="${k}">${esc(f.label)} (${num(BILLS.filter(f.test).length)})</option>`).join("");
@@ -2427,15 +2614,16 @@ function hydrate(raw) {
   }
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
+  // The address says which tab to open; a plain link opens Bills.
   let view = "bills";
-  try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
-  if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (PRESET?.watch || SHARED) view = "watch";
-  if (["stats", "how", "act", "watch", "person"].includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (VIEWS.includes(location.hash.slice(1))) view = location.hash.slice(1);
+  if (!DATA.current) for (const v of ["watch", "act"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true;
   if (PRESET?.who ? ["watch", "stats", "how"].includes(view) : view === "person") view = "bills";
   // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
-  showView(view);
+  showView(view, false);
+  renderMyReps();
   renderOpenNow();
   // The current page draws its network live; past pages carry one worked out by the build.
   $("statNetBtn").hidden = !((DATA.current && LEGS.length) || DATA.network);

@@ -17,6 +17,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `fetch_party_history.py` (run by hand; rarely changes) records the party of every current and
   former legislator by seat, from the Open States people archive, into `data/seat_parties.json`,
   so party comparisons cover past sessions too.
+- `fetch_agendas.py SESSION` downloads Senate committee agendas (which bills each committee takes
+  up, and when) into `data/agendas_SESSION.json`, so bills show an upcoming committee meeting.
+  The Assembly doesn't publish agendas through the API.
 - `fetch_old_outcomes.py` (run once) saves how far each 2009–2015 bill got into
   `data/old_outcomes.json.gz`, so bill histories show outcomes before the full downloads begin.
 - On GitHub Pages each current legislator also has a page filtered to their bills, at
