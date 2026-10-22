@@ -473,7 +473,6 @@ table.oc th { vertical-align: bottom; }
         <button class="tab" role="tab" type="button" data-v="stage">Stage</button>
         <button class="tab" role="tab" type="button" data-v="topic">Topic</button>
         <button class="tab" role="tab" type="button" data-v="comm">Committee</button>
-        <button class="tab" role="tab" type="button" data-v="time">Timeline</button>
         <button class="tab" role="tab" type="button" data-v="sessions">Sessions</button>
       </div>
       <div id="chartBody"></div>
@@ -1116,39 +1115,6 @@ function chartComm() {
   return `<p class="chart-cap">The 12 busiest policy committees for the current filters (Rules, Finance and Ways and Means left out). S = Senate, A = Assembly.</p>${legend()}${stackRows(groups, "comm", (k) => state.comm === k)}`;
 }
 
-function monthBars(months, counts, color, label) {
-  const W = 440, H = 96, L = 36, R = 6, T = 14, B = 16;
-  const max = Math.max(1, ...months.map((m) => counts[m]));
-  const step = Math.pow(10, Math.floor(Math.log10(max)));
-  const tick = [1, 2, 2.5, 5, 10].map((f) => f * step).find((s) => max / s <= 3);
-  const top = Math.ceil(max / tick) * tick;
-  const y = (v) => T + (H - T - B) * (1 - v / top);
-  const bw = (W - L - R) / months.length;
-  let g = `<text x="${L}" y="9" style="font-weight:600">${label}</text>`;
-  for (let v = 0; v <= top; v += tick) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${num(v)}</text>`;
-  months.forEach((m, i) => {
-    const x = L + i * bw, v = counts[m];
-    if (v) g += `<rect x="${x + 1.5}" y="${y(v)}" width="${bw - 3}" height="${y(0) - y(v)}" fill="${color}"><title>${m}: ${num(v)}</title></rect>`;
-    const mo = +m.slice(5);
-    if (mo === 1 || mo === 7) g += `<text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${mo === 1 ? "Jan " + m.slice(0, 4) : "Jul"}</text>`;
-  });
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label} by month">${g}</svg>`;
-}
-
-function chartTime() {
-  const months = [];
-  for (const y of [DATA.session, DATA.session + 1]) for (let m = 1; m <= 12; m++) months.push(`${y}-${String(m).padStart(2, "0")}`);
-  const intro = Object.fromEntries(months.map((m) => [m, 0])), signed = { ...intro };
-  for (const b of BILLS) {
-    if (!matches(b)) continue;
-    if (b.firstMonth in intro) intro[b.firstMonth]++;
-    if (b.signedMonth in signed) signed[b.signedMonth]++;
-  }
-  return `<p class="chart-cap">Bills introduced and bills signed each month of the session, for the current filters. Each chart has its own scale.</p>
-    ${monthBars(months, intro, "var(--navy)", "Introduced")}
-    ${monthBars(months, signed, "var(--signed)", "Signed into law")}`;
-}
-
 function chartSessions() {
   const t = state.topics.size === 1 ? [...state.topics][0] : "all";
   const rows = DATA.sessions.map(({ session }) => {
@@ -1169,7 +1135,7 @@ function chartSessions() {
 
 function renderChart() {
   for (const b of document.querySelectorAll("#chartTabs .tab")) b.setAttribute("aria-selected", b.dataset.v === chartView);
-  $("chartBody").innerHTML = { stage: chartStage, topic: chartTopic, comm: chartComm, time: chartTime, sessions: chartSessions }[chartView]();
+  $("chartBody").innerHTML = { stage: chartStage, topic: chartTopic, comm: chartComm, sessions: chartSessions }[chartView]();
 }
 
 // Every filter in effect, as removable chips above the results, so none is ever out of sight.
@@ -1657,7 +1623,7 @@ function hydrate(raw) {
     $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
   }
-  try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "time", "sessions"].includes(v)) chartView = v; } catch (err) {}
+  try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "sessions"].includes(v)) chartView = v; } catch (err) {}
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
   let view = "bills";
