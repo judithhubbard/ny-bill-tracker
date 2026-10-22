@@ -241,7 +241,10 @@ table.oc th { vertical-align: bottom; }
 .sortby { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
 .sortby select { width: auto; padding: 4px 8px; font-size: 13px; }
 .resultbar { align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-top: 8px; }
-.resultbar .q { flex: 1 1 240px; min-width: 0; width: auto; }
+.resultbar { row-gap: 10px; padding-bottom: 8px; }
+.resultbar .q { flex: 1 1 100%; min-width: 0; width: auto; }
+.resultbar #count { font-size: 14px; }
+.resultbar .sortby { margin-left: auto; gap: 8px; }
 
 /* Stage list in the sidebar */
 .pg { display: grid; gap: 1px; }
