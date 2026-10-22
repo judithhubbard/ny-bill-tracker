@@ -1,0 +1,775 @@
+<title>Albany Bill Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one working column. Session header, then the stage pipeline as clickable counts,
+   filters, then a paged list of bills with a six-step progress track on each row. */
+:root {
+  --paper: #f6f8fb;
+  --sheet: #ffffff;
+  --ink: #14213d;
+  --ink-2: #4a5878;
+  --rule: #d9e0ec;
+  --navy: #1d3b78;
+  --gold: #c8921a;
+  --gold-soft: #f6ead0;
+  --signed: #1f7a4d;
+  --signed-soft: #dcefe4;
+  --veto: #b3372b;
+  --veto-soft: #f6dedb;
+  --pip-off: #e3e8f1;
+  --chip: #eef2f8;
+  --focus: #3a6fd8;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1626; --sheet: #162036; --ink: #e6ebf5; --ink-2: #a3b0c9; --rule: #2a3754;
+    --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628;
+    --veto: #ee7d70; --veto-soft: #3d1f1d; --pip-off: #26324b; --chip: #1d2944; --focus: #8fb0f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1626; --sheet: #162036; --ink: #e6ebf5; --ink-2: #a3b0c9; --rule: #2a3754;
+  --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628;
+  --veto: #ee7d70; --veto-soft: #3d1f1d; --pip-off: #26324b; --chip: #1d2944; --focus: #8fb0f0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 22px; }
+a { color: var(--navy); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+header { display: grid; gap: 4px; }
+.eyebrow { font: 600 12px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--display); font-stretch: 80%; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.sub { color: var(--ink-2); margin: 4px 0 0; max-width: 70ch; }
+.sub b { color: var(--ink); font-weight: 600; }
+
+/* Pipeline */
+.pipeline { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); overflow: hidden; }
+.stage { appearance: none; border: 0; border-right: 1px solid var(--rule); background: transparent; color: inherit; text-align: left; padding: 12px 12px 10px; cursor: pointer; display: grid; gap: 2px; font: inherit; min-width: 0; }
+.stage:last-child { border-right: 0; }
+.stage:hover { background: var(--chip); }
+.stage[aria-pressed="true"] { background: var(--navy); color: var(--sheet); }
+.stage[aria-pressed="true"] .stage-label { color: var(--sheet); }
+.stage-n { font: 700 24px/1.1 var(--display); font-stretch: 85%; font-variant-numeric: tabular-nums; }
+.stage-label { font-size: 12px; color: var(--ink-2); line-height: 1.25; }
+.stage[data-k="3"] .stage-n, .stage[data-k="4"] .stage-n { color: var(--gold); }
+.stage[data-k="5"] .stage-n { color: var(--signed); }
+.stage[data-k="6"] .stage-n { color: var(--veto); }
+.stage[aria-pressed="true"] .stage-n { color: var(--sheet); }
+
+/* Topics */
+.topics { display: flex; flex-wrap: wrap; gap: 6px; }
+.topic { appearance: none; border: 1px solid var(--rule); background: var(--sheet); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: 600 13px/1.2 var(--body); cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; }
+.topic .c { font: 500 11px var(--mono); color: var(--ink-2); }
+.topic:hover { border-color: var(--navy); }
+.topic[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); color: var(--sheet); }
+.topic[aria-pressed="true"] .c { color: var(--sheet); opacity: .8; }
+
+/* Filters */
+.filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.filters .wide { grid-column: span 2; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font: 600 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+input[type="search"], select { width: 100%; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 5px; padding: 8px 10px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 13px; color: var(--ink-2); }
+.toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.toggles .spacer { flex: 1; }
+.reset { appearance: none; background: none; border: 0; color: var(--navy); font: 600 13px var(--body); cursor: pointer; padding: 0; text-decoration: underline; }
+
+.resultbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-2); border-bottom: 2px solid var(--ink); padding-bottom: 6px; }
+.resultbar b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Bill rows */
+.list { display: grid; }
+.bill { border-bottom: 1px solid var(--rule); }
+.bill > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 116px minmax(0, 1fr) 150px; gap: 14px; padding: 12px 4px; align-items: start; }
+.bill > summary::-webkit-details-marker { display: none; }
+.bill > summary:hover { background: var(--sheet); }
+.nums { display: grid; gap: 1px; font: 700 13px/1.35 var(--mono); }
+.nums .other { font-weight: 500; color: var(--ink-2); }
+.main { min-width: 0; display: grid; gap: 4px; }
+.title { font-weight: 600; line-height: 1.35; }
+.meta { font-size: 12.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: 11px; font-weight: 600; background: var(--chip); color: var(--ink-2); border-radius: 3px; padding: 1px 6px; }
+.tag.env { background: var(--signed-soft); color: var(--signed); }
+.status { display: grid; gap: 5px; justify-items: start; }
+.track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; width: 100%; }
+.pip { height: 6px; border-radius: 1px; background: var(--pip-off); }
+.pip.on { background: var(--navy); }
+.pip.on.gold { background: var(--gold); }
+.pip.on.ok { background: var(--signed); }
+.pip.on.no { background: var(--veto); }
+.st { font-size: 12px; font-weight: 600; line-height: 1.25; }
+.st.s3, .st.s4 { color: var(--gold); }
+.st.s5 { color: var(--signed); }
+.st.s6 { color: var(--veto); }
+.st small { display: block; font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.detail { padding: 2px 4px 18px 134px; display: grid; gap: 12px; font-size: 14px; }
+.detail p { margin: 0; max-width: 78ch; }
+.act { font: 500 12.5px/1.4 var(--mono); color: var(--ink-2); max-width: 78ch; }
+.versions { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.ver { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; display: grid; gap: 6px; min-width: 0; }
+.ver h3 { margin: 0; font: 700 13px var(--mono); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ver h3 a { font: 600 12px var(--body); }
+.ver .who { font-size: 12.5px; color: var(--ink-2); }
+.ver ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; font-size: 12.5px; max-height: 220px; overflow-y: auto; }
+.ver li { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 6px; }
+.ver li time { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.more { justify-self: center; appearance: none; border: 1px solid var(--navy); background: var(--sheet); color: var(--navy); font: 600 14px var(--body); border-radius: 5px; padding: 9px 18px; cursor: pointer; margin-top: 16px; }
+.more:hover { background: var(--chip); }
+.empty, .loading { padding: 40px 4px; color: var(--ink-2); }
+footer { font-size: 12.5px; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 12px; display: grid; gap: 4px; }
+footer p { margin: 0; max-width: 90ch; }
+
+/* Header with stats panel */
+.top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); gap: 28px; align-items: start; }
+.chart { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); padding: 10px 12px 12px; display: grid; gap: 10px; min-width: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--rule); }
+.tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 5px 8px; font: 600 12.5px var(--body); color: var(--ink-2); cursor: pointer; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--navy); }
+.chart-cap { font-size: 12px; color: var(--ink-2); margin: 0; }
+.bars { display: grid; gap: 3px; }
+.barrow { appearance: none; border: 0; background: none; font: inherit; color: inherit; text-align: left; padding: 2px 0; display: grid; grid-template-columns: 128px minmax(0, 1fr) 50px; gap: 8px; align-items: center; cursor: pointer; border-radius: 3px; }
+.barrow:hover { background: var(--chip); }
+.barrow[aria-pressed="true"] .bl { font-weight: 700; color: var(--ink); }
+.bl { font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt { display: flex; height: 12px; min-width: 0; }
+.bt i { display: block; height: 100%; }
+.bv { font: 500 11.5px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.c-com { background: var(--pip-off); }
+.c-floor { background: color-mix(in srgb, var(--navy) 45%, var(--pip-off)); }
+.c-one { background: var(--navy); }
+.c-both { background: var(--gold); }
+.c-law { background: var(--signed); }
+.c-veto { background: var(--veto); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart svg text { fill: var(--ink-2); font: 10px var(--body); }
+.chart svg .grid { stroke: var(--rule); stroke-width: 1; }
+
+/* Session switcher */
+.sessions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.sessions a, .sessions span { font: 600 13px/1 var(--mono); padding: 6px 9px; border-radius: 4px; border: 1px solid var(--rule); text-decoration: none; color: var(--ink-2); background: var(--sheet); }
+.sessions a:hover { border-color: var(--navy); color: var(--navy); }
+.sessions .here { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.sessions .off { opacity: .55; }
+
+/* Outcomes across sessions */
+.outcomes { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.outcomes > summary { cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.outcomes > summary span { font: 400 13px var(--body); color: var(--ink-2); }
+.outcomes-body { padding: 0 14px 14px; display: grid; gap: 10px; }
+.outcomes-body .field { max-width: 280px; }
+.tablewrap { overflow-x: auto; }
+table.oc { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+table.oc th { text-align: right; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+table.oc td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--rule); }
+table.oc th:first-child, table.oc td:first-child { text-align: left; font-family: var(--mono); font-weight: 700; }
+table.oc tr.here td { background: var(--chip); }
+table.oc td.bar { width: 24%; text-align: left; }
+table.oc th { vertical-align: bottom; }
+.sharebar { display: flex; align-items: center; gap: 8px; }
+.sharebar i { display: block; height: 8px; background: var(--signed); border-radius: 1px; }
+.sharebar b { font-weight: 600; font-size: 12.5px; }
+.note { font-size: 12.5px; color: var(--ink-2); margin: 0; max-width: 90ch; }
+
+/* Bill history across sessions */
+.tag.hist { background: var(--gold-soft); color: var(--ink); }
+.tag.veto { background: var(--veto-soft); color: var(--veto); }
+.tag.law { background: var(--signed-soft); color: var(--signed); }
+.lineage { display: grid; gap: 4px; }
+.lineage h4 { margin: 0 0 2px; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.lineage ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--rule); }
+.lineage li { display: grid; grid-template-columns: 70px minmax(0, 150px) minmax(0, 1fr); gap: 10px; padding: 4px 0 4px 12px; font-size: 13px; align-items: baseline; position: relative; }
+.lineage li::before { content: ""; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--pip-off); }
+.lineage li.s5::before { border-color: var(--signed); background: var(--signed); }
+.lineage li.s6::before { border-color: var(--veto); background: var(--veto); }
+.lineage li.s3::before, .lineage li.s4::before { border-color: var(--gold); background: var(--gold); }
+.lineage li.s2::before, .lineage li.s1::before { border-color: var(--navy); }
+.lineage li.this { font-weight: 700; }
+.lineage li.this::before { border-color: var(--ink); }
+.lineage .yr { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.lineage .bn { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.lineage .oc5 { color: var(--signed); font-weight: 600; }
+.lineage .oc6 { color: var(--veto); font-weight: 600; }
+.lineage .oc3, .lineage .oc4 { color: var(--gold); font-weight: 600; }
+
+@media (max-width: 860px) {
+  .top { grid-template-columns: minmax(0, 1fr); }
+  .pipeline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stage:nth-child(4) { border-right: 0; }
+  .stage:nth-child(-n+4) { border-bottom: 1px solid var(--rule); }
+  .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .bill > summary { grid-template-columns: 86px minmax(0, 1fr); }
+  .bill > summary .status { grid-column: 1 / -1; grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 10px; }
+  .detail { padding-left: 4px; }
+  .filters { grid-template-columns: minmax(0, 1fr); }
+  .filters .wide { grid-column: auto; }
+  .lineage li { grid-template-columns: 60px minmax(0, 1fr); }
+  .lineage li .oc { grid-column: 2; }
+  .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stage { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .stage:nth-child(2n) { border-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+
+<div class="wrap">
+  <div class="top">
+    <header>
+      <div class="eyebrow" id="sessionLabel">New York State Legislature</div>
+      <h1>Albany Bill Tracker</h1>
+      <p class="sub" id="subline">Loading bills…</p>
+      <nav class="sessions" id="sessions" aria-label="Legislative sessions"></nav>
+    </header>
+    <section class="chart" aria-label="Statistics">
+      <div class="tabs" role="tablist" id="chartTabs">
+        <button class="tab" role="tab" type="button" data-v="stage">Stage</button>
+        <button class="tab" role="tab" type="button" data-v="topic">Topic</button>
+        <button class="tab" role="tab" type="button" data-v="comm">Committee</button>
+        <button class="tab" role="tab" type="button" data-v="time">Timeline</button>
+        <button class="tab" role="tab" type="button" data-v="sessions">Sessions</button>
+      </div>
+      <div id="chartBody"></div>
+    </section>
+  </div>
+
+  <div class="pipeline" id="pipeline" role="group" aria-label="Filter by stage"></div>
+
+  <details class="outcomes" id="outcomes">
+    <summary>Compare outcomes across sessions <span>Bills introduced, passed, signed and vetoed in each two-year session</span></summary>
+    <div class="outcomes-body">
+      <div class="field">
+        <label for="ocTopic">Topic</label>
+        <select id="ocTopic"><option value="all">All bills</option></select>
+      </div>
+      <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
+      <p class="note">“Passed both houses” counts every bill that got through both the Senate and the Assembly, including those later signed or vetoed. “Became law” divides bills signed by all bills introduced: for 2017–18, 1,027 of 13,223. “Governor signed” divides bills signed by bills signed plus bills vetoed, leaving out bills still waiting for her. The current session is still open, so its numbers will change until December 31.</p>
+    </div>
+  </details>
+
+  <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
+
+  <div class="filters">
+    <div class="field wide">
+      <label for="q">Search</label>
+      <input type="search" id="q" placeholder="Bill number, words in title or summary, sponsor, law" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="law">Law amended</label>
+      <select id="law"><option value="">All laws</option></select>
+    </div>
+    <div class="field">
+      <label for="comm">Committee</label>
+      <select id="comm"><option value="">All committees</option></select>
+    </div>
+    <div class="field wide">
+      <label for="hist">History in other sessions</label>
+      <select id="hist">
+        <option value="">Any history</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="intro">Year introduced</label>
+      <select id="intro"><option value="">Either year</option></select>
+    </div>
+    <div class="field">
+      <label for="sort">Sort by</label>
+      <select id="sort">
+        <option value="recent">Latest action</option>
+        <option value="stage">Furthest along</option>
+        <option value="sessions">Most sessions introduced</option>
+        <option value="num">Bill number</option>
+        <option value="cosp">Most cosponsors</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="toggles">
+    <label><input type="checkbox" id="local"> Local government impact only</label>
+    <label id="senBox"><input type="checkbox" id="sen"> <span id="senLabel">Sponsored by our senator</span></label>
+    <label id="asmBox"><input type="checkbox" id="asm"> <span id="asmLabel">Sponsored by our Assembly member</span></label>
+    <span class="spacer"></span>
+    <button class="reset" id="reset" type="button">Clear filters</button>
+  </div>
+
+  <div class="resultbar"><span id="count"></span><span id="fetched"></span></div>
+  <div class="list" id="list"><div class="loading">Loading bills…</div></div>
+  <button class="more" id="more" type="button" hidden>Show 100 more</button>
+
+  <footer>
+    <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
+    <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
+    <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out. The local-government filter also catches bills amending the Real Property Tax Law or Social Services Law, or mentioning counties or municipalities. The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office. Bills not passed by both houses by December 31 of the second year of the session die and must be reintroduced.</p>
+  </footer>
+</div>
+
+<script type="application/json" id="bill-data"></script>
+<script>
+const LIVE_LABELS = ["In committee", "On the floor", "Passed one house", "Passed both houses", "Delivered to governor", "Signed into law", "Vetoed"];
+const FINAL_LABELS = ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses", "Delivered to governor", "Signed into law", "Vetoed"];
+const PAGE = 100;
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "hist", "intro", "sort", "local", "sen", "asm"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", hist: "", intro: "", sort: "recent", local: false, sen: false, asm: false, shown: PAGE });
+const state = blank();
+let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtDate = (d) => {
+  if (!d) return "";
+  const [y, m, day] = d.split("-").map(Number);
+  return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
+const num = (n) => n.toLocaleString("en-US");
+const span = (s) => `${s}–${String(s + 1).slice(2)}`;
+
+function store(k, v) { try { localStorage.setItem(`abt:${DATA.session}:${k}`, JSON.stringify(v)); } catch (e) {} }
+function recall(k) { try { const v = localStorage.getItem(`abt:${DATA.session}:${k}`); return v == null ? null : JSON.parse(v); } catch (e) { return null; } }
+
+function billUrl(p, session = DATA.session) {
+  return `https://www.nysenate.gov/legislation/bills/${session}/${p.replace(/[A-Z]$/, "")}`;
+}
+
+// Outcome wording for a bill in any session: finished sessions say "died", the open one doesn't.
+function outcomeLabel(stage, session, chapter, veto) {
+  if (stage === -2) return "Withdrawn by sponsor";
+  if (stage < 0) return "Outcome not loaded";
+  if (stage === 5 && chapter) return `Signed, Chapter ${chapter}`;
+  if (stage === 6 && veto) return `Vetoed, Memo ${veto}`;
+  return (session === LATEST ? LIVE_LABELS : FINAL_LABELS)[stage];
+}
+
+const rankOf = (s) => [0, 1, 2, 3, 4, 6, 5][s] ?? -1; // stage -> how far it got (vetoed below signed)
+
+const HIST_FILTERS = {
+  new: { label: "New this session (no earlier version)", test: (b) => !b.earlier.length },
+  reintro: { label: "Reintroduced from an earlier session", test: (b) => b.earlier.length > 0 },
+  prevOne: { label: "Earlier version passed one house at most", test: (b) => b.earlier.some((e) => e[2] === 2) && !b.earlier.some((e) => e[2] >= 3) },
+  prevBoth: { label: "Earlier version passed both houses", test: (b) => b.earlier.some((e) => e[2] >= 3) },
+  prevVeto: { label: "Earlier version was vetoed", test: (b) => b.earlier.some((e) => e[2] === 6) },
+  prevLaw: { label: "Earlier version became law", test: (b) => b.earlier.some((e) => e[2] === 5) },
+  later: { label: "Reintroduced in a later session", test: (b) => b.later.length > 0, past: true },
+  laterLaw: { label: "Became law in a later session", test: (b) => b.later.some((e) => e[2] === 5), past: true },
+  laterDied: { label: "Not reintroduced later", test: (b) => !b.later.length && b.stage !== 5, past: true },
+};
+
+function matches(b, skip) {
+  if (skip !== "stage" && state.stage != null && b.stage !== state.stage) return false;
+  if (skip !== "topic" && state.topics.size) {
+    for (const t of state.topics) if (!b.topics.includes(t)) return false;
+  }
+  if (state.law && !b.laws.includes(state.law)) return false;
+  if (state.comm && !b.comms.includes(state.comm)) return false;
+  if (state.local && !b.local) return false;
+  if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
+  if (state.intro && b.intro !== +state.intro) return false;
+  // Checking both sponsor boxes shows bills carried by either one.
+  if ((state.sen || state.asm) && !((state.sen && b.sen) || (state.asm && b.asm))) return false;
+  if (state.q) {
+    const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const w of words) if (!b._hay.includes(w)) return false;
+  }
+  return true;
+}
+
+function sortBills(arr) {
+  const recent = (a, b) => (b.last || "").localeCompare(a.last || "");
+  const by = {
+    recent: (a, b) => recent(a, b) || b.stage - a.stage,
+    stage: (a, b) => rankOf(b.stage) - rankOf(a.stage) || recent(a, b),
+    sessions: (a, b) => b.earlier.length - a.earlier.length || recent(a, b),
+    num: (a, b) => a.sortKey - b.sortKey,
+    cosp: (a, b) => b.cosp - a.cosp,
+  }[state.sort];
+  return arr.sort(by);
+}
+
+function renderPipeline() {
+  const counts = Array(STAGES.length).fill(0);
+  for (const b of BILLS) if (matches(b, "stage")) counts[b.stage]++;
+  $("pipeline").innerHTML = STAGES.map((label, k) =>
+    `<button class="stage" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
+       <span class="stage-n">${num(counts[k])}</span><span class="stage-label">${label}</span></button>`).join("");
+}
+
+function renderTopics() {
+  const counts = {};
+  for (const b of BILLS) if (matches(b, "topic")) for (const t of b.topics) counts[t] = (counts[t] || 0) + 1;
+  $("topics").innerHTML = Object.keys(TOPICS).map((t) =>
+    `<button class="topic" type="button" data-t="${t}" aria-pressed="${state.topics.has(t)}">${esc(TOPICS[t])}<span class="c">${num(counts[t] || 0)}</span></button>`).join("");
+}
+
+function renderOutcomes() {
+  const t = $("ocTopic").value || "all";
+  const pct = (n, d) => (d ? `${((n / d) * 100).toFixed(1)}%` : "–");
+  const rows = DATA.sessions.map(({ session }) => {
+    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
+    return { session, c, share: c[0] ? c[2] / c[0] : 0 };
+  });
+  const max = Math.max(...rows.map((r) => r.share), 0.0001);
+  $("ocTable").innerHTML = `<thead><tr><th>Session</th><th>Bills introduced</th><th>Passed both houses</th><th>Signed into law</th><th>Vetoed</th><th>Became law, as % of bills introduced</th><th>Governor signed, as % of bills she acted on</th></tr></thead>
+    <tbody>${rows.map(({ session, c, share }) => `<tr class="${session === DATA.session ? "here" : ""}">
+      <td>${span(session)}${session === LATEST ? " (open)" : ""}</td><td>${num(c[0])}</td><td>${num(c[1])}</td><td>${num(c[2])}</td><td>${num(c[3])}</td>
+      <td class="bar"><div class="sharebar"><i style="width:${(share / max) * 70}%"></i><b>${pct(c[2], c[0])}</b></div></td>
+      <td>${pct(c[2], c[2] + c[3])}</td></tr>`).join("")}</tbody>`;
+}
+
+function track(b) {
+  const cls = b.stage === 5 ? "ok" : b.stage === 6 ? "no" : b.stage >= 3 ? "gold" : "";
+  const filled = b.stage >= 5 ? 6 : b.stage + 1;
+  return `<div class="track" aria-hidden="true">${[0,1,2,3,4,5].map((i) => `<span class="pip ${i < filled ? "on " + cls : ""}"></span>`).join("")}</div>`;
+}
+
+function statusText(b) {
+  let t = outcomeLabel(b.stage, DATA.session, b.chapter, b.veto);
+  if (b.stage === 2 && b.passedIn) t = `Passed ${b.passedIn}${DATA.current ? "" : " only"}`;
+  if (b.stage === 0 && b.comm) t = `${DATA.current ? "In" : "Died in"} ${b.comm}`;
+  return `<div class="st s${b.stage}">${esc(t)}<small>${fmtDate(b.last)}</small></div>`;
+}
+
+function historyTags(b) {
+  const tags = [];
+  if (b.earlier.length) tags.push(`<span class="tag hist">${b.earlier.length} earlier session${b.earlier.length === 1 ? "" : "s"}</span>`);
+  const vetoed = b.earlier.filter((e) => e[2] === 6).map((e) => e[0]);
+  if (vetoed.length) tags.push(`<span class="tag veto">Vetoed in ${vetoed.join(", ")}</span>`);
+  const law = b.later.find((e) => e[2] === 5);
+  if (law) tags.push(`<span class="tag law">Became law in ${span(law[0])}</span>`);
+  else if (b.later.length) tags.push(`<span class="tag hist">Reintroduced ${b.later.map((e) => span(e[0])).join(", ")}</span>`);
+  return tags.join("");
+}
+
+function verBlock(v) {
+  if (!v) return "";
+  const acts = v.actions.slice().reverse().map((a) => `<li><time>${esc(a[0])}</time><span>${esc(a[1])}</span></li>`).join("");
+  return `<div class="ver">
+    <h3><span>${esc(v.p)}</span><a href="${billUrl(v.p)}" target="_blank" rel="noopener">Bill text and memo ↗</a></h3>
+    <div class="who">${esc(v.sponsor || "No sponsor listed")}${v.cosp ? ` · ${v.cosp} cosponsor${v.cosp === 1 ? "" : "s"}` : ""}</div>
+    <div class="who"><b>${esc(v.statusDesc)}</b>${v.committee ? " · " + esc(v.committee) : ""}</div>
+    <ol>${acts}</ol>
+  </div>`;
+}
+
+function lineage(b) {
+  if (!b.hist.length) return "";
+  const self = [DATA.session, b.nums.join(" / "), b.stage, b.chapter || 0, b.veto || 0, true];
+  const all = [...b.hist, self].sort((x, y) => x[0] - y[0]);
+  return `<div class="lineage"><h4>This bill in other sessions</h4><ol>${all.map((e) => {
+    const [s, nums, st, ch, vt, isSelf] = e;
+    const first = nums.split(" / ")[0];
+    const numHtml = isSelf ? esc(nums) : `<a href="${billUrl(first, s)}" target="_blank" rel="noopener">${esc(nums)}</a>`;
+    return `<li class="s${st}${isSelf ? " this" : ""}"><span class="yr">${span(s)}</span><span class="bn">${numHtml}</span><span class="oc oc${st}">${esc(outcomeLabel(st, s, ch, vt))}${isSelf ? " (this page)" : ""}</span></li>`;
+  }).join("")}</ol></div>`;
+}
+
+function renderList() {
+  const rows = sortBills(BILLS.filter((b) => matches(b)));
+  $("count").innerHTML = `<b>${num(rows.length)}</b> of ${num(BILLS.length)} bills`;
+  const slice = rows.slice(0, state.shown);
+  if (!slice.length) {
+    $("list").innerHTML = `<div class="empty">No bills match these filters. Try removing a topic or clearing the search.</div>`;
+  } else {
+    $("list").innerHTML = slice.map((b, i) => {
+      const [first, second] = b.nums;
+      const tags = b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
+      const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
+      return `<details class="bill" data-i="${i}">
+        <summary>
+          <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}</div>
+          <div class="main">
+            <div class="title">${esc(b.title)}</div>
+            <div class="meta">${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
+            <div class="tags">${tags}</div>
+          </div>
+          <div class="status">${track(b)}${statusText(b)}</div>
+        </summary>
+        <div class="detail"></div>
+      </details>`;
+    }).join("");
+    $("list")._rows = slice;
+  }
+  $("more").hidden = rows.length <= state.shown;
+  $("more").textContent = `Show ${num(Math.min(PAGE, rows.length - state.shown))} more`;
+}
+
+
+// ---- Stats panel ----
+let chartView = "stage";
+const SEGS = [["c-law", "Signed"], ["c-veto", "Vetoed"], ["c-both", "Passed both houses"], ["c-one", "Passed one house"], ["c-com", "Not passed"]];
+const segOf = (s) => (s === 5 ? 0 : s === 6 ? 1 : s === 3 || s === 4 ? 2 : s === 2 ? 3 : 4);
+const legend = () => `<div class="legend">${SEGS.map(([c, l]) => `<span><i class="${c}"></i>${l}</span>`).join("")}</div>`;
+
+function stackRows(groups, keyAttr, pressed) {
+  // groups: [{key, label, segs:[5 counts], total}]
+  const max = Math.max(1, ...groups.map((g) => g.total));
+  return `<div class="bars">${groups.map((g) => `<button class="barrow" type="button" data-${keyAttr}="${esc(g.key)}" aria-pressed="${pressed(g.key)}" title="${esc(g.label)}: ${num(g.total)} bills, ${num(g.segs[0])} signed">
+      <span class="bl">${esc(g.label)}</span>
+      <span class="bt">${g.segs.map((n, i) => n ? `<i class="${SEGS[i][0]}" style="width:${(n / max) * 100}%"></i>` : "").join("")}</span>
+      <span class="bv">${num(g.total)}</span></button>`).join("")}</div>`;
+}
+
+function chartStage() {
+  const counts = Array(7).fill(0);
+  for (const b of BILLS) if (matches(b, "stage")) counts[b.stage]++;
+  const cls = ["c-com", "c-floor", "c-one", "c-both", "c-both", "c-law", "c-veto"];
+  const max = Math.max(1, ...counts);
+  return `<p class="chart-cap">Bills at each stage, for the current filters. Click a bar to filter.</p>
+    <div class="bars">${STAGES.map((l, k) => `<button class="barrow" type="button" data-stage="${k}" aria-pressed="${state.stage === k}">
+      <span class="bl">${l}</span><span class="bt"><i class="${cls[k]}" style="width:${(counts[k] / max) * 100}%"></i></span><span class="bv">${num(counts[k])}</span></button>`).join("")}</div>`;
+}
+
+function grouped(keysOf, labelOf, limit) {
+  const m = new Map();
+  for (const b of BILLS) {
+    for (const k of keysOf(b)) {
+      if (!m.has(k)) m.set(k, { key: k, label: labelOf(k), segs: [0, 0, 0, 0, 0], total: 0 });
+      const g = m.get(k); g.segs[segOf(b.stage)]++; g.total++;
+    }
+  }
+  return [...m.values()].sort((a, b) => b.total - a.total).slice(0, limit);
+}
+
+function chartTopic() {
+  const BILLS_ = BILLS.filter((b) => matches(b, "topic"));
+  const m = Object.keys(TOPICS).map((k) => ({ key: k, label: TOPICS[k], segs: [0, 0, 0, 0, 0], total: 0 }));
+  const idx = Object.fromEntries(m.map((g, i) => [g.key, i]));
+  for (const b of BILLS_) for (const t of b.topics) { const g = m[idx[t]]; g.segs[segOf(b.stage)]++; g.total++; }
+  m.sort((a, b) => b.total - a.total);
+  return `<p class="chart-cap">Bills by topic and how far they got. Click a bar to filter.</p>${legend()}${stackRows(m, "topic", (k) => state.topics.has(k))}`;
+}
+
+function chartComm() {
+  const saved = state.comm; state.comm = "";
+  const groups = grouped((b) => (matches(b) ? b.comms.filter((c) => !/· (Rules|Finance|Ways And Means)$/.test(c)) : []), (k) => k, 12);
+  state.comm = saved;
+  return `<p class="chart-cap">The 12 busiest policy committees for the current filters (Rules, Finance and Ways and Means left out). S = Senate, A = Assembly.</p>${legend()}${stackRows(groups, "comm", (k) => state.comm === k)}`;
+}
+
+function monthBars(months, counts, color, label) {
+  const W = 440, H = 96, L = 36, R = 6, T = 14, B = 16;
+  const max = Math.max(1, ...months.map((m) => counts[m]));
+  const step = Math.pow(10, Math.floor(Math.log10(max)));
+  const tick = [1, 2, 2.5, 5, 10].map((f) => f * step).find((s) => max / s <= 3);
+  const top = Math.ceil(max / tick) * tick;
+  const y = (v) => T + (H - T - B) * (1 - v / top);
+  const bw = (W - L - R) / months.length;
+  let g = `<text x="${L}" y="9" style="font-weight:600">${label}</text>`;
+  for (let v = 0; v <= top; v += tick) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 4}" y="${y(v) + 3}" text-anchor="end">${num(v)}</text>`;
+  months.forEach((m, i) => {
+    const x = L + i * bw, v = counts[m];
+    if (v) g += `<rect x="${x + 1.5}" y="${y(v)}" width="${bw - 3}" height="${y(0) - y(v)}" fill="${color}"><title>${m}: ${num(v)}</title></rect>`;
+    const mo = +m.slice(5);
+    if (mo === 1 || mo === 7) g += `<text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${mo === 1 ? "Jan " + m.slice(0, 4) : "Jul"}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${label} by month">${g}</svg>`;
+}
+
+function chartTime() {
+  const months = [];
+  for (const y of [DATA.session, DATA.session + 1]) for (let m = 1; m <= 12; m++) months.push(`${y}-${String(m).padStart(2, "0")}`);
+  const intro = Object.fromEntries(months.map((m) => [m, 0])), signed = { ...intro };
+  for (const b of BILLS) {
+    if (!matches(b)) continue;
+    if (b.firstMonth in intro) intro[b.firstMonth]++;
+    if (b.signedMonth in signed) signed[b.signedMonth]++;
+  }
+  return `<p class="chart-cap">Bills introduced and bills signed each month of the session, for the current filters. Each chart has its own scale.</p>
+    ${monthBars(months, intro, "var(--navy)", "Introduced")}
+    ${monthBars(months, signed, "var(--signed)", "Signed into law")}`;
+}
+
+function chartSessions() {
+  const t = state.topics.size === 1 ? [...state.topics][0] : "all";
+  const rows = DATA.sessions.map(({ session }) => {
+    const c = (DATA.outcomes[session] || {})[t] || [0, 0, 0, 0];
+    return { session, c, share: c[0] ? c[2] / c[0] : 0 };
+  });
+  const max = Math.max(1, ...rows.map((r) => r.c[0]));
+  return `<p class="chart-cap">Every session's bills${t === "all" ? "" : ` on ${esc(TOPICS[t])}`} and how they ended. ${t === "all" ? "Select one topic to narrow this view." : ""}</p>${legend()}
+    <div class="bars">${rows.map(({ session, c, share }) => {
+      const segs = [c[2], c[3], c[1] - c[2] - c[3], 0, c[0] - c[1]];
+      return `<div class="barrow" style="cursor:default" title="${num(c[0])} bills, ${num(c[2])} signed (${(share * 100).toFixed(1)}%)">
+        <span class="bl">${span(session)}${session === DATA.session ? " ◂" : ""}</span>
+        <span class="bt">${segs.map((n, i) => n > 0 ? `<i class="${SEGS[i][0]}" style="width:${(n / max) * 100}%"></i>` : "").join("")}</span>
+        <span class="bv">${(share * 100).toFixed(1)}%</span></div>`;
+    }).join("")}</div><p class="chart-cap">The percentage is the share of all bills introduced that became law. Only a single selected topic applies to this view; other filters don't.</p>`;
+}
+
+function renderChart() {
+  for (const b of document.querySelectorAll("#chartTabs .tab")) b.setAttribute("aria-selected", b.dataset.v === chartView);
+  $("chartBody").innerHTML = { stage: chartStage, topic: chartTopic, comm: chartComm, time: chartTime, sessions: chartSessions }[chartView]();
+}
+
+function render() {
+  renderChart();
+  renderPipeline();
+  renderTopics();
+  renderList();
+  const saved = {};
+  for (const k of FILTER_KEYS) saved[k] = k === "topics" ? [...state.topics] : state[k];
+  store("filters", saved);
+}
+
+function fillDetail(el) {
+  const d = el.querySelector(".detail");
+  if (d.dataset.done) return;
+  d.dataset.done = "1";
+  const b = $("list")._rows[+el.dataset.i];
+  d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
+    ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
+    ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
+    ${lineage(b)}
+    <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
+}
+
+function syncControls() {
+  $("q").value = state.q;
+  for (const id of ["law", "comm", "hist", "intro", "sort"]) $(id).value = state[id];
+  for (const id of ["local", "sen", "asm"]) $(id).checked = state[id];
+}
+
+function wire() {
+  $("pipeline").addEventListener("click", (e) => {
+    const btn = e.target.closest(".stage"); if (!btn) return;
+    const k = +btn.dataset.k; state.stage = state.stage === k ? null : k; state.shown = PAGE; render();
+  });
+  $("topics").addEventListener("click", (e) => {
+    const btn = e.target.closest(".topic"); if (!btn) return;
+    const t = btn.dataset.t; state.topics.has(t) ? state.topics.delete(t) : state.topics.add(t); state.shown = PAGE; render();
+  });
+  let timer;
+  $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
+  for (const id of ["law", "comm", "hist", "intro", "sort"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
+  for (const id of ["local", "sen", "asm"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  $("reset").addEventListener("click", () => { Object.assign(state, blank()); syncControls(); render(); });
+  $("more").addEventListener("click", () => { state.shown += PAGE; renderList(); });
+  $("list").addEventListener("toggle", (e) => { if (e.target.open) fillDetail(e.target); }, true);
+  $("ocTopic").addEventListener("change", renderOutcomes);
+  $("chartTabs").addEventListener("click", (e) => {
+    const tab = e.target.closest(".tab"); if (!tab) return;
+    chartView = tab.dataset.v; try { localStorage.setItem("abt:chart", chartView); } catch (err) {}
+    renderChart();
+  });
+  $("chartBody").addEventListener("click", (e) => {
+    const r = e.target.closest("button.barrow"); if (!r) return;
+    if (r.dataset.stage != null) { const k = +r.dataset.stage; state.stage = state.stage === k ? null : k; }
+    else if (r.dataset.topic) { const t = r.dataset.topic; state.topics.has(t) ? state.topics.delete(t) : state.topics.add(t); }
+    else if (r.dataset.comm) { state.comm = state.comm === r.dataset.comm ? "" : r.dataset.comm; $("comm").value = state.comm; }
+    state.shown = PAGE; render();
+  });
+}
+
+// Unpack the compact embedded data (see build_data.py) into one object per bill.
+function decode(raw) {
+  const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
+  const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+  raw.bills = raw.rows.map((r) => {
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist] = r;
+    const v = vers.map(([p, sp, c, sd, cm, acts]) => ({
+      p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm),
+      actions: acts.map(([dt, t]) => [day(dt), T[t]]),
+    }));
+    return {
+      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist,
+      earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
+      laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
+      passedIn: passedIn || null, last: day(last),
+      local: !!(flags & 1), sen: !!(flags & 2), asm: !!(flags & 8), budget: !!(flags & 4),
+      nums: v.map((x) => x.p), sponsors: v.map((x) => x.sponsor).filter(Boolean), vers: v,
+    };
+  });
+  delete raw.rows; delete raw.strings;
+  return raw;
+}
+
+function hydrate(raw) {
+  DATA = raw; TOPICS = raw.topics;
+  LATEST = Math.max(...raw.sessions.map((s) => s.session));
+  STAGES = raw.current ? LIVE_LABELS : FINAL_LABELS;
+  BILLS = raw.bills.map((b, idx) => {
+    b.idx = idx;
+    b._hay = [b.title, b.summary, b.law, ...b.sponsors, ...b.nums, ...b.nums.map((n) => n.replace(/[A-Z]$/, ""))].join(" ").toLowerCase();
+    b.sortKey = (b.nums[0][0] === "S" ? 0 : 1e6) + parseInt(b.nums[0].slice(1), 10);
+    let first = "9999", signed = null;
+    for (const v of b.vers) for (const [d, txt] of v.actions) {
+      if (d < first) first = d;
+      if (!signed && txt.startsWith("SIGNED CHAP")) signed = d;
+    }
+    b.firstMonth = first.slice(0, 7); b.signedMonth = signed ? signed.slice(0, 7) : null;
+    return b;
+  });
+
+  document.title = raw.current ? "Albany Bill Tracker" : `Albany Bill Tracker ${span(raw.session)}`;
+  $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? "" : " (final)"}`;
+  $("subline").innerHTML = raw.current
+    ? `Every Senate and Assembly bill in the session, with matching bills from the two houses paired. <b>Choose a stage or topic</b> to narrow the list, and open a bill to see its history in each house and in earlier sessions.`
+    : `How every bill in the ${span(raw.session)} session ended, with matching bills from the two houses paired. Open a bill to see whether it came back in a later session and what happened to it.`;
+  $("fetched").textContent = `Data as of ${raw.fetched}`;
+  $("sessions").innerHTML = raw.sessions.map(({ session, url }) => {
+    const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
+    if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
+    if (!url) return `<span class="off">${label}</span>`;
+    const external = /^https?:/.test(url) ? ` target="_blank" rel="noopener"` : "";
+    return `<a href="${esc(url)}"${external}>${label}</a>`;
+  }).join("");
+
+  const opt = (v, n) => `<option value="${esc(v)}">${esc(v)} (${num(n)})</option>`;
+  $("law").innerHTML = `<option value="">All laws</option>` + raw.lawList.map(([l, n]) => opt(l, n)).join("");
+  $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => opt(c, n)).join("");
+  $("hist").innerHTML = `<option value="">Any history</option>` + Object.entries(HIST_FILTERS)
+    .filter(([, f]) => !f.past || !raw.current)
+    .map(([k, f]) => `<option value="${k}">${esc(f.label)} (${num(BILLS.filter(f.test).length)})</option>`).join("");
+  const years = [raw.session, raw.session + 1];
+  $("intro").innerHTML = `<option value="">Either year</option>` + years.map((y) =>
+    `<option value="${y}">${y}${y === raw.session ? " (first year)" : " (second year)"} (${num(BILLS.filter((b) => b.intro === y).length)})</option>`).join("");
+  $("ocTopic").innerHTML = `<option value="all">All bills</option>` + Object.entries(TOPICS).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join("");
+
+  const names = raw.delegation || {};
+  const join = (title, list) => list.map((n) => `${title} ${n}`).join(" or ");
+  $("senLabel").textContent = `Sponsored by ${join("Sen.", names.SENATE || [])}`;
+  $("asmLabel").textContent = `Sponsored by ${join("Asm.", names.ASSEMBLY || [])}`;
+  $("senBox").hidden = !names.SENATE?.length;
+  $("asmBox").hidden = !names.ASSEMBLY?.length;
+
+  const saved = recall("filters");
+  if (saved) {
+    for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
+    if (state.hist && !(state.hist in HIST_FILTERS)) state.hist = "";
+    if (!names.SENATE?.length) state.sen = false;
+    if (!names.ASSEMBLY?.length) state.asm = false;
+    syncControls();
+  }
+  try { const v = localStorage.getItem("abt:chart"); if (["stage", "topic", "comm", "time", "sessions"].includes(v)) chartView = v; } catch (err) {}
+  renderOutcomes();
+  render();
+}
+
+wire();
+try {
+  hydrate(decode(JSON.parse($("bill-data").textContent)));
+} catch (err) {
+  $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;
+  $("subline").textContent = "Bill data unavailable.";
+}
+</script>

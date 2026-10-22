@@ -1,0 +1,7 @@
+# Fresh downloads are rebuilt every run; only past sessions are kept, gzipped.
+data/*.json
+data/*.tmp
+site/
+_site/
+__pycache__/
+.DS_Store

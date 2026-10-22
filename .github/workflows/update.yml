@@ -1,0 +1,51 @@
+name: Update bill tracker
+
+on:
+  schedule:
+    - cron: "0 10 * * *"   # every day at 10:00 UTC (6 a.m. Eastern in summer, 5 a.m. in winter)
+  workflow_dispatch:        # "Run workflow" button on the Actions tab
+  push:
+    branches: [main]
+
+env:
+  # The session to re-download each day. Past sessions are stored in data/*.json.gz.
+  # When a new session starts (January 2027), see README.md.
+  CURRENT_SESSION: "2025"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download current session from Open Legislation
+        env:
+          NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
+        run: python3 fetch_bills.py "$CURRENT_SESSION"
+      - name: Build pages
+        run: python3 build_data.py --github _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
