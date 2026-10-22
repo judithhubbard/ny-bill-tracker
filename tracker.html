@@ -1761,6 +1761,7 @@ function fillDetail(el) {
 
 function showView(v) {
   if (!["bills", "watch", "stats", "how", "act"].includes(v)) v = "bills";
+  if (PRESET?.who && ["watch", "stats", "how"].includes(v)) v = "bills";
   for (const tab of document.querySelectorAll(".view-tab")) tab.setAttribute("aria-selected", tab.dataset.view === v);
   for (const id of ["bills", "watch", "stats", "how", "act"]) $("view-" + id).hidden = id !== v;
   if (v === "watch") renderWatchView();
@@ -2080,8 +2081,11 @@ function hydrate(raw) {
     $("who").hidden = true;
     $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
-    // The watchlist lives on the main pages; here it would only mix in unrelated bills.
-    document.querySelector('.view-tab[data-view="watch"]').hidden = true;
+    // A legislator's page is only about them: no watchlist, statistics for all bills, or
+    // general guidance; Weigh in becomes just their bills open for comment.
+    for (const v of ["watch", "stats", "how"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true;
+    document.querySelector('.view-tab[data-view="act"]').textContent = "Open for comment";
+    for (const sec of document.querySelectorAll("#view-act > .act-sec")) if (sec.id !== "openNow") sec.hidden = true;
   }
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
   if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
@@ -2089,7 +2093,7 @@ function hydrate(raw) {
   try { view = localStorage.getItem("abt:view") || "bills"; } catch (err) {}
   if (["stats", "how", "act", "watch"].includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (PRESET?.watch || SHARED) view = "watch";
-  if (PRESET?.who && view === "watch") view = "bills";
+  if (PRESET?.who && ["watch", "stats", "how"].includes(view)) view = "bills";
   // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
   if (PRESET?.watch) document.querySelector(".views").hidden = true;
   showView(view);
