@@ -231,6 +231,23 @@ def load_session(session):
                 topics.insert(0, "env")
 
         dates = [a["date"] for b in live for a in b["actions"]]
+
+        def when(pred, mode="last"):
+            ds = sorted({a["date"] for b in live for a in b["actions"] if pred(a["text"])})
+            if not ds:
+                return ""
+            return {"first": ds[0], "last": ds[-1], "all": ";".join(ds)}[mode]
+
+        # Key dates in the bill's path, across both houses' versions ("" if it never happened).
+        key_dates = [
+            when(lambda t: t.startswith(("ADVANCED TO THIRD READING", "ORDERED TO THIRD READING")), "first"),
+            when(lambda t: t in ("PASSED SENATE", "REPASSED SENATE"), "all"),
+            when(lambda t: t in ("PASSED ASSEMBLY", "REPASSED ASSEMBLY"), "all"),
+            when(lambda t: t.startswith("DIED IN")),
+            when(lambda t: t == "DELIVERED TO GOVERNOR"),
+            when(lambda t: t.startswith("SIGNED CHAP")),
+            when(lambda t: t.startswith("VETOED MEMO")),
+        ]
         first = min(dates + [b["publishDate"] for b in live if b["publishDate"]], default=None)
         last = max(dates, default=lead["status"]["actionDate"])
         prog = next(((b["programInfo"] or {}).get("name") for b in live if b["programInfo"]), None)
@@ -264,6 +281,7 @@ def load_session(session):
             "first": first,
             "last": last,
             "cosp": max(b["cosponsorCount"] for b in live),
+            "keyDates": key_dates,
             "vers": [{
                 "p": b["printNo"] + (b["activeVersion"] or ""),
                 "sponsor": b["sponsor"],
@@ -372,7 +390,8 @@ def main():
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
-                         S(r["program"]), S(r["law"]), vers, int((r["first"] or str(session))[:4]), h])
+                         S(r["program"]), S(r["law"]), vers, int((r["first"] or str(session))[:4]), h,
+                         [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]]])
 
         data = {
             "session": session,
@@ -384,6 +403,8 @@ def main():
             "delegation": names,
             "sessions": [{"session": s, "url": urls.get(str(s))} for s in SESSIONS],
             "outcomes": {str(s): summary[s] for s in SESSIONS},
+            # Date of the last floor vote in either house this session.
+            "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
             "rows": rows,
         }

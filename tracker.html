@@ -56,9 +56,15 @@ h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--display); font-stretch: 80%; ma
 .sub b { color: var(--ink); font-weight: 600; }
 
 /* Pipeline */
-.pipeline { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); overflow: hidden; }
-.stage { appearance: none; border: 0; border-right: 1px solid var(--rule); background: transparent; color: inherit; text-align: left; padding: 12px 12px 10px; cursor: pointer; display: grid; gap: 2px; font: inherit; min-width: 0; }
+.pipeline { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 3fr); gap: 10px; }
+.pgroup { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.pgroup h2 { margin: 0; padding: 8px 12px 6px; font: 600 11px/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.pgroup h2 span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.pstages { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.stage { appearance: none; border: 0; border-right: 1px solid var(--rule); background: transparent; color: inherit; text-align: left; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; align-content: start; font: inherit; min-width: 0; }
 .stage:last-child { border-right: 0; }
+.stage-sub { font-size: 11.5px; color: var(--ink-2); line-height: 1.3; }
+.stage[aria-pressed="true"] .stage-sub { color: var(--sheet); opacity: .85; }
 .stage:hover { background: var(--chip); }
 .stage[aria-pressed="true"] { background: var(--navy); color: var(--sheet); }
 .stage[aria-pressed="true"] .stage-label { color: var(--sheet); }
@@ -165,6 +171,21 @@ footer p { margin: 0; max-width: 90ch; }
 .chart svg text { fill: var(--ink-2); font: 10px var(--body); }
 .chart svg .grid { stroke: var(--rule); stroke-width: 1; }
 
+/* Session notice and process explainer */
+.notice { background: var(--gold-soft); border-radius: 6px; padding: 10px 14px; font-size: 14px; max-width: none; margin: 0; }
+.howto { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.howto > summary { cursor: pointer; padding: 10px 14px; font: 700 15px var(--display); font-stretch: 85%; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.howto > summary span { font: 400 13px var(--body); color: var(--ink-2); }
+.howto ol { margin: 0; padding: 0 14px 14px 36px; display: grid; gap: 8px; max-width: 80ch; font-size: 14px; }
+.howto li b { font-weight: 600; }
+
+/* Key dates under each bill */
+.keydates h4 { margin: 0 0 4px; font: 600 11px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.keydates ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
+.keydates li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; }
+.keydates time { font-family: var(--mono); font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.keydates .est { color: var(--gold); font-weight: 600; }
+
 /* Session switcher */
 .sessions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .sessions a, .sessions span { font: 600 13px/1 var(--mono); padding: 6px 9px; border-radius: 4px; border: 1px solid var(--rule); text-decoration: none; color: var(--ink-2); background: var(--sheet); }
@@ -214,9 +235,7 @@ table.oc th { vertical-align: bottom; }
 
 @media (max-width: 860px) {
   .top { grid-template-columns: minmax(0, 1fr); }
-  .pipeline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .stage:nth-child(4) { border-right: 0; }
-  .stage:nth-child(-n+4) { border-bottom: 1px solid var(--rule); }
+  .pipeline { grid-template-columns: minmax(0, 1fr); }
   .filters { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 @media (max-width: 620px) {
@@ -227,9 +246,10 @@ table.oc th { vertical-align: bottom; }
   .filters .wide { grid-column: auto; }
   .lineage li { grid-template-columns: 60px minmax(0, 1fr); }
   .lineage li .oc { grid-column: 2; }
-  .pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .stage { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .pstages { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stage { border-bottom: 1px solid var(--rule); }
   .stage:nth-child(2n) { border-right: 0; }
+  .keydates li { grid-template-columns: 96px minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -255,7 +275,21 @@ table.oc th { vertical-align: bottom; }
     </section>
   </div>
 
-  <div class="pipeline" id="pipeline" role="group" aria-label="Filter by stage"></div>
+  <p class="notice" id="notice" hidden></p>
+
+  <div class="pipeline" id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
+
+  <details class="howto" id="howto">
+    <summary>How a bill becomes law in New York <span>The steps behind the stages above</span></summary>
+    <ol>
+      <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee there. Most bills never get out of committee.</li>
+      <li><b>Floor.</b> When a committee reports a bill, it goes on that house's calendar (“third reading”) to wait for a vote of the full house.</li>
+      <li><b>The other house.</b> A bill that passes one house goes to the other. Most bills have a matching (“same as”) bill in the other house. When the passed bill arrives, the other house usually swaps it in for its own version and votes on it. Both houses have to pass identical text.</li>
+      <li><b>Waiting to be sent.</b> A bill that has passed both houses stays with the Legislature until the governor's office asks for it. Her office requests bills in batches through the rest of the year, and nothing is required of her until then.</li>
+      <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
+      <li><b>The two-year session.</b> Bills carry over from the first year to the second. In January of the second year, bills that passed only one house are sent back to committee in their original house and have to pass again. Any bill that hasn't passed both houses by December 31 of the second year dies and has to be reintroduced with a new number.</li>
+    </ol>
+  </details>
 
   <details class="outcomes" id="outcomes">
     <summary>Compare outcomes across sessions <span>Bills introduced, passed, signed and vetoed in each two-year session</span></summary>
@@ -286,8 +320,8 @@ table.oc th { vertical-align: bottom; }
       <select id="comm"><option value="">All committees</option></select>
     </div>
     <div class="field wide">
-      <label for="progress">Progress this session</label>
-      <select id="progress"><option value="">Any progress</option></select>
+      <label for="progress">Furthest it has gotten this session</label>
+      <select id="progress"><option value="">Any</option></select>
     </div>
     <div class="field wide">
       <label for="hist">History in other sessions</label>
@@ -329,19 +363,32 @@ table.oc th { vertical-align: bottom; }
   <footer>
     <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
     <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
-    <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out. “Passed the Senate” and “Passed the Assembly” include bills that passed in 2025 and were sent back to committee at the start of 2026, when they had to pass again. The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office. Bills not passed by both houses by December 31 of the second year of the session die and must be reintroduced.</p>
+    <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out. The stage boxes show where each bill is now; the “Furthest it has gotten” filter counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays. The sponsor checkboxes appear only for sessions when Sen. Webb or Asm. Kelles was in office. Bills not passed by both houses by December 31 of the second year of the session die and must be reintroduced.</p>
   </footer>
 </div>
 
 <script type="application/json" id="bill-data"></script>
 <script>
-const LIVE_LABELS = ["In committee", "On the floor", "Passed one house", "Passed both houses", "Delivered to governor", "Signed into law", "Vetoed"];
-const FINAL_LABELS = ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses", "Delivered to governor", "Signed into law", "Vetoed"];
+// Stage wording. "live" is the open session; "final" is a finished one.
+// pipe = stage boxes, long = bill status and history, chart = stats panel bars.
+const STAGE_TEXT = {
+  live: {
+    pipe: ["In committee", "Reported to the floor", "Passed one house", "Passed both houses", "On the governor's desk", "Signed into law", "Vetoed"],
+    long: ["In committee", "Reported to the floor", "Passed one house", "Passed both houses, not yet sent to the governor", "On the governor's desk", "Signed into law", "Vetoed"],
+    chart: ["In committee", "On the floor", "Passed one house", "Passed both, not sent", "Governor's desk", "Signed", "Vetoed"],
+  },
+  final: {
+    pipe: ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses", "Sent to the governor", "Signed into law", "Vetoed"],
+    long: ["Died in committee", "Died on the floor", "Passed one house only", "Passed both houses, never sent to the governor", "Sent to the governor, no action recorded", "Signed into law", "Vetoed"],
+    chart: ["Died in committee", "Died on the floor", "Passed one house", "Passed both, not sent", "Sent, no action", "Signed", "Vetoed"],
+  },
+};
+const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
 const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "sen", "asm"];
 const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", sen: false, asm: false, shown: PAGE });
 const state = blank();
-let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0;
+let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -351,6 +398,17 @@ const fmtDate = (d) => {
   return new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 const num = (n) => n.toLocaleString("en-US");
+const fmtMonth = (d) => (d ? new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "");
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+
+// The governor has 10 days, Sundays excepted, after delivery (NY Constitution, Art. IV, sec. 7).
+function deadline(iso) {
+  if (!iso) return null;
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  for (let n = 0; n < 10;) { dt.setDate(dt.getDate() + 1); if (dt.getDay() !== 0) n++; }
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+}
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
 function store(k, v) { try { localStorage.setItem(`abt:${DATA.session}:${k}`, JSON.stringify(v)); } catch (e) {} }
@@ -366,7 +424,7 @@ function outcomeLabel(stage, session, chapter, veto) {
   if (stage < 0) return "Outcome not loaded";
   if (stage === 5 && chapter) return `Signed, Chapter ${chapter}`;
   if (stage === 6 && veto) return `Vetoed, Memo ${veto}`;
-  return (session === LATEST ? LIVE_LABELS : FINAL_LABELS)[stage];
+  return (session === LATEST ? STAGE_TEXT.live : STAGE_TEXT.final).long[stage];
 }
 
 const rankOf = (s) => [0, 1, 2, 3, 4, 6, 5][s] ?? -1; // stage -> how far it got (vetoed below signed)
@@ -385,14 +443,13 @@ const HIST_FILTERS = {
 
 // Cumulative progress: "passed the Senate" includes bills that went further.
 const PROGRESS = {
-  passedS: { label: "Passed the Senate (including bills that went further)", test: (b) => b.passedS },
-  passedA: { label: "Passed the Assembly (including bills that went further)", test: (b) => b.passedA },
-  onlyS: { label: "Passed the Senate only", test: (b) => b.passedS && !b.passedA },
-  onlyA: { label: "Passed the Assembly only", test: (b) => b.passedA && !b.passedS },
-  both: { label: "Passed both houses (including signed and vetoed)", test: (b) => b.stage >= 3 },
-  waiting: { label: "Waiting for the governor", test: (b) => b.stage === 3 || b.stage === 4, current: true },
-  signed: { label: "Signed into law", test: (b) => b.stage === 5 },
-  vetoed: { label: "Vetoed", test: (b) => b.stage === 6 },
+  // Where a bill is now is the stage boxes; this is how far it ever got.
+  passedS: { label: "Passed the Senate at some point", test: (b) => b.passedS },
+  passedA: { label: "Passed the Assembly at some point", test: (b) => b.passedA },
+  onlyS: { label: "Passed the Senate but not the Assembly", test: (b) => b.passedS && !b.passedA },
+  onlyA: { label: "Passed the Assembly but not the Senate", test: (b) => b.passedA && !b.passedS },
+  both: { label: "Passed both houses (whatever happened next)", test: (b) => b.stage >= 3 },
+  never: { label: "Never passed either house", test: (b) => !b.passedS && !b.passedA },
 };
 const HOUSES = { both: "Both houses", S: "Senate only", A: "Assembly only" };
 
@@ -424,16 +481,31 @@ function sortBills(arr) {
     sessions: (a, b) => b.earlier.length - a.earlier.length || recent(a, b),
     num: (a, b) => a.sortKey - b.sortKey,
     cosp: (a, b) => b.cosp - a.cosp,
+    due: (a, b) => (a.due || "9999").localeCompare(b.due || "9999") || recent(a, b),
   }[state.sort];
   return arr.sort(by);
 }
 
 function renderPipeline() {
-  const counts = Array(STAGES.length).fill(0);
-  for (const b of BILLS) if (matches(b, "stage")) counts[b.stage]++;
-  $("pipeline").innerHTML = STAGES.map((label, k) =>
-    `<button class="stage" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
-       <span class="stage-n">${num(counts[k])}</span><span class="stage-label">${label}</span></button>`).join("");
+  const counts = Array(7).fill(0), oneHouse = { Senate: 0, Assembly: 0 };
+  const today = isoToday();
+  let nextDue = null;
+  for (const b of BILLS) {
+    if (!matches(b, "stage")) continue;
+    counts[b.stage]++;
+    if (b.stage === 2 && b.passedIn) oneHouse[b.passedIn]++;
+    if (b.stage === 4 && b.due && b.due >= today && (!nextDue || b.due < nextDue)) nextDue = b.due;
+  }
+  const subs = {
+    2: `Senate ${num(oneHouse.Senate)} · Assembly ${num(oneHouse.Assembly)}`,
+    3: DATA.current ? "Not yet sent to the governor" : "Never sent to the governor",
+    4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No action recorded",
+  };
+  const box = (k) => `<button class="stage" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
+       <span class="stage-n">${num(counts[k])}</span><span class="stage-label">${TEXT.pipe[k]}</span>${subs[k] ? `<span class="stage-sub">${subs[k]}</span>` : ""}</button>`;
+  $("pipeline").innerHTML = `
+    <div class="pgroup"><h2>In the Legislature</h2><div class="pstages">${[0, 1, 2, 3].map(box).join("")}</div></div>
+    <div class="pgroup"><h2>With the governor</h2><div class="pstages">${[4, 5, 6].map(box).join("")}</div></div>`;
 }
 
 function renderTopics() {
@@ -465,10 +537,46 @@ function track(b) {
 }
 
 function statusText(b) {
-  let t = outcomeLabel(b.stage, DATA.session, b.chapter, b.veto);
-  if (b.stage === 2 && b.passedIn) t = `Passed ${b.passedIn}${DATA.current ? "" : " only"}`;
-  if (b.stage === 0 && b.comm) t = `${DATA.current ? "In" : "Died in"} ${b.comm}`;
-  return `<div class="st s${b.stage}">${esc(t)}<small>${fmtDate(b.last)}</small></div>`;
+  const D = b.dates, live = DATA.current;
+  let t = TEXT.long[b.stage], small = `Last action ${fmtDate(b.last)}`;
+  if (b.stage === 0) {
+    t = `${live ? "In" : "Died in"} ${b.comm || "committee"}`;
+    const passed = D.passS ? "Senate" : D.passA ? "Assembly" : null;
+    if (passed && D.died) small = `Passed ${passed} ${fmtDate((D.passSAll[0] || D.passAAll[0]))}; sent back to committee ${fmtMonth(D.died)}`;
+  } else if (b.stage === 2 && b.passedIn) {
+    t = `Passed ${b.passedIn}${live ? "" : " only"}`;
+    small = fmtDate(b.passedIn === "Senate" ? D.passS : D.passA);
+  } else if (b.stage === 3) {
+    t = "Passed both houses";
+    small = `${live ? "Not yet sent" : "Never sent"} to the governor · passed ${fmtDate([D.passS, D.passA].sort().pop())}`;
+  } else if (b.stage === 4) {
+    t = live ? "On the governor's desk" : "Sent to the governor";
+    small = live && b.due ? `Sent ${fmtDate(D.deliv)} · decision due ${fmtDate(b.due)} (est.)` : `Sent ${fmtDate(D.deliv)}`;
+  } else if (b.stage === 5) {
+    t = b.chapter ? `Signed · Chapter ${b.chapter}` : "Signed into law";
+    small = fmtDate(D.signed);
+  } else if (b.stage === 6) {
+    t = b.veto ? `Vetoed · Memo ${b.veto}` : "Vetoed";
+    small = fmtDate(D.vetoed);
+  }
+  return `<div class="st s${b.stage}">${esc(t)}<small>${esc(small)}</small></div>`;
+}
+
+function keyDates(b) {
+  const D = b.dates;
+  const items = [
+    [D.intro, "Introduced"],
+    [D.floor, "First reported to the floor"],
+    ...D.passSAll.map((d, i) => [d, i ? "Passed the Senate again" : "Passed the Senate"]),
+    ...D.passAAll.map((d, i) => [d, i ? "Passed the Assembly again" : "Passed the Assembly"]),
+    [D.died, "Sent back to committee for the new year (had to pass again)"],
+    [D.deliv, "Sent to the governor"],
+    [D.signed, `Signed into law${b.chapter ? `, Chapter ${b.chapter}` : ""}`],
+    [D.vetoed, `Vetoed${b.veto ? `, Memo ${b.veto}` : ""}`],
+  ].filter(([d]) => d).sort((x, y) => x[0].localeCompare(y[0]));
+  if (DATA.current && b.stage === 4 && b.due) items.push([b.due, "Governor's decision due (estimated: 10 days after delivery, not counting Sundays)", true]);
+  return `<div class="keydates"><h4>Key dates</h4><ol>${items.map(([d, l, est]) =>
+    `<li><time>${fmtDate(d)}</time><span class="${est ? "est" : ""}">${esc(l)}</span></li>`).join("")}</ol></div>`;
 }
 
 function historyTags(b) {
@@ -662,6 +770,7 @@ function fillDetail(el) {
   d.innerHTML = `${b.summary ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     ${b.lawCode ? `<div class="act">${esc(b.lawCode)}</div>` : ""}
+    ${keyDates(b)}
     ${lineage(b)}
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
@@ -715,13 +824,18 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd] = r;
+    const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
+    // Every date each house passed it (a bill sent back in year two may pass twice).
+    dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
+    dates.passAAll = kd[3] ? kd[3].split(";").map(day) : [];
     const v = vers.map(([p, sp, c, sd, cm, acts]) => ({
       p, sponsor: str(sp), cosp: c, statusDesc: str(sd), committee: str(cm),
       actions: acts.map(([dt, t]) => [day(dt), T[t]]),
     }));
     return {
-      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist,
+      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates,
+      due: raw.current && stage === 4 ? deadline(dates.deliv) : null,
       earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
       laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
       passedIn: passedIn || null, last: day(last),
@@ -736,7 +850,8 @@ function decode(raw) {
 function hydrate(raw) {
   DATA = raw; TOPICS = raw.topics;
   LATEST = Math.max(...raw.sessions.map((s) => s.session));
-  STAGES = raw.current ? LIVE_LABELS : FINAL_LABELS;
+  TEXT = raw.current ? STAGE_TEXT.live : STAGE_TEXT.final;
+  STAGES = TEXT.chart;
   BILLS = raw.bills.map((b, idx) => {
     b.idx = idx;
     b._hay = [b.title, b.summary, b.law, ...b.sponsors, ...b.nums, ...b.nums.map((n) => n.replace(/[A-Z]$/, ""))].join(" ").toLowerCase();
@@ -758,6 +873,15 @@ function hydrate(raw) {
     ? `Every Senate and Assembly bill in the session, with matching bills from the two houses paired. <b>Choose a stage or topic</b> to narrow the list, and open a bill to see its history in each house and in earlier sessions.`
     : `How every bill in the ${span(raw.session)} session ended, with matching bills from the two houses paired. Open a bill to see whether it came back in a later session and what happened to it.`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
+  // After the last floor votes of the second year, only the governor's actions are still moving.
+  const lv = raw.lastVote || "";
+  const quietDays = lv ? (new Date(isoToday()) - new Date(lv)) / 864e5 : 0;
+  if (raw.current && lv.startsWith(String(raw.session + 1)) && quietDays > 21) {
+    const pending = BILLS.filter((b) => b.stage === 3 || b.stage === 4).length;
+    $("notice").textContent = `The Legislature held its last floor votes of this session on ${fmtDate(lv)}. Bills that hadn't passed both houses by then can move only if lawmakers return for a special session, and they all die on December 31, ${raw.session + 1}. What's still moving is the governor's work on the ${num(pending)} bills that passed both houses and haven't been signed or vetoed.`;
+    $("notice").hidden = false;
+  }
+  if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option>`);
   $("sessions").innerHTML = raw.sessions.map(({ session, url }) => {
     const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
     if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
@@ -768,8 +892,7 @@ function hydrate(raw) {
 
   const opt = (v, n) => `<option value="${esc(v)}">${esc(v)} (${num(n)})</option>`;
   $("lawOptions").innerHTML = raw.lawList.map(([l, n]) => `<option value="${esc(l)}">${num(n)} bill${n === 1 ? "" : "s"}</option>`).join("");
-  $("progress").innerHTML = `<option value="">Any progress</option>` + Object.entries(PROGRESS)
-    .filter(([, p]) => !p.current || raw.current)
+  $("progress").innerHTML = `<option value="">Any</option>` + Object.entries(PROGRESS)
     .map(([k, p]) => `<option value="${k}">${esc(p.label)} (${num(BILLS.filter(p.test).length)})</option>`).join("");
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.house === k).length)})</option>`).join("");
@@ -793,7 +916,8 @@ function hydrate(raw) {
   if (saved) {
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
     if (state.hist && !(state.hist in HIST_FILTERS)) state.hist = "";
-    if (state.progress && (!(state.progress in PROGRESS) || (PROGRESS[state.progress].current && !raw.current))) state.progress = "";
+    if (state.progress && !(state.progress in PROGRESS)) state.progress = "";
+    if (state.sort === "due" && !raw.current) state.sort = "recent";
     if (!names.SENATE?.length) state.sen = false;
     if (!names.ASSEMBLY?.length) state.asm = false;
     syncControls();
