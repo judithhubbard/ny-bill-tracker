@@ -594,7 +594,7 @@ const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed"
 const PAGE = 100;
 const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party"];
 const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", shown: PAGE });
-let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "";
+let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "", ROOT = "";
 const state = blank();
 let DATA = null, BILLS = [], TOPICS = {}, STAGES = [], LATEST = 0, TEXT = STAGE_TEXT.live;
 
@@ -678,7 +678,7 @@ function billLink(b) {
   const num_ = baseNum(b.nums[0]);
   const here = DATA.sessions.find((s) => s.session === DATA.session);
   if (here && /^https:\/\/claude\.ai/.test(here.url || "")) return `${here.url}#${num_}`;
-  const root = new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
+  const root = ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
   return `${root}${DATA.current ? "" : `${DATA.session}.html`}#${num_}`;
 }
 function openFromHash() {
@@ -1241,7 +1241,7 @@ function watchButton(b) {
 }
 function shareLink() {
   const nums = BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
-  const root = new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
+  const root = ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
   return `${root}watchlist/#w=${DATA.session}.${nums.join(".")}`;
 }
 const sharedStance = (b) => { for (const n of b.nums) if (SHARED.has(baseNum(n))) return SHARED.get(baseNum(n)); return null; };
@@ -1678,6 +1678,7 @@ wire();
   try {
     const el = $("bill-data");
     BASE = el.dataset.base || "";
+    ROOT = el.dataset.root || "";
     const meta = document.querySelector('meta[name="abt-preset"]');
     if (meta) PRESET = JSON.parse(meta.content);
     const raw = el.dataset.src ? await (await fetch(el.dataset.src)).json() : JSON.parse(el.textContent);

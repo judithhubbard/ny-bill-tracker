@@ -32,6 +32,8 @@ if "--github" in ARGS:
     GITHUB = os.path.abspath(ARGS[i + 1])
     del ARGS[i:i + 2]
 ONLY = [int(a) for a in ARGS] or SESSIONS
+# The GitHub Pages address, used for share links and links to single bills.
+SITE_URL = os.environ.get("SITE_URL", "https://judithhubbard.github.io/ny-bill-tracker/")
 
 
 def read_session(session):
@@ -692,10 +694,10 @@ def main():
         html = template.replace(marker, f'<script type="application/json" id="bill-data">{payload}</script>')
         if GITHUB:
             out = os.path.join(GITHUB, "index.html" if session == current else f"{session}.html")
-            html = github_page(template.replace(marker, f'<script type="application/json" id="bill-data" data-src="data/{session}.json"></script>'))
+            html = github_page(template.replace(marker, f'<script type="application/json" id="bill-data" data-src="data/{session}.json" data-root="{SITE_URL}"></script>'))
             if session == current:
                 for leg in data.get("legislators", []):
-                    page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../"></script>')
+                    page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../" data-root="{SITE_URL}"></script>')
                     preset = json.dumps({"who": leg["id"]}).replace('"', "&quot;")
                     page = page.replace("<title>Albany Bill Tracker</title>",
                                         f'<title>{leg["title"]} {leg["name"]} · Albany Bill Tracker</title>\n<meta name="abt-preset" content="{preset}">', 1)
@@ -703,7 +705,7 @@ def main():
                     with open(os.path.join(GITHUB, leg["slug"], "index.html"), "w") as f:
                         f.write(github_page(page))
                 # /watchlist/: the same page, opened to the visitor's own watchlist.
-                page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../"></script>')
+                page = template.replace(marker, f'<script type="application/json" id="bill-data" data-src="../data/{session}.json" data-base="../" data-root="{SITE_URL}"></script>')
                 page = page.replace("<title>Albany Bill Tracker</title>",
                                     '<title>Watchlist · Albany Bill Tracker</title>\n<meta name="abt-preset" content="{&quot;watch&quot;: true}">', 1)
                 os.makedirs(os.path.join(GITHUB, "watchlist"), exist_ok=True)
