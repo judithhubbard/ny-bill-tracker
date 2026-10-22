@@ -76,7 +76,7 @@ input[type="search"], select { width: 100%; min-width: 0; font: inherit; font-si
 
 /* Bill rows */
 .list { display: grid; }
-.bill { border-bottom: 1px solid var(--rule); }
+.bill { border-bottom: 1px solid var(--rule); scroll-margin-top: 120px; }
 .bill > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 116px minmax(0, 1fr) 150px; gap: 14px; padding: 12px 4px; align-items: start; }
 .bill > summary::-webkit-details-marker { display: none; }
 .bill > summary:hover { background: var(--sheet); }
@@ -88,6 +88,10 @@ input[type="search"], select { width: 100%; min-width: 0; font: inherit; font-si
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { font-size: 11px; font-weight: 600; background: var(--chip); color: var(--ink-2); border-radius: 3px; padding: 1px 6px; }
 .tag.env { background: var(--signed-soft); color: var(--signed); }
+.tag.party::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.tag.party.dem::before { background: #3b6fd1; }
+.tag.party.rep::before { background: #c8423a; }
+.tag.party.both::before { background: linear-gradient(90deg, #3b6fd1 50%, #c8423a 50%); }
 .status { display: grid; gap: 5px; justify-items: start; }
 .track { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; width: 100%; }
 .pip { height: 6px; border-radius: 1px; background: var(--pip-off); }
@@ -1064,10 +1068,18 @@ function renderList() {
   $("more").textContent = `Show ${num(Math.min(PAGE, rows.length - state.shown))} more`;
 }
 
+// Party of the sponsors and co-sponsors, with head counts (current session only).
+function partyTag(b) {
+  const [d, r] = b.partyCount || [0, 0];
+  if (!d && !r) return "";
+  const label = d && r ? `Both parties: ${d} D, ${r} R` : d ? `Democrats only (${d})` : `Republicans only (${r})`;
+  return `<span class="tag party ${d && r ? "both" : d ? "dem" : "rep"}" title="Sponsors and co-sponsors, both versions">${label}</span>`;
+}
+
 // One bill as an expandable row; used on the Bills tab and the Weigh in tab.
 function billRow(b) {
       const [first, second] = b.nums;
-      const tags = b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
+      const tags = partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
       return `<details class="bill" data-idx="${b.idx}">
         <summary>
@@ -1308,6 +1320,7 @@ function renderWatchView() {
         ? `${watchButton(b, false)}<span class="stance fixed ${x.stance}" title="The position of whoever shared this list">Shared as: ${x.stance === "oppose" ? "Oppose" : "Support"}</span>`
         : watchButton(b)}</div><div class="wstatus">${statusText(b)}</div></div>
       <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
+      ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
       ${action}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
@@ -1508,7 +1521,9 @@ function decode(raw) {
       actions: acts.map(([dt, t]) => [day(dt), T[t]]),
     }));
     return {
-      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates, parties: parties || "",
+      title, summary, act, lawCode, topics, stage, chapter, veto, cosp, intro, hist, dates,
+      partyCount: Array.isArray(parties) ? parties : [0, 0],
+      parties: Array.isArray(parties) ? (parties[0] && parties[1] ? "DR" : parties[0] ? "D" : parties[1] ? "R" : "") : parties || "",
       votes: (votes || []).map(([house, kind, cm, date, yes, no, ny]) => ({
         house, kind, committee: str(cm), date: day(date), yes, no, notYes: new Map(ny.map(([m, code]) => [T[m], code])),
       })),

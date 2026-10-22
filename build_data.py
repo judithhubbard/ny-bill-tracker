@@ -428,14 +428,15 @@ def parties(session, recs):
 
 
 def bill_parties(r, party_of):
-    """Which parties have a sponsor or co-sponsor on either version: "D", "R", "DR" or ""."""
-    found = set()
+    """How many sponsors and co-sponsors of each party are on either version: [D, R]."""
+    found = {}
     for v in r["vers"]:
         for n in [v["sponsor"]] + v.get("cosponsors", []):
             p = party_of.get((v["p"][0], n))
             if p:
-                found.add(p)
-    return "".join(sorted(found))
+                found[(v["p"][0], n)] = p
+    vals = list(found.values())
+    return [vals.count("D"), vals.count("R")]
 
 
 def legislators(session):
