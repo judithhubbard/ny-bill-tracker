@@ -553,13 +553,13 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
-.intro { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; background: var(--chip); border-left: 3px solid var(--navy); border-radius: 8px; padding: 8px 12px; margin: 10px 0 2px; font-size: 13.5px; }
-.intro .intro-h { font-weight: 700; }
-.intro ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; flex: 1; }
-.intro li { display: inline-flex; align-items: center; gap: 6px; }
-.intro .n { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 11px/18px var(--body); text-align: center; flex: none; }
-@media (max-width: 600px) { .intro ol { flex-basis: 100%; order: 3; } }
-.intro .intro-x { appearance: none; border: 0; background: none; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; padding: 0 2px; }
+.intro { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: "h tips x" "ol ol ol"; align-items: center; gap: 4px 14px; background: var(--chip); border-left: 3px solid var(--navy); border-radius: 8px; padding: 8px 12px; margin: 10px 0 2px; font-size: 13.5px; }
+.intro .intro-h { grid-area: h; font-weight: 700; }
+.intro [data-impact] { grid-area: tips; }
+.intro .intro-x { grid-area: x; appearance: none; border: 0; background: none; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; padding: 0 2px; }
+.intro ol { grid-area: ol; list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.intro li { display: block; }
+.intro .n { display: inline-block; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 11px/18px var(--body); text-align: center; }
 ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 75ch; }
 .view-help { appearance: none; background: none; border: 0; padding: 5px 8px; font: 600 12.5px var(--body); color: var(--navy); text-decoration: underline; cursor: pointer; }
 .ver details.acts > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--navy); margin-top: 4px; }
@@ -2614,7 +2614,8 @@ function renderWatchView() {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
     card.innerHTML = `<h2>My watchlist</h2>
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
-      ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>` : ""}`;
+      ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
+      <p class="muted sharenote">The link holds your list as it is now. If you change your list, send a new link.</p>` : ""}`;
   }
 
   const items = list.map((b) => ({ b, stance: stanceOf(b), ...keyAction(b, stanceOf(b)) }));
@@ -2866,7 +2867,13 @@ function wire() {
   // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
   document.addEventListener("click", (e) => {
     if (e.target.closest("[data-intro-close]")) { try { localStorage.setItem(INTRO_STORE, "hidden"); } catch (err) {} $("howto").hidden = true; return; }
-    if (e.target.closest("[data-intro]")) { if ($("howto").hidden) { renderIntro(true); $("howto").scrollIntoView({ block: "start" }); } else $("howto").hidden = true; return; }
+    if (e.target.closest("[data-intro]")) { if ($("howto").hidden) {
+      renderIntro(true);
+      // Scroll only if it's out of view (e.g. after scrolling down), and then just enough to show it.
+      const r = $("howto").getBoundingClientRect();
+      if (r.top < 0 || r.bottom > innerHeight) $("howto").scrollIntoView({ block: "nearest" });
+    } else $("howto").hidden = true;
+    return; }
     if (e.target.closest("[data-impact]")) { showView("how"); $("impact").scrollIntoView({ block: "start" }); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
