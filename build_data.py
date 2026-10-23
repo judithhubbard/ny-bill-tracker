@@ -139,50 +139,109 @@ TOPIC_WORDS = {k: re.compile(v[3], re.I) for k, v in TOPICS.items() if v[3]}
 LOCAL_LAWS = TOPICS["local"][2] | {"Real Property Tax Law", "Real Property Taxation", "Social Services Law"}
 LOCAL_WORDS = re.compile(r"\b(count(y|ies)|municipal\w*|local governments?|unfunded mandate)\b", re.I)
 
-# Bills only about some other place: a named town, city, county, district or New York City body,
-# and not Tompkins County or its region. Hidden by the "Leave out bills only about other places" filter.
-COUNTIES = ("Albany Allegany Bronx Broome Cattaraugus Cayuga Chautauqua Chemung Chenango Clinton Columbia Cortland "
-            "Delaware Dutchess Erie Essex Franklin Fulton Genesee Greene Hamilton Herkimer Jefferson Kings Lewis "
-            "Livingston Madison Monroe Montgomery Nassau Niagara Oneida Onondaga Ontario Orange Orleans Oswego Otsego "
-            "Putnam Queens Rensselaer Richmond Rockland Saratoga Schenectady Schoharie Schuyler Seneca Steuben Suffolk "
-            "Sullivan Tioga Tompkins Ulster Warren Washington Wayne Westchester Wyoming Yates").split() + ["St. Lawrence", "New York"]
-OTHER_PLACES = ["Buffalo", "Rochester", "Syracuse", "Yonkers", "Schenectady", "Binghamton", "Utica", "Niagara Falls",
-                "Poughkeepsie", "Newburgh", "New Rochelle", "Mount Vernon", "White Plains", "Long Beach", "Glen Cove",
-                "Saratoga Springs", "Plattsburgh", "Watertown", "Jamestown", "Elmira", "Kingston", "Troy", "Lackawanna",
-                "Lockport", "Olean", "Oswego", "Peekskill", "Middletown", "Glens Falls", "Gloversville", "Amsterdam",
-                "Cohoes", "Watervliet", "Ogdensburg", "Oneonta", "Hornell", "Corning", "Dunkirk", "Batavia", "Canandaigua",
-                "Port Jervis", "Salamanca", "North Tonawanda", "Tonawanda", "Rensselaer", "Beacon", "Auburn", "Brooklyn",
-                "Manhattan", "Staten Island", "the Bronx", "Harlem", "Long Island", "Adirondack", "Catskill",
-                "Hudson Valley", "Hudson River", "Lake George", "Lake Champlain", "Westchester", "Capital District",
-                "Capital Region", "Western New York", "North Country", "Mid-Hudson", "Rockaway", "Coney Island"]
-HOME_AREA = re.compile(r"\b(Tompkins|Ithaca|Dryden|Trumansburg|Cayuga Heights|Freeville|Cayuga Lake|Finger Lakes|Southern Tier|"
-                       r"Central New York|(town|village)s? of (Lansing|Groton|Caroline|Danby|Enfield|Newfield|Ulysses))\b")
+# Which counties a bill is only about, when it names specific places: a town, city, village, county,
+# district or New York City body. Bills worded to reach beyond those places count as statewide.
+COUNTIES = [c.replace("_", " ") for c in ("Albany Allegany Bronx Broome Cattaraugus Cayuga Chautauqua Chemung Chenango Clinton "
+            "Columbia Cortland Delaware Dutchess Erie Essex Franklin Fulton Genesee Greene Hamilton Herkimer Jefferson Kings "
+            "Lewis Livingston Madison Monroe Montgomery Nassau New_York Niagara Oneida Onondaga Ontario Orange Orleans Oswego "
+            "Otsego Putnam Queens Rensselaer Richmond Rockland St._Lawrence Saratoga Schenectady Schoharie Schuyler Seneca "
+            "Steuben Suffolk Sullivan Tioga Tompkins Ulster Warren Washington Wayne Westchester Wyoming Yates").split()]
+NYC = ["New York", "Kings", "Queens", "Bronx", "Richmond"]
+# Regions and bodies named without a town or county.
+REGIONS = {
+    "New York city": NYC, "New York City": NYC, "city of New York": NYC, "NYC": NYC, "N.Y. city": NYC, "population of one million or more": NYC,
+    "Brooklyn": ["Kings"], "Manhattan": ["New York"], "Harlem": ["New York"], "Staten Island": ["Richmond"],
+    "the Bronx": ["Bronx"], "Rockaway": ["Queens"], "Coney Island": ["Kings"], "NYCHA": NYC, "Port Authority": NYC,
+    "metropolitan transportation authority": NYC + ["Nassau", "Suffolk", "Westchester", "Putnam", "Dutchess", "Orange", "Rockland"],
+    "MTA": NYC + ["Nassau", "Suffolk", "Westchester", "Putnam", "Dutchess", "Orange", "Rockland"],
+    "Long Island Rail Road": ["Kings", "Queens", "Nassau", "Suffolk"], "Long Island Power Authority": ["Nassau", "Suffolk"],
+    "Long Island": ["Nassau", "Suffolk"], "Westchester": ["Westchester"],
+    "Adirondack": ["Clinton", "Essex", "Franklin", "Fulton", "Hamilton", "Herkimer", "Lewis", "Oneida", "St. Lawrence", "Saratoga", "Warren", "Washington"],
+    "Catskill": ["Delaware", "Greene", "Sullivan", "Ulster"],
+    "Hudson Valley": ["Columbia", "Dutchess", "Greene", "Orange", "Putnam", "Rockland", "Sullivan", "Ulster", "Westchester"],
+    "Mid-Hudson": ["Columbia", "Dutchess", "Greene", "Orange", "Putnam", "Sullivan", "Ulster"],
+    "Hudson River": ["Albany", "Columbia", "Dutchess", "Greene", "Orange", "Putnam", "Rensselaer", "Rockland", "Saratoga", "Ulster", "Warren", "Washington", "Westchester", "New York", "Bronx"],
+    "Lake George": ["Warren", "Washington", "Essex"], "Lake Champlain": ["Clinton", "Essex", "Washington"],
+    "Capital District": ["Albany", "Rensselaer", "Saratoga", "Schenectady"], "Capital Region": ["Albany", "Rensselaer", "Saratoga", "Schenectady"],
+    "Western New York": ["Allegany", "Cattaraugus", "Chautauqua", "Erie", "Genesee", "Niagara", "Orleans", "Wyoming"],
+    "North Country": ["Clinton", "Essex", "Franklin", "Hamilton", "Jefferson", "Lewis", "St. Lawrence"],
+    "Finger Lakes": ["Cayuga", "Livingston", "Monroe", "Ontario", "Schuyler", "Seneca", "Steuben", "Tompkins", "Wayne", "Yates"],
+    "Cayuga Lake": ["Cayuga", "Seneca", "Tompkins"],
+    "Southern Tier": ["Allegany", "Broome", "Cattaraugus", "Chautauqua", "Chemung", "Chenango", "Delaware", "Schuyler", "Steuben", "Tioga", "Tompkins"],
+    "Central New York": ["Cayuga", "Cortland", "Madison", "Onondaga", "Oswego", "Tompkins"],
+}
+# Cities named on their own. Names that are also common words or other things (Hudson, Rome, Geneva) are left out.
+CITY_NAMES = ["Buffalo", "Rochester", "Syracuse", "Yonkers", "Schenectady", "Binghamton", "Utica", "Niagara Falls", "Poughkeepsie",
+              "Newburgh", "New Rochelle", "Mount Vernon", "White Plains", "Long Beach", "Glen Cove", "Saratoga Springs", "Plattsburgh",
+              "Watertown", "Jamestown", "Elmira", "Kingston", "Lackawanna", "Lockport", "Olean", "Peekskill", "Glens Falls",
+              "Gloversville", "Cohoes", "Watervliet", "Ogdensburg", "Oneonta", "Hornell", "Corning", "Dunkirk", "Batavia",
+              "Canandaigua", "Port Jervis", "Salamanca", "North Tonawanda", "Ithaca", "Cortland", "Trumansburg", "Cayuga Heights"]
+PLACES_PATH = os.path.join(HERE, "data", "ny_places.json")
+PLACE_COUNTIES = json.load(open(PLACES_PATH)) if os.path.exists(PLACES_PATH) else {}
 _NAME = r"(?:St\. )?[A-Z][A-Za-z'’.-]+(?:[ -](?:on[ -]the[ -])?[A-Z][A-Za-z'’.-]+)*"
 _CTY = "|".join(re.escape(c) for c in COUNTIES)
-_MUNI = (r"\b(?:[Cc]ity|[Tt]own|[Vv]illage|[Hh]amlet|[Bb]orough)s? of (?!New York State\b)" + _NAME
-         + r"|\b(?:" + _CTY + r")[ -][Cc]ount(?:y|ies)\b|\b[Cc]ount(?:y|ies) of (?:" + _CTY + r")\b")
-_ENTITY = (r"\b" + _NAME + r" (?:[Vv]olunteer )?(?:[Ff]ire (?:[Dd]epartment|[Cc]ompany|[Dd]istrict)|[Aa]mbulance"
-           r"|(?:[Pp]ublic |[Ff]ree )?[Ll]ibrary(?: [Dd]istrict)?|(?:[Cc]entral |[Uu]nion [Ff]ree |[Cc]ity )?[Ss]chool [Dd]istrict"
-           r"|[Ww]ater [Dd]istrict|[Ss]ewer [Dd]istrict|[Hh]ousing [Aa]uthority|[Ii]ndustrial [Dd]evelopment [Aa]gency"
-           r"|[Pp]arking [Aa]uthority|Cemetery|Hospital|Rescue Squad)\b")
-_NYC = (r"\b(?:New York [Cc]ity|NYC|N\.Y\. city|[Mm]etropolitan [Tt]ransportation [Aa]uthority|MTA|Long Island Rail Road|"
-        r"Port Authority|NYCHA|Long Island Power Authority|population of one million or more)\b|\b(?:"
-        + "|".join(re.escape(c) for c in OTHER_PLACES) + r")\b")
-PLACE_IN_TITLE = re.compile("|".join([_MUNI, _ENTITY, _NYC]))
-# Summaries mention New York City in passing ("except in the city of New York"), so only named towns and counties count there.
-PLACE_IN_SUMMARY = re.compile(r"(?!city of New York\b)(?:" + _MUNI + ")")
-# Wording that makes a bill reach beyond the place it names, e.g. "counties outside the city of New York".
+_MUNI = re.compile(r"\b(?:[Cc]ity|[Tt]own|[Vv]illage|[Hh]amlet|[Bb]orough)s? of (?!New York State\b)(" + _NAME + ")")
+_COUNTY = re.compile(r"\b(" + _CTY + r")[ -][Cc]ount(?:y|ies)\b|\b[Cc]ount(?:y|ies) of (" + _CTY + r")\b")
+_ENTITY = re.compile(r"\b(" + _NAME + r") (?:[Vv]olunteer )?(?:[Ff]ire (?:[Dd]epartment|[Cc]ompany|[Dd]istrict)|[Aa]mbulance"
+                     r"|(?:[Pp]ublic |[Ff]ree )?[Ll]ibrary(?: [Dd]istrict)?|(?:[Cc]entral |[Uu]nion [Ff]ree |[Cc]ity )?[Ss]chool [Dd]istrict"
+                     r"|[Ww]ater [Dd]istrict|[Ss]ewer [Dd]istrict|[Hh]ousing [Aa]uthority|[Ii]ndustrial [Dd]evelopment [Aa]gency"
+                     r"|[Pp]arking [Aa]uthority|Cemetery|Hospital|Rescue Squad)\b")
+_NAMED = re.compile(r"\b(" + "|".join(re.escape(k) for k in sorted(list(REGIONS) + CITY_NAMES, key=len, reverse=True)) + r")\b")
+# Wording that makes a bill reach beyond the places it names, e.g. "counties outside the city of New York".
 REACHES_BEYOND = re.compile(r"\b(statewide|each county|every county|all counties|any county|state of New York|outside|except|"
                             r"other than|excluding|limits the application|the counties and|counties and the city)\b", re.I)
 
 
-def about_elsewhere(title, summary, law_code):
-    """True if a bill is only about some place other than Tompkins County and its region."""
-    if HOME_AREA.search(f"{title} {summary}") or REACHES_BEYOND.search(title):
-        return False
+def counties_of_name(name):
+    """Counties for a place name, trying shorter versions ("Johnson City Central" -> "Johnson City")."""
+    name = re.sub(r"'s$", "", name.replace("’", "'").rstrip(".,")).replace("Mt. ", "Mount ")
+    if name in ("New York", "NY", "N.Y."):
+        return NYC
+    words = name.split()
+    # Longest leading run first ("Johnson City Central" -> "Johnson City"), then without a leading
+    # direction ("East Ramapo" -> "Ramapo").
+    for cand in [words[:k] for k in range(len(words), 0, -1)] + [words[1:]] * (len(words) > 1):
+        hit = PLACE_COUNTIES.get(" ".join(cand).lower())
+        if hit:
+            return hit
+    return []
+
+
+def place_counties(title, summary, law_code):
+    """The counties a bill is only about, or [] if it isn't about specific places. "?" marks a named place
+    whose county isn't known."""
+    if REACHES_BEYOND.search(title):
+        return []
     t = title[:1].lower() + title[1:]  # the opening verb isn't a place name
-    nyc_code_only = bool(law_code) and all("NYC" in p for p in law_code.split(";") if p.strip())
-    return bool(PLACE_IN_TITLE.search(t) or PLACE_IN_SUMMARY.search(summary) or nyc_code_only)
+    found, unknown = set(), False
+    for m in _MUNI.finditer(t):
+        hit = counties_of_name(m.group(1))
+        found.update(hit); unknown |= not hit
+    for m in _ENTITY.finditer(t):
+        hit = counties_of_name(m.group(1))
+        found.update(hit); unknown |= not hit
+    for m in _COUNTY.finditer(t):
+        found.add(m.group(1) or m.group(2))
+    if re.search(r"\bcounties\b", t):  # "the counties of Dutchess, Orange and Putnam"
+        found.update(c for c in COUNTIES if c != "New York" and re.search(r"\b" + re.escape(c) + r"\b", t))
+    for m in _NAMED.finditer(t):
+        found.update(REGIONS.get(m.group(1)) or PLACE_COUNTIES.get(m.group(1).lower(), []))
+    if found or unknown:
+        # The summary often names the county ("town of Brookhaven, county of Suffolk").
+        for m in _COUNTY.finditer(summary):
+            found.add(m.group(1) or m.group(2))
+    else:
+        # Summaries mention New York City in passing, so only named towns and counties count there.
+        for m in _MUNI.finditer(summary):
+            if not m.group(1).rstrip(".").endswith(("New York", "NY")):
+                hit = counties_of_name(m.group(1))
+                found.update(hit); unknown |= not hit
+        for m in _COUNTY.finditer(summary):
+            found.add(m.group(1) or m.group(2))
+        if not (found or unknown) and law_code and all("NYC" in p for p in law_code.split(";") if p.strip()):
+            found.update(NYC)
+    out = sorted(c for c in found if c in COUNTIES)
+    return out or (["?"] if unknown else [])
 
 
 STAGE_LABEL = ["In committee", "On the floor", "Passed one house", "Passed both houses",
@@ -403,7 +462,7 @@ def load_session(session):
             "laws": laws,
             "comms": comms,
             "topics": topics,
-            "elsewhere": about_elsewhere(lead["title"] or "", lead["summary"] or "", lead["lawCode"] or ""),
+            "places": place_counties(lead["title"] or "", lead["summary"] or "", lead["lawCode"] or ""),
             "local": "local" in topics or bool(set(laws) & LOCAL_LAWS) or bool(LOCAL_WORDS.search(text)),
             "senDeleg": any(b["chamber"] == "SENATE" and b["district"] in deleg.get("SENATE", ()) for b in live),
             "asmDeleg": any(b["chamber"] == "ASSEMBLY" and b["district"] in deleg.get("ASSEMBLY", ()) for b in live),
@@ -1283,7 +1342,7 @@ def main():
                     for h, kind, comm, date, y, n, ny in votes]
         rows = []
         for i, r in enumerate(recs):
-            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32) | (r["elsewhere"] and 64)
+            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
                      [S(n) for n in v["cosponsors"]] if session == current else [], v.get("district") or 0] for v in r["vers"]]
@@ -1294,7 +1353,8 @@ def main():
                          S(r["program"]), S(r["law"]), vers, max(session, int((r["first"] or str(session))[:4])), h,
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"]),
-                         [[S(c), w] for c, w in agenda_of(r)]])
+                         [[S(c), w] for c, w in agenda_of(r)],
+                         [(COUNTIES + ["?"]).index(c) for c in r["places"]]])
 
         data = {
             "session": session,
@@ -1313,6 +1373,7 @@ def main():
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
             "rows": rows,
+            "counties": COUNTIES,
         }
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)

@@ -17,6 +17,9 @@ Data: New York State Senate [Open Legislation API](https://legislation.nysenate.
 - `fetch_party_history.py` (run by hand; rarely changes) records the party of every current and
   former legislator by seat, from the Open States people archive, into `data/seat_parties.json`,
   so party comparisons cover past sessions too.
+- `fetch_places.py` downloads New York place names and their counties from the U.S. Geological Survey
+  (towns, cities, villages and hamlets) into `data/ny_places.json`, which is kept in the repository. The
+  build uses it to tell which county a bill about a named place is about, for the "Places" filter.
 - `fetch_agendas.py SESSION` downloads committee agendas (which bills each committee takes
   up, and when) into `data/agendas_SESSION.json`, so bills show an upcoming committee meeting.
   Senate agendas come from the API; Assembly agendas from the agenda pages on nyassembly.gov,

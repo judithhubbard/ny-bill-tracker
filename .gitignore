@@ -8,3 +8,4 @@ __pycache__/
 !data/contacts_*.json
 !data/assembly_votes_*.json
 !data/seat_parties.json
+!data/ny_places.json
