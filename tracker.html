@@ -2324,8 +2324,6 @@ function wire() {
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
   for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party", "area", "changed"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
   $("csv").addEventListener("click", downloadCsv);
-  // Claude artifact pages can't hand visitors a file; the download works on GitHub Pages.
-  $("csv").hidden = !ROOT;
   // The law box matches any law whose name contains the typed text (3+ characters),
   // so "cannabis" finds the Cannabis Law and "conservation" the Environmental Conservation Law.
   let lawTimer;
@@ -2670,6 +2668,8 @@ function hydrate(raw) {
   renderOpenNow();
   // The current page draws its network live; past pages carry one worked out by the build.
   $("statNetBtn").hidden = !((DATA.current && LEGS.length) || DATA.network);
+  // Claude artifact pages can't hand visitors a file; the download works on GitHub Pages.
+  $("csv").hidden = !ROOT;
   try { const s = localStorage.getItem("abt:statsec"); if (s && $(s) && !(s === "statNet" && $("statNetBtn").hidden)) statSec = s; } catch (e) {}
   showStatSec(statSec);
   const one = openFromHash();
