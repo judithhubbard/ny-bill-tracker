@@ -752,6 +752,20 @@ def insights(loaded, hist, current):
                     c[1] += any(e[0] == nxt for e in later)
                     c[2] += any(e[2] == 5 for e in later)
 
+    # Bills that sat in committee all of the first year: [bills, approved by a committee in the second year, law].
+    stuck = {t: [0, 0, 0] for t in topics}
+    for s in past:
+        y2 = str(s + 1)
+        for r in loaded[s][0]:
+            kd = r["keyDates"]
+            if r["first"] >= y2 or (kd[0] and kd[0] < y2):
+                continue
+            for t in topics:
+                if has(r, t):
+                    stuck[t][0] += 1
+                    stuck[t][1] += bool(kd[0])
+                    stuck[t][2] += r["stage"] == 5
+
     # What happened to bills that died, by how far they got: [died, back next session, later law].
     fate = {t: {k: [0, 0, 0] for k in ("committee", "floor", "oneHouse", "vetoed")} for t in topics}
     for s in past[:-1]:
@@ -873,6 +887,7 @@ def insights(loaded, hist, current):
         "govYears": [[k.split("|")[0], k.split("|")[1], v[0], v[1]] for k, v in sorted(gov_years.items())],
         "persistence": persist,
         "comeback": comeback,
+        "stuck": stuck,
     }
 
 

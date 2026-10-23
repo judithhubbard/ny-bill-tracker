@@ -549,16 +549,23 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
-.howcal { overflow-x: auto; }
-.howcal svg { display: block; min-width: 680px; width: 100%; max-width: 980px; height: auto; font-family: var(--body); }
-.howcal .lbl { font-size: 11.5px; fill: var(--ink-2); }
-.howcal .yr { font: 700 14px var(--display); fill: var(--ink); }
-.howcal .mo { font: 10.5px var(--mono); fill: var(--ink-2); }
-.howcal .ann { font-size: 11px; fill: var(--ink); font-weight: 600; }
-.howcal .band { fill: var(--gold-soft); }
-.howcal .grid { stroke: var(--rule); stroke-width: 1; }
-.howcal .mark { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
-.howcal .today { stroke: var(--gold); stroke-width: 2; }
+.tl { position: relative; max-width: 900px; margin-top: 4px; }
+.tl .yrs, .tl .mos { display: grid; grid-template-columns: repeat(24, 1fr); font: 11px var(--mono); color: var(--ink-2); }
+.tl .yrs span { grid-column: span 12; font: 700 13px var(--body); color: var(--ink); border-left: 2px solid var(--ink); padding-left: 6px; }
+.tl .mos span { text-align: center; border-left: 1px solid var(--rule); }
+.tl .lane { position: relative; height: 34px; margin: 6px 0; background: var(--chip); border-radius: 4px; }
+.tl .lane b { position: absolute; top: 0; bottom: 0; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font: 600 12px/1.15 var(--body); overflow: hidden; }
+.tl .lane .leg { background: var(--navy); color: var(--sheet); }
+.tl .lane .gov { background: var(--law-bar); color: #fff; }
+.tl .lab { font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-top: 10px; }
+.tl .pins { position: relative; height: 26px; margin-top: 6px; }
+.tl .pin { position: absolute; transform: translateX(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 12px/22px var(--body); text-align: center; }
+.tl .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--veto); }
+.tl .now i { position: absolute; top: -2px; left: 4px; font: 600 11px var(--body); font-style: normal; color: var(--veto); white-space: nowrap; }
+ol.tlkey { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 70ch; }
+ol.tlkey li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: baseline; }
+ol.tlkey li span { width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 12px/22px var(--body); text-align: center; }
+@media (max-width: 600px) { .tl .lane b { font-size: 10.5px; padding: 0 4px; } .tl .mos { font-size: 9px; } }
 
 .steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 75ch; }
 .steps b { font-weight: 600; }
@@ -1818,6 +1825,9 @@ function renderStats() {
     <div class="vlist">${FATE.map(([k, l]) => { const [n, back, law] = fate[k] || [0, 0, 0];
       return vrow(l, `${num(n)} bills`, [[pctOf(back, n), "a"], [pctOf(law, n), "l"]], `${pctOf(back, n)}% came back · <b class="big">${pctOf(law, n)}%</b> law`); }).join("")}</div>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${I.pastSessions[0]}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, followed through ${I.pastSessions[I.pastSessions.length - 1] + 1}.</p>
+    ${(() => { const [n, moved, law] = I.stuck?.[t] || [0, 0, 0];
+      return n ? `<p>Bills that sat in committee all of the first year: <b>${pctOf(moved, n)}%</b> were approved by a committee in the second year, <b>${pctOf(law, n)}%</b> became law.</p>
+    <p class="note">${num(n)} bills${t === "all" ? "" : ` (${TOPICS[t]})`}, ${pastSpan()}.</p>` : ""; })()}
     ${pers.length ? `<h3 class="sub">This session's most persistent bills</h3>
     <p class="key track-key">${[["s-1", "Introduced, outcome not available"], ["s0", "Died in committee"], ["s2", "Passed one house"], ["s3", "Passed both houses"], ["s6", "Vetoed"], ["s5", "Signed"]].map(([c, l]) => `<span><i class="dot ${c}"></i>${l}</span>`).join("")}</p>
     <div class="perscards">${pers.map(([n, title]) => persCard(n, title)).join("")}</div>` : ""}`;
@@ -2516,63 +2526,37 @@ function wire() {
   });
 }
 
-// "How a bill becomes law": each day something happened, across the two years of the session.
+// "How a bill becomes law": the two-year session as a simple timeline, with dates from this session's data.
 function renderHowCal() {
-  const Y = DATA.session, rows = [
-    ["Introduced", "var(--refer)", (b) => [b.dates.intro]],
-    ["Approved by a committee", "var(--navy)", (b) => [b.dates.floor]],
-    ["Passed the Senate", "var(--navy)", (b) => b.dates.passSAll],
-    ["Passed the Assembly", "var(--navy)", (b) => b.dates.passAAll],
-    ["Sent to the governor", "var(--gold)", (b) => [b.dates.deliv]],
-    ["Signed", "var(--law-bar)", (b) => [b.dates.signed]],
-    ["Vetoed", "var(--veto)", (b) => [b.dates.vetoed]],
+  const Y = DATA.session, start = Date.UTC(Y, 0, 1), span_ = Date.UTC(Y + 2, 0, 1) - start;
+  const pos = (d) => (((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - start) / span_) * 100).toFixed(2);
+  const MD = (d) => new Date(d + "T12:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  // The first and last floor votes of each year mark when the Legislature is in session.
+  const floor = (yr) => BILLS.flatMap((b) => [...b.dates.passSAll, ...b.dates.passAAll]).filter((d) => d.startsWith(yr)).sort();
+  const f1 = floor(String(Y)), f2 = floor(String(Y + 1));
+  const s1 = [`${Y}-01-07`, f1[f1.length - 1] || `${Y}-06-10`], s2 = [`${Y + 1}-01-07`, f2[f2.length - 1] || `${Y + 1}-06-10`];
+  const bar = (cls, a, z, text) => `<b class="${cls}" style="left:${pos(a)}%;width:${pos(z) - pos(a)}%">${text}</b>`;
+  const pins = [
+    [`${Y}-01-07`, `<b>January ${Y}:</b> the Legislature convenes. Bills are introduced all year, but committees meet and floor votes happen only while it's in session.`],
+    [`${Y}-04-01`, `<b>April 1:</b> the state budget is due.`],
+    [s1[1], `<b>${MD(s1[1])}:</b> the first year's session ends. Bills that didn't pass carry over to the second year.`],
+    [`${Y}-09-15`, `<b>Summer through December:</b> the governor's office asks for passed bills in batches and signs or vetoes each one within 10 days. Most vetoes come in November and December.`],
+    [`${Y + 1}-01-07`, `<b>January ${Y + 1}:</b> bills that passed only one house go back to committee and have to pass again.`],
+    [s2[1], `<b>${MD(s2[1])}:</b> the session ends. It's the last chance for floor votes, and the busiest weeks of the year.`],
+    [`${Y + 1}-12-31`, `<b>December 31, ${Y + 1}:</b> bills that haven't passed both houses die. Next session they start over with new numbers. Bills sent to the governor in late December can be decided in January.`],
   ];
-  const counts = rows.map(() => new Map());
-  for (const b of BILLS) rows.forEach(([, , get], i) => { for (const d of get(b)) if (d) counts[i].set(d, (counts[i].get(d) || 0) + 1); });
-  const max = counts.map((m) => Math.max(1, ...m.values()));
-  const L = 168, W = 980, R = 12, rowH = 20, top = 40, plotW = W - L - R;
-  const dayOf = (d) => (Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - Date.UTC(+d.slice(0, 4), 0, 1)) / 864e5;
-  const x = (d) => L + (dayOf(d) / 366) * plotW;
   const today = new Date().toISOString().slice(0, 10);
-  const MD = (d) => new Date(d + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const panelH = top + rows.length * rowH + 22;
-  const panel = (year, k) => {
-    const y0 = k * (panelH + 14), yr = String(year);
-    // In session: first to last floor vote of the year, in either house.
-    const floor = [...counts[2].keys(), ...counts[3].keys()].filter((d) => d.startsWith(yr)).sort();
-    let g = `<text class="yr" x="0" y="${y0 + 16}">${k ? "Second year" : "First year"} · ${year}</text>`;
-    if (floor.length) {
-      const a = x(floor[0]), z = x(floor[floor.length - 1]) + 2;
-      g += `<rect class="band" x="${a}" y="${y0 + top - 6}" width="${z - a}" height="${rows.length * rowH + 6}"/>`
-        + `<text class="ann" x="${a + 4}" y="${y0 + top - 10}">Floor votes: ${MD(floor[0])} – ${MD(floor[floor.length - 1])}</text>`;
-    }
-    for (let m = 0; m < 12; m++) {
-      const mx = L + (Date.UTC(year, m, 1) - Date.UTC(year, 0, 1)) / 864e5 / 366 * plotW;
-      g += `<line class="grid" x1="${mx}" x2="${mx}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/>`
-        + `<text class="mo" x="${mx + 3}" y="${y0 + top + rows.length * rowH + 14}">${"JFMAMJJASOND"[m]}</text>`;
-    }
-    const apr = x(`${yr}-04-01`);
-    g += `<line class="mark" x1="${apr}" x2="${apr}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/>`
-      + `<text class="ann" x="${apr + 4}" y="${y0 + 16}">Apr 1: budget due</text>`;
-    if (k) g += `<text class="ann" text-anchor="end" x="${W - R}" y="${y0 + 16}">Dec 31: bills not passed by both houses die</text>`;
-    rows.forEach(([label, color], i) => {
-      const ry = y0 + top + i * rowH;
-      g += `<text class="lbl" x="0" y="${ry + 13}">${label}</text>`;
-      for (const [d, n] of counts[i]) {
-        if (!d.startsWith(yr)) continue;
-        const h = Math.max(2, Math.sqrt(n / max[i]) * (rowH - 4));
-        g += `<rect x="${x(d).toFixed(1)}" y="${(ry + rowH - 2 - h).toFixed(1)}" width="2" height="${h.toFixed(1)}" fill="${color}"><title>${MD(d)}, ${year}: ${num(n)} ${label.toLowerCase()}</title></rect>`;
-      }
-    });
-    if (DATA.current && today.startsWith(yr)) {
-      const t = x(today);
-      g += `<line class="today" x1="${t}" x2="${t}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/><text class="ann" x="${t + 4}" y="${y0 + top + 8}">Today</text>`;
-    }
-    return g;
-  };
-  $("howCal").className = "howcal";
-  $("howCal").innerHTML = `<svg viewBox="0 0 ${W} ${2 * panelH + 14}" role="img" aria-label="Calendar of legislative activity in ${span(Y)}">${panel(Y, 0)}${panel(Y + 1, 1)}</svg>`
-    + `<p class="note">Each mark is a day something happened to at least one bill in ${span(Y)}; taller marks mean more bills. Shaded: the first to the last floor vote of each year, roughly when the Legislature is in session in Albany. In January of the second year, bills that passed only one house go back to committee. Bills can be introduced, and the governor can act, all year.</p>`;
+  const now = DATA.current && today < `${Y + 2}` ? `<span class="now" style="left:${pos(today)}%"><i>Today</i></span>` : "";
+  $("howCal").innerHTML = `<div class="tl">
+    <div class="yrs"><span>First year · ${Y}</span><span>Second year · ${Y + 1}</span></div>
+    <div class="mos">${Array.from({ length: 24 }, (_, m) => `<span>${"JFMAMJJASOND"[m % 12]}</span>`).join("")}</div>
+    <div class="lab">Legislature</div>
+    <div class="lane">${bar("leg", ...s1, "In session")}${bar("leg", ...s2, "In session")}${now}</div>
+    <div class="lab">Governor</div>
+    <div class="lane">${bar("gov", s1[1], `${Y}-12-31`, "Signs or vetoes")}${bar("gov", s2[1], `${Y + 1}-12-31`, "Signs or vetoes")}${now.replace(/<i>.*<\/i>/, "")}</div>
+    <div class="pins">${pins.map(([d], k) => `<span class="pin" style="left:${Math.min(98.5, Math.max(1.5, pos(d)))}%">${k + 1}</span>`).join("")}</div>
+  </div>
+  <ol class="tlkey">${pins.map(([, t], k) => `<li><span>${k + 1}</span><div>${t}</div></li>`).join("")}</ol>`;
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
