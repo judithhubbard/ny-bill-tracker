@@ -554,6 +554,9 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.tip { position: relative; appearance: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; padding: 0; margin: 0 0 0 3px; border-radius: 50%; border: 1px solid var(--ink-2); background: none; color: var(--ink-2); font: italic 700 10px/1 Georgia, serif; vertical-align: 1px; cursor: help; text-transform: none; letter-spacing: 0; }
+#tipbox { position: fixed; z-index: 100; max-width: 260px; padding: 8px 10px; border-radius: 6px; background: var(--ink); color: var(--paper); font: 400 12.5px/1.4 var(--body); box-shadow: 0 4px 14px rgba(0,0,0,.18); pointer-events: none; }
+.tip:hover, .tip:focus-visible, .tip.open { background: var(--navy); border-color: var(--navy); color: var(--sheet); }
 .side label.hidebox { align-items: flex-start; margin-top: 6px; font-size: 13px; color: var(--ink); }
 .side label.hidebox input { margin-top: 3px; }
 .side label.hidebox .hc { color: var(--ink-2); font-size: 12px; }
@@ -780,7 +783,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
           <label for="homeCounty">Your county</label>
           <select id="homeCounty"></select>
           <span class="subsel" id="youReps"></span>
-          <label class="inline hidebox" title="Hides bills only about other counties, bills for one person or group, and road namings"><input type="checkbox" id="nearby"> <span>Only bills that could affect <span id="nearbyCounty">your county</span> <span class="hc" id="nearbyN"></span></span></label>
+          <label class="inline hidebox"><input type="checkbox" id="nearby"> <span>Only bills that could affect <span id="nearbyCounty">your county</span> <span class="hc" id="nearbyN"></span> <button type="button" class="tip" aria-label="What this means" data-tip="Hides bills only about other counties, bills for one named person or group (such as a pension or a tax exemption), and road and bridge namings. Statewide bills and bills about your county stay.">i</button></span></label>
         </div>
         <div class="group">
           <div class="group-h">Where it is now</div>
@@ -797,22 +800,22 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
           <label class="inline" for="whoCos"><input type="checkbox" id="whoCos"> Include bills they co-sponsored</label>
         </div>
         <div class="field" id="votedField" hidden>
-          <label for="voted" id="votedLabel">How your legislators voted</label>
+          <label for="voted"><span id="votedLabel">How your legislators voted</span> <button type="button" class="tip" aria-label="What this means" data-tip="Each legislator&#x27;s last floor vote on the bill in their own house. “Didn&#x27;t vote” means excused or absent; the records don&#x27;t say why.">i</button></label>
           <select id="voted"><option value="">Any vote</option></select>
         </div>
         <div class="field" id="changedField">
-          <label for="changed">New activity</label>
+          <label for="changed">New activity <button type="button" class="tip" aria-label="What this means" data-tip="Bills with any new action in that period. “Since your last visit” uses the last time this browser opened the site.">i</button></label>
           <select id="changed"><option value="">Any time</option></select>
         </div>
         <details class="group morefilters" id="moreFilters">
           <summary class="group-h">More filters <span id="moreCount"></span></summary>
           <div class="morebody">
           <div class="field" id="partyField">
-            <label for="party">Party of sponsors and co-sponsors</label>
+            <label for="party">Party of sponsors and co-sponsors <button type="button" class="tip" aria-label="What this means" data-tip="Counts the sponsors and co-sponsors of both versions of the bill. “Both parties” means at least one from each party.">i</button></label>
             <select id="party"><option value="">Any</option></select>
           </div>
           <div class="field">
-            <label for="progress">Furthest it has gotten this session</label>
+            <label for="progress">Furthest it has gotten this session <button type="button" class="tip" aria-label="What this means" data-tip="The furthest a bill got this session, even if it was later sent back to committee. “Where it is now” shows only its current stage.">i</button></label>
             <select id="progress"><option value="">Any</option></select>
           </div>
           <div class="field">
@@ -829,7 +832,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
             <select id="house"><option value="">Either house</option></select>
           </div>
           <div class="field">
-            <label for="hist">History in other sessions</label>
+            <label for="hist">History in other sessions <button type="button" class="tip" aria-label="What this means" data-tip="What happened to this bill&#x27;s earlier versions in past sessions. A bill reintroduced in a new session gets a new number.">i</button></label>
             <select id="hist"><option value="">Any history</option></select>
           </div>
           <div class="field">
@@ -868,7 +871,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <div class="field stattopic">
       <label for="statTopic">Topic</label>
       <select id="statTopic"><option value="all">All bills</option></select>
-      <label class="inline statgen"><input type="checkbox" id="statGeneral"> Leave out bills about one place, person or group, and road namings</label>
+      <label class="inline statgen"><input type="checkbox" id="statGeneral"> Leave out bills about one place, person or group, and road namings <button type="button" class="tip" aria-label="What this means" data-tip="Bills about one place, person or group pass far more often than other bills, so including them makes the odds look better than they are for most bills.">i</button></label>
     </div>
     <nav class="subtabs" id="statTabs" aria-label="Statistics sections">
       <button type="button" data-sec="statOdds">Odds of becoming law</button>
@@ -1226,7 +1229,7 @@ function renderPipeline() {
   $("pipeline").innerHTML = floorVotesOver() ? `
     <div class="pg live"><div class="pg-h">Still in play</div>${[3, 4].map(row).join("")}</div>
     <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
-    <div class="pg stale"><div class="pg-h">Out of time <span>Die December 31 unless lawmakers return</span></div>${[0, 1, 2].map(row).join("")}</div>` : `
+    <div class="pg stale"><div class="pg-h">Out of time ${TIP(OUT_OF_TIME)}<span>Die December 31 unless lawmakers return</span></div>${[0, 1, 2].map(row).join("")}</div>` : `
     <div class="pg leg"><div class="pg-h">In the Legislature</div>${[0, 1, 2, 3].map(row).join("")}</div>
     <div class="pg live"><div class="pg-h">With the governor</div>${[4].map(row).join("")}</div>
     <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>`;
@@ -1319,7 +1322,29 @@ function statusText(b) {
 }
 
 // ---- What's next and who to contact (current session only) ----
-const govItem = (ask) => `<li class="key"><span class="contact">Governor's office <span class="decides">Decides</span></span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
+// A small "i" that explains a term on hover, focus or tap. The text shows in one box at the page level,
+// so panels that scroll can't cut it off.
+function showTip(btn) {
+  let box = document.getElementById("tipbox");
+  if (!box) { box = document.createElement("div"); box.id = "tipbox"; box.setAttribute("role", "tooltip"); document.body.appendChild(box); }
+  box.textContent = btn.dataset.tip;
+  box.hidden = false;
+  const r = btn.getBoundingClientRect(), w = Math.min(260, innerWidth - 16);
+  box.style.maxWidth = `${w}px`;
+  const bw = box.offsetWidth, bh = box.offsetHeight;
+  box.style.left = `${Math.max(8, Math.min(r.left - 12, innerWidth - bw - 8))}px`;
+  box.style.top = `${r.bottom + 6 + bh > innerHeight ? r.top - bh - 6 : r.bottom + 6}px`;
+}
+function hideTip() { const box = document.getElementById("tipbox"); if (box) box.hidden = true; }
+document.addEventListener("mouseover", (e) => { const t = e.target.closest?.(".tip"); if (t) showTip(t); });
+document.addEventListener("mouseout", (e) => { const t = e.target.closest?.(".tip"); if (t && !t.classList.contains("open")) hideTip(); });
+document.addEventListener("focusin", (e) => { if (e.target.matches?.(".tip")) showTip(e.target); });
+document.addEventListener("focusout", (e) => { if (e.target.matches?.(".tip")) { e.target.classList.remove("open"); hideTip(); } });
+addEventListener("scroll", hideTip, true);
+const TIP = (text) => `<button type="button" class="tip" aria-label="What this means" data-tip="${esc(text)}">i</button>`;
+const OUT_OF_TIME = "Floor votes for this session are over. A bill that hasn't passed both houses can move only if lawmakers return for a special session; otherwise it dies December 31 and has to be reintroduced.";
+const DECIDES = `<span class="decides">Decides</span>${TIP('The person whose decision moves the bill to its next step.')}`;
+const govItem = (ask) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
@@ -1486,7 +1511,7 @@ function contactBook(b, canMove = true, oppose = false) {
         const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, phonesHtml(info)].filter(Boolean).join(" · ");
         const roles = p.roles.join("; ");
         const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
-        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` <span class="decides">Decides</span>` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
+        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` ${DECIDES}` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
       });
       items.sort((x, y) => y.star - x.star);
       return (gov ? gov : "") + items.map((x) => x.html).join("");
@@ -2727,7 +2752,7 @@ function renderWatchView() {
     const summary = b.summary && b.summary !== b.title ? `<p class="sum">${esc(b.summary.length > 260 ? b.summary.slice(0, 257) + "…" : b.summary)}</p>` : "";
     const action = x.key ? `
       <div class="do">
-        <p class="who"><b>${esc(titleOf(x.key))}</b> <span class="decides">Decides</span></p>
+        <p class="who"><b>${esc(titleOf(x.key))}</b> ${DECIDES}</p>
         <p class="askbig">Ask: ${esc(x.key.ask)}</p>
         <p class="reach"><button class="act-btn primary" type="button" data-email="${b.idx}">Copy email</button> ${reachOf(x.key)}</p>
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
@@ -2961,6 +2986,10 @@ function wire() {
   // In-page links to one bill are buttons, not #S1234 anchors: some viewers (Claude's artifact
   // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
   document.addEventListener("click", (e) => {
+    const tipBtn = e.target.closest(".tip");
+    for (const t of document.querySelectorAll(".tip.open")) if (t !== tipBtn) t.classList.remove("open");
+    if (tipBtn) { e.preventDefault(); e.stopPropagation(); tipBtn.classList.toggle("open"); tipBtn.classList.contains("open") ? showTip(tipBtn) : hideTip(); return; }
+    hideTip();
     if (e.target.closest("[data-intro-close]")) { try { localStorage.setItem(INTRO_STORE, "hidden"); } catch (err) {} $("howto").hidden = true; return; }
     if (e.target.closest("[data-intro]")) { if ($("howto").hidden) {
       renderIntro(true);
