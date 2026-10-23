@@ -2010,7 +2010,7 @@ function sankey(odds, fate, cfate) {
     const [name, key] = EXITS[i];
     if (i === 0 && cfate) {
       // Died in committee, in four parts.
-      const PARTS = [["none", "Never acted on", "sk-c0"], ["amended", "Amended by the sponsor only", "sk-c1"], ["held", "Held or voted down", "sk-c2"], ["passed", "Passed one committee, died in the next", "sk-c3"]];
+      const PARTS = [["none", "Never acted on", "sk-c0"], ["amended", "Revised by the sponsor, never voted on", "sk-c1"], ["held", "Held or voted down", "sk-c2"], ["passed", "Passed one committee, died in the next", "sk-c3"]];
       const tot = PARTS.reduce((a, [pk]) => a + ((cfate[pk] || [0])[0]), 0) || 1;
       let y = exitTop;
       PARTS.forEach(([pk, , cls]) => { const hh = h(out) * ((cfate[pk] || [0])[0] / tot); g += `<rect class="${cls}" x="${ex}" y="${y}" width="${nodeW}" height="${hh}"/>`; y += hh; });
@@ -2126,7 +2126,7 @@ function renderStats() {
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
   const fate = I.fate?.[t] || {};
   const lawSpan = `${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}`;
-  const COMM_FATE = [["none", "Never acted on"], ["amended", "Amended by the sponsor only"], ["held", "Held or voted down"], ["passed", "Passed one committee, died in the next"]];
+  const COMM_FATE = [["none", "Never acted on"], ["amended", "Revised by the sponsor, never voted on"], ["held", "Held or voted down"], ["passed", "Passed one committee, died in the next"]];
   const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
   const pers = I.persistent?.[t] || [];
   const TRIES = [[p0, "First try", "t0"], [p1, "Second try", "t1"], [p2, "Third try", "t2"], [p3, "Fourth or later", "t3"]];
