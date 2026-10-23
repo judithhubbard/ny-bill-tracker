@@ -553,6 +553,20 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.sankey { overflow-x: auto; margin: 6px 0 14px; }
+.sankey svg { display: block; width: 100%; min-width: 640px; max-width: 1000px; height: auto; }
+.sankey .sk-node { fill: var(--navy); }
+.sankey .sk-go { fill: var(--navy); opacity: .28; }
+.sankey .sk-out { fill: var(--refer); opacity: .45; }
+.sankey .sk-exit { fill: var(--refer); }
+.sankey .sk-law { fill: var(--law-bar); opacity: .45; }
+.sankey .sk-lawn { fill: var(--law-bar); }
+.sankey .sk-veto { fill: var(--veto); opacity: .4; }
+.sankey .sk-veton { fill: var(--veto); }
+.sankey .sk-l { font: 12px var(--body); fill: var(--ink-2); }
+.sankey .sk-b { font-weight: 600; fill: var(--ink); }
+.vrow.sub .lab { padding-left: 16px; border-left: 2px solid var(--rule); }
+.vrow.sub .lab b { font-weight: 500; font-size: 12.5px; }
 .wcard details.morebill { border: 0; border-top: 1px solid var(--rule); background: none; box-shadow: none; margin: 4px 0 0; border-radius: 0; }
 .wcard details.morebill > summary { display: block; padding: 8px 0 0; background: none; border: 0; font-weight: 600; font-size: 13px; color: var(--navy); }
 .wcard details.morebill > summary::before { content: "▸ "; }
@@ -1923,6 +1937,45 @@ function monthChart(I, t) {
     <div class="vrow wide"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 
+// How bills move: a Sankey diagram. Bills flow left to right through each step; at each step a gray
+// band drops down to the bills that stopped there. Band widths are numbers of bills.
+function sankey(odds) {
+  const n = (k) => (odds[k] || [0, 0])[0];
+  const N = [n("intro"), n("floor"), n("house"), n("both")], law = (odds.intro || [0, 0])[1], vetoed = n("vetoed");
+  if (!N[0] || !N[2]) return "";
+  const W = 900, top = 26, H0 = 190, k = H0 / N[0], nodeW = 12, gap = 28;
+  const xs = [0, 1, 2, 3, 4].map((i) => 10 + i * 200);
+  const h = (v) => Math.max(1.5, v * k);
+  const band = (x0, a0, b0, x1, a1, b1, cls) => { const m = (x0 + x1) / 2;
+    return `<path class="${cls}" d="M${x0},${a0} C${m},${a0} ${m},${a1} ${x1},${a1} L${x1},${b1} C${m},${b1} ${m},${b0} ${x0},${b0} Z"/>`; };
+  const pct = (v) => `${Math.round((v / N[0]) * 100)}%`;
+  const STEPS = ["Introduced", "Approved by a committee", "Passed one house", "Passed both houses"];
+  const EXITS = ["Died in committee", "Died awaiting a floor vote", "Passed one house only"];
+  const exitTop = top + H0 + gap;
+  let g = "", labels = "";
+  for (let i = 0; i < 4; i++) {
+    g += `<rect class="sk-node" x="${xs[i]}" y="${top}" width="${nodeW}" height="${h(N[i])}"/>`;
+    labels += `<text class="sk-l" x="${xs[i]}" y="${top - 8}"><tspan class="sk-b">${STEPS[i]}</tspan> ${num(N[i])}</text>`;
+    if (i < 3) {
+      // Continuing bills along the top; the rest drop to an exit below the next step.
+      g += band(xs[i] + nodeW, top, top + h(N[i + 1]), xs[i + 1], top, top + h(N[i + 1]), "sk-go");
+      const out = N[i] - N[i + 1];
+      g += band(xs[i] + nodeW, top + h(N[i + 1]), top + h(N[i]), xs[i + 1], exitTop, exitTop + h(out), "sk-out");
+      g += `<rect class="sk-exit" x="${xs[i + 1]}" y="${exitTop}" width="${nodeW}" height="${h(out)}"/>`;
+      labels += `<text class="sk-l" x="${xs[i + 1] + nodeW + 6}" y="${exitTop + 11}"><tspan class="sk-b">${EXITS[i]}</tspan></text><text class="sk-l" x="${xs[i + 1] + nodeW + 6}" y="${exitTop + 25}">${num(out)} · ${pct(out)}</text>`;
+    }
+  }
+  // Passed both houses: signed or vetoed.
+  const x4 = xs[4];
+  g += band(xs[3] + nodeW, top, top + h(law), x4, top, top + h(law), "sk-law");
+  g += band(xs[3] + nodeW, top + h(law), top + h(law) + h(vetoed), x4, top + h(law) + 14, top + h(law) + 14 + h(vetoed), "sk-veto");
+  g += `<rect class="sk-lawn" x="${x4}" y="${top}" width="${nodeW}" height="${h(law)}"/><rect class="sk-veton" x="${x4}" y="${top + h(law) + 14}" width="${nodeW}" height="${h(vetoed)}"/>`;
+  labels += `<text class="sk-l" x="${x4 + nodeW + 6}" y="${top + 11}"><tspan class="sk-b">Became law</tspan></text><text class="sk-l" x="${x4 + nodeW + 6}" y="${top + 25}">${num(law)} · ${pct(law)}</text>`
+    + `<text class="sk-l" x="${x4 + nodeW + 6}" y="${top + h(law) + 25}"><tspan class="sk-b">Vetoed</tspan> ${num(vetoed)} · ${pct(vetoed)}</text>`;
+  const height = exitTop + h(N[0] - N[1]) + 10;
+  return `<div class="sankey"><svg viewBox="0 0 ${W + 60} ${height}" role="img" aria-label="How bills move from introduction to law">${g}${labels}</svg></div>`;
+}
+
 // The Statistics switch: the same figures for general bills only (leaving out bills about one place,
 // person or group, and namings). The build stores those under "topic|g".
 let STAT_GENERAL = false;
@@ -1932,7 +1985,7 @@ function statView() {
   const pick = (o) => o && Object.fromEntries(Object.keys(o).filter((k) => !k.includes("|")).map((k) => [k, o[`${k}|g`] ?? o[k]]));
   return { ...I, odds: pick(I.odds), persistence: pick(I.persistence), comeback: pick(I.comeback), stuck: pick(I.stuck), fate: pick(I.fate),
     cosponsors: pick(I.cosponsors), party: pick(I.party), months: pick(I.months), monthsNow: pick(I.monthsNow),
-    committees: { current: pick(I.committees.current), past: pick(I.committees.past) } };
+    committees: { current: pick(I.committees.current), past: pick(I.committees.past) }, commFate: pick(I.commFate) };
 }
 function renderStats() {
   const I = statView();
@@ -1949,6 +2002,8 @@ function renderStats() {
   const odds = I.odds[t] || {};
   const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
   $("statOdds").innerHTML = `<h2>Odds of becoming law</h2>
+    ${sankey(odds)}
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. Band widths are numbers of bills.</p>
     <p class="key"><span><i class="k-law"></i>Share that became law</span></p>
     <div class="vlist">${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0];
       return vrow(l, `${num(n)} bills`, [[pctOf(law, n), "l"]], `<b class="big">${pctOf(law, n)}%</b> became law`); }).join("")}</div>
@@ -2012,6 +2067,7 @@ function renderStats() {
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
   const fate = I.fate?.[t] || {};
   const lawSpan = `${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}`;
+  const COMM_FATE = [["none", "Never acted on"], ["amended", "Amended by the sponsor only"], ["held", "Held or voted down"], ["passed", "Passed one committee, died in the next"]];
   const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
   const pers = I.persistent?.[t] || [];
   const TRIES = [[p0, "First try", "t0"], [p1, "Second try", "t1"], [p2, "Third try", "t2"], [p3, "Fourth or later", "t3"]];
@@ -2023,7 +2079,13 @@ function renderStats() {
     <h3 class="sub">Bills that died</h3>
     <p class="key"><span><i class="k-appr"></i>Came back the next session</span><span><i class="k-law"></i>Later became law</span></p>
     <div class="vlist">${FATE.map(([k, l]) => { const [n, back, law] = fate[k] || [0, 0, 0];
-      return vrow(l, `${num(n)} bills`, [[pctOf(back, n), "a"], [pctOf(law, n), "l"]], `${pctOf(back, n)}% came back · <b class="big">${pctOf(law, n)}%</b> law`); }).join("")}</div>
+      const row = vrow(l, `${num(n)} bills`, [[pctOf(back, n), "a"], [pctOf(law, n), "l"]], `${pctOf(back, n)}% came back · <b class="big">${pctOf(law, n)}%</b> law`);
+      // Bills that died in committee, by what happened to them there.
+      const cf = k === "committee" && I.commFate?.[t];
+      return row + (!cf ? "" : COMM_FATE.map(([ck, cl]) => { const [cn, cb, claw] = cf[ck] || [0, 0, 0];
+        return vrow(cl, `${num(cn)} bills`, [[pctOf(cb, cn), "a"], [pctOf(claw, cn), "l"]], `${pctOf(cb, cn)}% came back · <b class="big">${pctOf(claw, cn)}%</b> law`).replace('class="vrow"', 'class="vrow sub"'); }).join(""));
+    }).join("")}</div>
+    <p class="note">“Held”: put on a committee's agenda and held for consideration, tabled or voted down.</p>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${I.pastSessions[0]}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, followed through ${I.pastSessions[I.pastSessions.length - 1] + 1}.</p>
     ${(() => { const [n, moved, law] = I.stuck?.[t] || [0, 0, 0];
       return n ? `<p>Bills that sat in committee all of the first year: <b>${pctOf(moved, n)}%</b> were approved by a committee in the second year, <b>${pctOf(law, n)}%</b> became law.</p>

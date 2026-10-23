@@ -231,6 +231,21 @@ def narrow_kind(title):
     return ""
 
 
+def committee_fate(live):
+    """For a bill still in committee: "passed" (a committee approved it; it died in the next one), "held"
+    (put on an agenda and held, tabled or voted down), "amended" (the sponsor amended it, no vote), or "none"."""
+    acts = [a["text"] for b in live for a in b["actions"]]
+    votes = [v for b in live for v in b.get("votes") or [] if v.get("type") == "COMMITTEE"]
+    aye = lambda v: sum(n for k, n in v["counts"].items() if k.startswith("AYE"))
+    if any(t.startswith(("REPORTED", "COMMITTEE DISCHARGED")) for t in acts) or any(aye(v) > v["counts"].get("NAY", 0) for v in votes):
+        return "passed"
+    if votes or any(t.startswith(("HELD FOR CONSIDERATION", "TABLED", "DEFEATED")) for t in acts):
+        return "held"
+    if any(t.startswith("AMEND") for t in acts):
+        return "amended"
+    return "none"
+
+
 def narrow_bill(r):
     """About one place, person or group, or a naming: the bills the "leave out narrow bills" switches drop."""
     return bool(r["narrow"] or r["places"])
@@ -516,6 +531,7 @@ def load_session(session):
             "topics": topics,
             "places": place_counties(lead["title"] or "", lead["summary"] or "", lead["lawCode"] or ""),
             "narrow": narrow_kind(lead["title"] or ""),
+            "commFate": committee_fate(live),
             "local": "local" in topics or bool(set(laws) & LOCAL_LAWS) or bool(LOCAL_WORDS.search(text)),
             "senDeleg": any(b["chamber"] == "SENATE" and b["district"] in deleg.get("SENATE", ()) for b in live),
             "asmDeleg": any(b["chamber"] == "ASSEMBLY" and b["district"] in deleg.get("ASSEMBLY", ()) for b in live),
@@ -851,7 +867,8 @@ def insights(loaded, hist, current):
     for s in past:
         for r in loaded[s][0]:
             got = reached(r)
-            points = {"intro": True, "floor": got["floor"], "passS": got["passS"], "passA": got["passA"], "both": got["both"]}
+            points = {"intro": True, "floor": got["floor"], "passS": got["passS"], "passA": got["passA"], "both": got["both"],
+                      "house": got["passS"] or got["passA"], "vetoed": r["stage"] == 6}
             for t in topics:
                 if has(r, t):
                     for p, ok in points.items():
@@ -932,6 +949,20 @@ def insights(loaded, hist, current):
                     stuck[t][0] += 1
                     stuck[t][1] += bool(kd[0])
                     stuck[t][2] += r["stage"] == 5
+
+    # Bills that died in committee, by what happened there: [died, back next session, later law].
+    comm_fate = {t: {k: [0, 0, 0] for k in ("none", "amended", "held", "passed")} for t in topics}
+    for s in past[:-1]:
+        for i, r in enumerate(loaded[s][0]):
+            if r["stage"] != 0:
+                continue
+            later = [e for e in hist[s][i].values() if e[0] > s]
+            for t in topics:
+                if has(r, t):
+                    c = comm_fate[t][r["commFate"]]
+                    c[0] += 1
+                    c[1] += any(e[0] == s + 2 for e in later)
+                    c[2] += any(e[2] == 5 for e in later)
 
     # What happened to bills that died, by how far they got: [died, back next session, later law].
     fate = {t: {k: [0, 0, 0] for k in ("committee", "floor", "oneHouse", "vetoed")} for t in topics}
@@ -1050,6 +1081,7 @@ def insights(loaded, hist, current):
         "cosponsors": cosp,
         "party": party,
         "fate": fate,
+        "commFate": comm_fate,
         "persistent": persistent,
         "pastSessions": past,
         "committees": {"current": committee_table([current], minimum=False), "past": committee_table(past)},
