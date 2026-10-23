@@ -17,6 +17,7 @@
   --gold-soft: #f6ead0;
   --signed: #1f7a4d;
   --signed-soft: #dcefe4;
+  --law-bar: #43b072;
   --veto: #b3372b;
   --veto-soft: #f6dedb;
   --pip-off: #e3e8f1;
@@ -29,14 +30,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #0f1626; --sheet: #162036; --ink: #e6ebf5; --ink-2: #a3b0c9; --rule: #2a3754;
-    --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628;
+    --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628; --law-bar: #1f8a50;
     --veto: #ee7d70; --veto-soft: #3d1f1d; --refer: #4f5d7c; --pip-off: #26324b; --chip: #1d2944; --focus: #8fb0f0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #0f1626; --sheet: #162036; --ink: #e6ebf5; --ink-2: #a3b0c9; --rule: #2a3754;
-  --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628;
+  --navy: #8fb0f0; --gold: #e3b04b; --gold-soft: #3a3020; --signed: #5cc28c; --signed-soft: #173628; --law-bar: #1f8a50;
   --veto: #ee7d70; --veto-soft: #3d1f1d; --refer: #4f5d7c; --pip-off: #26324b; --chip: #1d2944; --focus: #8fb0f0;
   color-scheme: dark;
 }
@@ -143,7 +144,7 @@ footer p { margin: 0; max-width: 90ch; }
 .c-floor { background: color-mix(in srgb, var(--navy) 45%, var(--pip-off)); }
 .c-one { background: var(--navy); }
 .c-both { background: var(--gold); }
-.c-law { background: var(--signed); }
+.c-law { background: var(--law-bar); }
 .c-veto { background: var(--veto); }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 5px; }
@@ -183,7 +184,7 @@ table.oc tr.here td { background: var(--chip); }
 table.oc td.bar { width: 24%; text-align: left; }
 table.oc th { vertical-align: bottom; }
 .sharebar { display: flex; align-items: center; gap: 8px; }
-.sharebar i { display: block; height: 8px; background: var(--signed); border-radius: 1px; }
+.sharebar i { display: block; height: 8px; background: var(--law-bar); border-radius: 1px; }
 .sharebar b { font-weight: 600; font-size: 12.5px; }
 .note { font-size: 12.5px; color: var(--ink-2); margin: 0; max-width: 90ch; }
 
@@ -300,7 +301,7 @@ table.oc th { vertical-align: bottom; }
 .vtrack { position: relative; height: 7px; background: var(--pip-off); border-radius: 2px; }
 .vtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
 .vtrack i.a { background: var(--navy); }
-.vtrack i.l { background: var(--signed); }
+.vtrack i.l { background: var(--law-bar); }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
 .net svg { display: block; max-width: 900px; }
@@ -335,7 +336,7 @@ table.oc th { vertical-align: bottom; }
 .vrow.wide { grid-template-columns: minmax(0, 230px) minmax(0, 480px) minmax(0, 200px); }
 .mcol { position: relative; height: 100%; background: var(--pip-off); border-radius: 1px; }
 .mcol i { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 1px; }
-.mcol i.a { background: var(--navy); } .mcol i.l { background: var(--signed); } .mcol i.v { background: var(--veto); }
+.mcol i.a { background: var(--navy); } .mcol i.l { background: var(--law-bar); } .mcol i.v { background: var(--veto); }
 .mcol b { position: absolute; left: -1px; right: -1px; height: 3px; margin-bottom: -1px; background: var(--gold); }
 .mcol.gap, .mcols.axis span.gap { margin-left: 4px; }
 .mcols.axis { height: auto; font: 11px var(--mono, monospace); color: var(--ink-2); text-align: center; }
@@ -345,18 +346,18 @@ table.oc th { vertical-align: bottom; }
 .key .k-tick.now { background: var(--gold); width: 10px !important; height: 2px !important; box-shadow: none; }
 .vtrack i.n, .vtrack .tick.n, .key .k-n, .key .k-tick.n { background: var(--refer); }
 .commctl { display: flex; gap: 20px; flex-wrap: wrap; }
-.vtrack .tick.l { background: var(--signed); }
+.vtrack .tick.l { background: var(--law-bar); }
 .vrow .val { font-size: 12.5px; line-height: 1.25; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .vrow .val b.big { font: 700 14px var(--display); font-stretch: 85%; color: var(--ink); }
 .key .k-tick { width: 3px !important; height: 12px !important; box-shadow: 0 0 0 1px var(--paper); }
 .key .k-tick.a { background: var(--navy); }
-.key .k-tick.l { background: var(--signed); }
+.key .k-tick.l { background: var(--law-bar); }
 .houses { display: grid; gap: 22px; }
 .house h3.sub { margin-bottom: 8px; }
 .house .muted { color: var(--ink-2); font-size: 12.5px; margin: 6px 0 0; }
 .stack { display: flex; height: 22px; border-radius: 4px; overflow: hidden; max-width: 760px; }
 .stack i { display: block; height: 100%; }
-.t0 { background: var(--signed); } .t1 { background: var(--navy); } .t2 { background: var(--gold); } .t3 { background: var(--veto); }
+.t0 { background: var(--law-bar); } .t1 { background: var(--navy); } .t2 { background: var(--gold); } .t3 { background: var(--veto); }
 .key i.t0, .key i.t1, .key i.t2, .key i.t3 { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
 .perscards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .pcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
@@ -427,7 +428,7 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .twobar .track { position: relative; width: 140px; height: 10px; background: var(--pip-off); border-radius: 2px; flex: none; }
 .twobar .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
 .twobar .a { background: var(--navy); }
-.twobar .l { background: var(--signed); }
+.twobar .l { background: var(--law-bar); }
 .twobar b { font-weight: 600; min-width: 34px; color: var(--navy); }
 .twobar em { font-style: normal; color: var(--signed); font-weight: 600; }
 .commsort { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
@@ -438,7 +439,7 @@ table.st.comm thead tr:nth-child(2) th { top: calc(env(safe-area-inset-top, 0px)
 .key span { display: inline-flex; align-items: center; gap: 6px; }
 .key i { width: 12px; height: 10px; border-radius: 2px; display: inline-block; }
 .key .k-appr { background: var(--navy); }
-.key .k-law { background: var(--signed); }
+.key .k-law { background: var(--law-bar); }
 .key .k-veto { background: var(--veto); }
 .twobar .track.wide { width: 220px; }
 .twobar .v { background: var(--veto); }
@@ -450,7 +451,7 @@ table.st.months col.c-mnum { width: 86px; }
 table.st.months td.bar { padding-left: 10px; }
 table.st.months .track { position: relative; display: block; width: 160px; height: 10px; background: var(--pip-off); border-radius: 2px; }
 table.st.months .track i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
-table.st.months .track .l { left: 0; background: var(--signed); }
+table.st.months .track .l { left: 0; background: var(--law-bar); }
 table.st.months .track .v { background: var(--veto); }
 .twobar .track.mid { width: 160px; }
 table.st tr.tot td { font-weight: 700; border-top: 1px solid var(--ink); }
