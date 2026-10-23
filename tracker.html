@@ -236,7 +236,10 @@ table.oc th { vertical-align: bottom; }
 .side-body { display: grid; gap: 16px; }
 .group { display: grid; gap: 8px; }
 .group-h { font: 600 11px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
-.side .field { gap: 4px; }
+.side .field { gap: 5px; }
+.side .field > label:not(.inline):not(.subsel) { font: 600 13px/1.2 var(--body); letter-spacing: 0; text-transform: none; color: var(--ink); }
+.morebody { display: grid; gap: 14px; margin-top: 10px; padding: 12px; background: var(--chip); border-radius: 6px; }
+.side select.on, .side input.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); background: var(--gold-soft); font-weight: 600; }
 .side .topics { gap: 5px; }
 .side .topic { font-size: 12.5px; padding: 4px 9px; }
 .side .toggles { display: grid; gap: 6px; }
@@ -551,12 +554,13 @@ table.st col.c-m { width: 80px; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
 details.morefilters { margin-top: 4px; }
+#topicBox .topics { margin-top: 10px; }
 details.morefilters > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; }
 details.morefilters > summary::-webkit-details-marker { display: none; }
 details.morefilters > summary::after { content: "Show"; font: 600 12px var(--body); letter-spacing: 0; text-transform: none; color: var(--navy); }
 details.morefilters[open] > summary::after { content: "Hide"; }
-details.morefilters #moreCount { margin-left: 6px; color: var(--gold); text-transform: none; letter-spacing: 0; }
-.subsel { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--ink-2); text-transform: none; letter-spacing: 0; font-weight: 400; }
+details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6px; color: var(--gold); text-transform: none; letter-spacing: 0; }
+.side .field .subsel, .subsel { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--ink-2); text-transform: none; letter-spacing: 0; font-weight: 400; }
 .subsel select { width: auto; padding: 4px 8px; font-size: 13px; }
 .tl { position: relative; height: 270px; max-width: 940px; margin: 8px 0 0; padding-left: 96px; }
 .tl .plot { position: relative; height: 100%; }
@@ -684,10 +688,10 @@ details.morefilters #moreCount { margin-left: 6px; color: var(--gold); text-tran
           <div class="group-h">Where it is now</div>
           <div id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
         </div>
-        <div class="group">
-          <div class="group-h">Topic</div>
+        <details class="group morefilters" id="topicBox">
+          <summary class="group-h">Topic <span id="topicCount"></span></summary>
           <div class="topics" id="topics" role="group" aria-label="Filter by topic"></div>
-        </div>
+        </details>
         <div class="field">
           <label for="who">Sponsor</label>
           <input type="search" id="who" list="whoOptions" placeholder="Type a legislator's name" autocomplete="off">
@@ -705,6 +709,7 @@ details.morefilters #moreCount { margin-left: 6px; color: var(--gold); text-tran
         </div>
         <details class="group morefilters" id="moreFilters">
           <summary class="group-h">More filters <span id="moreCount"></span></summary>
+          <div class="morebody">
           <div class="field" id="partyField">
             <label for="party">Party of sponsors and co-sponsors</label>
             <select id="party"><option value="">Any</option></select>
@@ -733,6 +738,7 @@ details.morefilters #moreCount { margin-left: 6px; color: var(--gold); text-tran
           <div class="field">
             <label for="intro">Year introduced</label>
             <select id="intro"><option value="">Either year</option></select>
+          </div>
           </div>
         </details>
       </div>
@@ -2372,9 +2378,13 @@ function selectOptions() {
 }
 const MORE_KEYS = ["party", "progress", "law", "comm", "house", "hist", "intro"];
 function fillSelects() {
+  for (const id of ["who", "law", "area", "changed", ...MORE_KEYS]) $(id)?.classList.toggle("on", !!state[id]);
   const more = MORE_KEYS.filter((k) => state[k]).length;
   $("moreCount").textContent = more ? `${more} active` : "";
   if (more) $("moreFilters").open = true;
+  const nt = state.topics.size;
+  $("topicCount").textContent = nt ? `${nt} selected` : "";
+  if (nt) $("topicBox").open = true;
   for (const [id, [any, opts]] of Object.entries(selectOptions())) {
     const base = BILLS.filter((b) => matches(b, id));
     $(id).innerHTML = `<option value="">${esc(any)}</option>` + opts.map(([v, label, test, hides]) => {
