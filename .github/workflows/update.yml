@@ -35,15 +35,15 @@ jobs:
           echo "CURRENT_SESSION=$(( Y % 2 == 0 ? Y - 1 : Y ))" >> "$GITHUB_ENV"
 
       # When a new session starts, download the one that just ended and commit it (gzipped).
-      # Repeat daily through January 15, since governor actions from the last days of December
-      # can reach the API late; after that, past sessions are never re-downloaded.
+      # Repeat daily through February 15, since the governor has 30 days for bills delivered in late December, and those actions
+      # can reach the API late. After that, past sessions are never re-downloaded.
       - name: Store the previous session
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: |
           PREV=$(( CURRENT_SESSION - 2 ))
           MD=$(TZ=America/New_York date +%m%d)
-          if [ ! -f "data/bills_$PREV.json.gz" ] || [ "$MD" -le "0115" ]; then
+          if [ ! -f "data/bills_$PREV.json.gz" ] || [ "$MD" -le "0215" ]; then
             python3 fetch_bills.py "$PREV"
             gzip -9 -k -f -n "data/bills_$PREV.json"
             git add "data/bills_$PREV.json.gz"

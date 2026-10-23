@@ -849,6 +849,9 @@ def insights(loaded, hist, current):
         return t == "all" or t in r["topics"]
 
     current_comms = {f"{h} · {n}" for r in loaded[current][0] for h, n, _ in r["firstComms"]}
+    # A new session has few bills in its first weeks; until then, use the committees of the one before.
+    if len(loaded[current][0]) < 2000 and past:
+        current_comms |= {f"{h} · {n}" for r in loaded[past[-1]][0] for h, n, _ in r["firstComms"]}
 
     # Where bills die: share of bills each committee let out, current session and past sessions.
     def committee_table(sessions, minimum=True):
