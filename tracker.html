@@ -555,6 +555,7 @@ table.st col.c-m { width: 80px; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
 .tip { position: relative; appearance: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; padding: 0; margin: 0 0 0 3px; border-radius: 50%; border: 1px solid var(--ink-2); background: none; color: var(--ink-2); font: italic 700 10px/1 Georgia, serif; vertical-align: 1px; cursor: help; text-transform: none; letter-spacing: 0; }
+.srow[aria-pressed="true"] .tip { border-color: var(--sheet); color: var(--sheet); }
 #tipbox { position: fixed; z-index: 100; max-width: 260px; padding: 8px 10px; border-radius: 6px; background: var(--ink); color: var(--paper); font: 400 12.5px/1.4 var(--body); box-shadow: 0 4px 14px rgba(0,0,0,.18); pointer-events: none; }
 .tip:hover, .tip:focus-visible, .tip.open { background: var(--navy); border-color: var(--navy); color: var(--sheet); }
 .side label.hidebox { align-items: flex-start; margin-top: 6px; font-size: 13px; color: var(--ink); }
@@ -621,7 +622,6 @@ ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 7
 .statgen { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-2); margin-left: 14px; }
 .tag.narrow { background: none; border: 1px dashed var(--refer); }
 .tag.chap { background: var(--gold-soft); color: var(--ink); cursor: help; }
-.tag.chap i { font-style: normal; display: inline-block; width: 13px; height: 13px; line-height: 13px; text-align: center; border-radius: 50%; background: var(--gold); color: #fff; font-size: 9.5px; margin-left: 2px; }
 .chapam { background: var(--gold-soft); border-radius: 6px; padding: 8px 10px; }
 .tag.vno { background: var(--veto-soft); color: var(--veto); }
 .bill[open] { background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--navy); border-radius: 8px; margin: 14px 0; box-shadow: 0 2px 10px rgba(20, 33, 61, .08); }
@@ -1221,18 +1221,22 @@ function renderPipeline() {
     1: "Approved by committee",
     2: `Senate ${num(oneHouse.Senate)} · Assembly ${num(oneHouse.Assembly)}`,
     3: DATA.current ? "Not yet requested by the governor" : "Never requested by the governor",
-    4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No action recorded",
+    4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No decision in the records",
   };
   const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
-       <span class="sl">${TEXT.pipe[k]}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
+       <span class="sl">${TEXT.pipe[k]}${TIPI((!DATA.current && PAST_STAGE_TIPS[k]) || STAGE_TIPS[k])}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
   // After the second year's last floor votes, only bills that passed both houses can still move.
   $("pipeline").innerHTML = floorVotesOver() ? `
     <div class="pg live"><div class="pg-h">Still in play</div>${[3, 4].map(row).join("")}</div>
     <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
     <div class="pg stale"><div class="pg-h">Out of time ${TIP(OUT_OF_TIME)}<span>Die December 31 unless lawmakers return</span></div>${[0, 1, 2].map(row).join("")}</div>` : `
+    ${!DATA.current ? `
+    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
+    <div class="pg stale"><div class="pg-h">Died</div>${[0, 1, 2, 3].map(row).join("")}</div>
+    ${counts[4] ? `<div class="pg stale">${row(4)}</div>` : ""}` : `
     <div class="pg leg"><div class="pg-h">In the Legislature</div>${[0, 1, 2, 3].map(row).join("")}</div>
     <div class="pg live"><div class="pg-h">With the governor</div>${[4].map(row).join("")}</div>
-    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>`;
+    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>`}`;
 }
 
 function renderTopics() {
@@ -1336,12 +1340,40 @@ function showTip(btn) {
   box.style.top = `${r.bottom + 6 + bh > innerHeight ? r.top - bh - 6 : r.bottom + 6}px`;
 }
 function hideTip() { const box = document.getElementById("tipbox"); if (box) box.hidden = true; }
+document.addEventListener("click", (e) => {
+  const t = e.target.closest?.(".tip");
+  for (const o of document.querySelectorAll(".tip.open")) if (o !== t) o.classList.remove("open");
+  if (!t) { hideTip(); return; }
+  e.preventDefault(); e.stopPropagation();
+  t.classList.toggle("open");
+  t.classList.contains("open") ? showTip(t) : hideTip();
+}, true);
+document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("span.tip")) { e.preventDefault(); e.stopPropagation(); e.target.click(); } }, true);
 document.addEventListener("mouseover", (e) => { const t = e.target.closest?.(".tip"); if (t) showTip(t); });
 document.addEventListener("mouseout", (e) => { const t = e.target.closest?.(".tip"); if (t && !t.classList.contains("open")) hideTip(); });
 document.addEventListener("focusin", (e) => { if (e.target.matches?.(".tip")) showTip(e.target); });
 document.addEventListener("focusout", (e) => { if (e.target.matches?.(".tip")) { e.target.classList.remove("open"); hideTip(); } });
 addEventListener("scroll", hideTip, true);
 const TIP = (text) => `<button type="button" class="tip" aria-label="What this means" data-tip="${esc(text)}">i</button>`;
+// Inside a button or a summary a nested button isn't allowed, so this one is a focusable span.
+const TIPI = (text) => (text ? `<span class="tip" role="button" tabindex="0" aria-label="What this means" data-tip="${esc(text)}">i</span>` : "");
+const STAGE_TIPS = [
+  "Waiting in a committee. Most bills never get out of committee.",
+  "A committee approved it, and it's on the calendar waiting for a vote of the full Senate or Assembly. Leaders decide which bills get a vote.",
+  "Passed the Senate or the Assembly, but not both. Both houses have to pass the same text.",
+  "Passed both houses and waiting for the governor's office to request it. Her 10-day clock starts only when it's delivered.",
+  "Delivered to the governor. She has 10 days, not counting Sundays, to sign or veto it.",
+  "Signed into law and given a chapter number.",
+  "Vetoed by the governor. The Legislature can override a veto with two-thirds of each house, but rarely does.",
+];
+const HELD_TIP = "Put on a committee's agenda, then set aside without a vote: “held for consideration” in the Assembly, “tabled” in the Senate. Committees rarely vote bills down; they hold them instead.";
+const PAST_STAGE_TIPS = [
+  "Never got out of committee before the session ended.",
+  "A committee approved it, but it never got a vote of the full house.",
+  "Passed the Senate or the Assembly, but not both.",
+  "Passed both houses, but the governor's office never requested it, so it never reached her.",
+  "Sent to the governor, but the records show no signature or veto.",
+];
 const OUT_OF_TIME = "Floor votes for this session are over. A bill that hasn't passed both houses can move only if lawmakers return for a special session; otherwise it dies December 31 and has to be reintroduced.";
 const DECIDES = `<span class="decides">Decides</span>${TIP('The person whose decision moves the bill to its next step.')}`;
 const govItem = (ask) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
@@ -2191,7 +2223,7 @@ function renderStats() {
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
   const fate = I.fate?.[t] || {};
   const lawSpan = `${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}`;
-  const COMM_FATE = [["none", "Never acted on"], ["amended", "Revised by the sponsor, never voted on"], ["held", "Held without a vote"], ["defeated", "Voted down"], ["passed", "Passed one committee, died in the next"]];
+  const COMM_FATE = [["none", "Never acted on"], ["amended", "Revised by the sponsor, never voted on"], ["held", `Held without a vote${TIP(HELD_TIP)}`], ["defeated", "Voted down"], ["passed", "Passed one committee, died in the next"]];
   const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
   const pers = I.persistent?.[t] || [];
   const TRIES = [[p0, "First try", "t0"], [p1, "Second try", "t1"], [p2, "Third try", "t2"], [p3, "Fourth or later", "t3"]];
@@ -2461,7 +2493,7 @@ function partyTag(b) {
 function billRow(b) {
       const [first, second] = b.nums;
       const noes = DATA.current ? votePeople().filter((L) => floorVote(b, L) === "No") : [];
-      const chap = amendedBills(b) ? `<span class="tag chap" title="${esc(CHAPTER_AMENDMENT)}">Chapter amendment <i aria-hidden="true">?</i></span>` : "";
+      const chap = amendedBills(b) ? `<span class="tag chap">Chapter amendment${TIPI(CHAPTER_AMENDMENT)}</span>` : "";
       const narrowTag = { person: "For one person", org: "For one group", naming: "Road or place naming" }[b.narrow];
       const tags = (narrowTag ? `<span class="tag narrow">${narrowTag}</span>` : "") + chap + noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
@@ -2614,7 +2646,7 @@ function publishBox() {
   if (mine) return `<div class="pubbox"><p><b>Published as “${esc(mine.title)}”</b>${mine.group ? ` · ${esc(mine.group)}` : ""}. Anyone with this link sees it:</p>
     <p class="sharerow"><input type="text" readonly value="${esc(listUrl(mine.slug))}" aria-label="Published list link"> <button class="act-btn" type="button" data-pub="copy">Copy link</button></p>
     <p><button class="act-btn" type="button" data-pub="update">Update the published list</button> <span class="muted" id="pubMsg">Changes to your watchlist show up for others after you click this.</span></p>
-    <details class="pubmore"><summary>Edit key, to update this list from another computer</summary><p class="muted">Keep it private: anyone with it can change the list.</p>
+    <details class="pubmore"><summary>Edit key, to update this list from another computer${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private: anyone with it can change the list.</p>
       <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
   return `<details class="pubbox"><summary>Publish this list for others to follow</summary>
     <p class="muted">A published list has its own link and changes for everyone when you update it. Publishing needs an invite code.</p>
@@ -2986,10 +3018,6 @@ function wire() {
   // In-page links to one bill are buttons, not #S1234 anchors: some viewers (Claude's artifact
   // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
   document.addEventListener("click", (e) => {
-    const tipBtn = e.target.closest(".tip");
-    for (const t of document.querySelectorAll(".tip.open")) if (t !== tipBtn) t.classList.remove("open");
-    if (tipBtn) { e.preventDefault(); e.stopPropagation(); tipBtn.classList.toggle("open"); tipBtn.classList.contains("open") ? showTip(tipBtn) : hideTip(); return; }
-    hideTip();
     if (e.target.closest("[data-intro-close]")) { try { localStorage.setItem(INTRO_STORE, "hidden"); } catch (err) {} $("howto").hidden = true; return; }
     if (e.target.closest("[data-intro]")) { if ($("howto").hidden) {
       renderIntro(true);
