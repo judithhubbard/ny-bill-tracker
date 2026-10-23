@@ -571,6 +571,7 @@ table.st col.c-m { width: 80px; }
 .sankey .sk-veton { fill: var(--veto); }
 .sankey .sk-l { font: 12px var(--body); fill: var(--ink-2); }
 .sankey .sk-b { font-weight: 600; fill: var(--ink); }
+.sankey .sk-p { font: 700 11.5px var(--body); fill: var(--ink); }
 .vrow.sub .lab { padding-left: 16px; border-left: 2px solid var(--rule); }
 .vrow.sub .lab b { font-weight: 500; font-size: 12.5px; }
 .wcard details.morebill { border: 0; border-top: 1px solid var(--rule); background: none; box-shadow: none; margin: 4px 0 0; border-radius: 0; }
@@ -1990,7 +1991,8 @@ function sankey(odds, fate, cfate) {
   const back = (key) => { const f = fate?.[key]; return f && f[0] ? `${pct(f[1], f[0])} reintroduced next session` : ""; };
   const STEPS = ["Introduced", "Approved by a committee", "Passed one house", "Passed both houses"];
   const EXITS = [["Died in committee", "committee"], ["Died awaiting a floor vote", "floor"], ["Passed one house only", "oneHouse"]];
-  const exitTop = top + H0 + gap;
+  // Each exit sits just under the step it leaves to, so the exits step down instead of sharing one line.
+  let exitTop = 0, bottom = 0;
   const label = (x, y, lines) => lines.filter(Boolean).map((l, i) => `<text class="sk-l${i ? "" : " sk-b"}" x="${x}" y="${y + i * 15}">${l}</text>`).join("");
   let g = "", labels = "";
   for (let i = 0; i < 4; i++) {
@@ -1998,7 +2000,12 @@ function sankey(odds, fate, cfate) {
     labels += `<text class="sk-l" x="${xs[i]}" y="${top - 10}"><tspan class="sk-b">${STEPS[i]}</tspan> ${num(N[i])}</text>`;
     if (i === 3) break;
     g += band(xs[i] + nodeW, top, top + h(N[i + 1]), xs[i + 1], top, top + h(N[i + 1]), "sk-go");
+    // On each band: the share of the bills at this step that went this way.
+    labels += `<text class="sk-p" x="${xs[i] + nodeW + 6}" y="${top + Math.max(h(N[i + 1]) / 2 + 4, 12)}">${pct(N[i + 1], N[i])}</text>`
+      + `<text class="sk-p" x="${xs[i] + nodeW + 6}" y="${top + h(N[i + 1]) + 16}">${pct(N[i] - N[i + 1], N[i])}</text>`;
     const out = N[i] - N[i + 1], ex = xs[i + 1];
+    exitTop = top + h(N[i + 1]) + gap;
+    bottom = Math.max(bottom, exitTop + Math.max(h(out), i === 0 && cfate ? 120 : 50));
     g += band(xs[i] + nodeW, top + h(N[i + 1]), top + h(N[i]), ex, exitTop, exitTop + h(out), "sk-out");
     const [name, key] = EXITS[i];
     if (i === 0 && cfate) {
@@ -2019,10 +2026,12 @@ function sankey(odds, fate, cfate) {
   const x4 = xs[4], vy = top + h(law) + 22;
   g += band(xs[3] + nodeW, top, top + h(law), x4, top, top + h(law), "sk-law");
   g += band(xs[3] + nodeW, top + h(law), top + h(law) + h(vetoed), x4, vy, vy + h(vetoed), "sk-veto");
+  labels += `<text class="sk-p" x="${xs[3] + nodeW + 6}" y="${top + Math.max(h(law) / 2 + 4, 12)}">${pct(law, N[3])}</text>`
+    + `<text class="sk-p" x="${xs[3] + nodeW + 6}" y="${top + h(law) + 16}">${pct(vetoed, N[3])}</text>`;
   g += `<rect class="sk-lawn" x="${x4}" y="${top}" width="${nodeW}" height="${h(law)}"/><rect class="sk-veton" x="${x4}" y="${vy}" width="${nodeW}" height="${h(vetoed)}"/>`;
   labels += label(x4 + nodeW + 8, top + 11, ["Became law", `${num(law)} · ${pct(law)} of bills`]);
   labels += label(x4 + nodeW + 8, vy + 8, ["Vetoed", `${num(vetoed)} · ${pct(vetoed)} of bills`, back("vetoed")]);
-  const height = exitTop + Math.max(h(N[0] - N[1]), 120) + 12;
+  const height = Math.max(bottom, top + H0) + 12;
   return `<div class="sankey"><svg viewBox="0 0 ${W + 150} ${height}" role="img" aria-label="How bills move from introduction to law">${g}${labels}</svg></div>`;
 }
 
@@ -2053,7 +2062,7 @@ function renderStats() {
   const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
   $("statOdds").innerHTML = `<h2>Odds of becoming law</h2>
     ${sankey(odds, I.fate?.[t], I.commFate?.[t])}
-    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. Band widths are numbers of bills.</p>
+    <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. Band widths are numbers of bills; the percentage on each band is the share of the bills at that step that went that way.</p>
     <p class="key"><span><i class="k-law"></i>Share that became law</span></p>
     <div class="vlist">${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0];
       return vrow(l, `${num(n)} bills`, [[pctOf(law, n), "l"]], `<b class="big">${pctOf(law, n)}%</b> became law`); }).join("")}</div>
