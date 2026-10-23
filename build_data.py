@@ -1075,9 +1075,12 @@ def insights(loaded, hist, current):
                     continue
                 n += 1
                 law += r["stage"] == 5
-                kk = kinds["n" if narrow_bill(r) else "g"]
-                kk[0] += 1
-                kk[1] += r["stage"] == 5
+                kind = "n" if narrow_bill(r) else "g"
+                # By kind, and by topic within kind ("env|g"), for each bill's own odds line.
+                for key in [kind] + [f"{tp}|{kind}" for tp in r["topics"]]:
+                    kk = kinds.setdefault(key, [0, 0])
+                    kk[0] += 1
+                    kk[1] += r["stage"] == 5
         waiting = {"date": md, "year": year, "n": n, "law": law, "kinds": kinds}
 
     return {

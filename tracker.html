@@ -1650,6 +1650,8 @@ const ODDS_POINTS = [
 // with past bills of its own kind.
 const isNarrow = (b) => !!(b.narrow || b.places.length);
 function oddsLine(b) {
+  // Constitutional amendments don't go to the governor.
+  if (b.topics.includes("const")) return "A constitutional amendment doesn't go to the governor: it has to pass two separately elected Legislatures, then the voters.";
   const kind = isNarrow(b) ? "n" : "g";
   const like = kind === "n" ? "bills about one place, person or group" : "bills not about one place, person or group";
   const odds = DATA.insights?.odds?.[`all|${kind}`] || DATA.insights?.odds?.all;
@@ -1657,16 +1659,20 @@ function oddsLine(b) {
   const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
   const [n, law] = odds[point] || [0, 0];
   if (!n) return "";
+  const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
+  // The same figure for each of the bill's topics, where past sessions had enough such bills.
+  const rates = b.topics.map((t) => { const o = DATA.insights?.odds?.[`${t}|${kind}`]?.[point]; return o && o[0] >= 40 ? `${esc(TOPICS[t])} ${pctOf(o[1], o[0])}%` : ""; }).filter(Boolean);
+  const byTopic = rates.length ? ` By topic, of those that ${label}: ${rates.join(" · ")}.` : "";
   // Not yet requested: compare with bills still waiting on this same date in past sessions.
   const w = DATA.insights?.waiting;
   const [wn, wl] = w?.kinds?.[kind] || [w?.n, w?.law];
   if (b.stage === 3 && w && wn >= 30) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.`;
+    const wt = b.topics.map((t) => { const x = w.kinds?.[`${t}|${kind}`]; return x && x[0] >= 30 ? `${esc(TOPICS[t])} ${pctOf(x[1], x[0])}%` : ""; }).filter(Boolean);
+    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.${wt.length ? ` By topic: ${wt.join(" · ")}.` : ""}`;
   }
-  const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
-  return `Past sessions: ${pctOf(law, n)}% of ${like} that ${label} became law.`;
+  return `Past sessions: ${pctOf(law, n)}% of ${like} that ${label} became law.${byTopic}`;
 }
 
 // One bar: full length is the share approved by committee; the darker part, the share that became law.
