@@ -232,14 +232,17 @@ def narrow_kind(title):
 
 
 def committee_fate(live):
-    """For a bill still in committee: "passed" (a committee approved it; it died in the next one), "held"
-    (put on an agenda and held, tabled or voted down), "amended" (the sponsor amended it, no vote), or "none"."""
+    """For a bill still in committee: "passed" (a committee approved it; it died in the next one), "defeated"
+    (a committee voted it down), "held" (put on an agenda and held for consideration or tabled, no vote),
+    "amended" (the sponsor revised it, no vote), or "none"."""
     acts = [a["text"] for b in live for a in b["actions"]]
     votes = [v for b in live for v in b.get("votes") or [] if v.get("type") == "COMMITTEE"]
     aye = lambda v: sum(n for k, n in v["counts"].items() if k.startswith("AYE"))
     if any(t.startswith(("REPORTED", "COMMITTEE DISCHARGED")) for t in acts) or any(aye(v) > v["counts"].get("NAY", 0) for v in votes):
         return "passed"
-    if votes or any(t.startswith(("HELD FOR CONSIDERATION", "TABLED", "DEFEATED")) for t in acts):
+    if votes or any(t.startswith("DEFEATED") for t in acts):
+        return "defeated"
+    if any(t.startswith(("HELD FOR CONSIDERATION", "TABLED")) for t in acts):
         return "held"
     if any(t.startswith("AMEND") for t in acts):
         return "amended"
@@ -951,7 +954,7 @@ def insights(loaded, hist, current):
                     stuck[t][2] += r["stage"] == 5
 
     # Bills that died in committee, by what happened there: [died, back next session, later law].
-    comm_fate = {t: {k: [0, 0, 0] for k in ("none", "amended", "held", "passed")} for t in topics}
+    comm_fate = {t: {k: [0, 0, 0] for k in ("none", "amended", "held", "defeated", "passed")} for t in topics}
     for s in past[:-1]:
         for i, r in enumerate(loaded[s][0]):
             if r["stage"] != 0:

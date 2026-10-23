@@ -565,6 +565,7 @@ table.st col.c-m { width: 80px; }
 .sankey .sk-c1 { fill: var(--gold); }
 .sankey .sk-c2 { fill: var(--veto); }
 .sankey .sk-c3 { fill: var(--navy); }
+.sankey .sk-c4 { fill: var(--ink); }
 .sankey .sk-law { fill: var(--law-bar); opacity: .45; }
 .sankey .sk-lawn { fill: var(--law-bar); }
 .sankey .sk-veto { fill: var(--veto); opacity: .4; }
@@ -2005,18 +2006,18 @@ function sankey(odds, fate, cfate) {
       + `<text class="sk-p" x="${xs[i] + nodeW + 6}" y="${top + h(N[i + 1]) + 16}">${pct(N[i] - N[i + 1], N[i])}</text>`;
     const out = N[i] - N[i + 1], ex = xs[i + 1];
     exitTop = top + h(N[i + 1]) + gap;
-    bottom = Math.max(bottom, exitTop + Math.max(h(out), i === 0 && cfate ? 120 : 50));
+    bottom = Math.max(bottom, exitTop + Math.max(h(out), i === 0 && cfate ? 137 : 50));
     g += band(xs[i] + nodeW, top + h(N[i + 1]), top + h(N[i]), ex, exitTop, exitTop + h(out), "sk-out");
     const [name, key] = EXITS[i];
     if (i === 0 && cfate) {
       // Died in committee, in four parts.
-      const PARTS = [["none", "Never acted on", "sk-c0"], ["amended", "Revised by the sponsor, never voted on", "sk-c1"], ["held", "Held or voted down", "sk-c2"], ["passed", "Passed one committee, died in the next", "sk-c3"]];
+      const PARTS = [["none", "Never acted on", "sk-c0"], ["amended", "Revised by the sponsor, never voted on", "sk-c1"], ["held", "Held without a vote", "sk-c2"], ["defeated", "Voted down", "sk-c4"], ["passed", "Passed one committee, died in the next", "sk-c3"]];
       const tot = PARTS.reduce((a, [pk]) => a + ((cfate[pk] || [0])[0]), 0) || 1;
       let y = exitTop;
       PARTS.forEach(([pk, , cls]) => { const hh = h(out) * ((cfate[pk] || [0])[0] / tot); g += `<rect class="${cls}" x="${ex}" y="${y}" width="${nodeW}" height="${hh}"/>`; y += hh; });
       labels += label(ex + nodeW + 8, exitTop + 11, [name, `${num(out)} · ${pct(out)} of bills`, back(key)]);
       labels += PARTS.map(([pk, pl, cls], j) => { const [cn, , claw] = cfate[pk] || [0, 0, 0];
-        return `<rect class="${cls}" x="${ex + nodeW + 8}" y="${exitTop + 50 + j * 17}" width="9" height="9"/><text class="sk-l" x="${ex + nodeW + 22}" y="${exitTop + 58 + j * 17}">${pl} ${pct(cn, tot)}</text>`; }).join("");
+        return `<rect class="${cls}" x="${ex + nodeW + 8}" y="${exitTop + 50 + j * 17}" width="9" height="9"/><text class="sk-l" x="${ex + nodeW + 22}" y="${exitTop + 58 + j * 17}">${pl} ${cn && cn / tot < 0.005 ? `(${num(cn)} bills)` : pct(cn, tot)}</text>`; }).join("");
     } else {
       g += `<rect class="sk-exit" x="${ex}" y="${exitTop}" width="${nodeW}" height="${h(out)}"/>`;
       labels += label(ex + nodeW + 8, exitTop + 11, [name, `${num(out)} · ${pct(out)} of bills`, back(key)]);
@@ -2126,7 +2127,7 @@ function renderStats() {
   const [p0, p1, p2, p3, total] = I.persistence[t] || [0, 0, 0, 0, 0];
   const fate = I.fate?.[t] || {};
   const lawSpan = `${I.pastSessions[1]}–${String(I.pastSessions[I.pastSessions.length - 1] + 1).slice(2)}`;
-  const COMM_FATE = [["none", "Never acted on"], ["amended", "Revised by the sponsor, never voted on"], ["held", "Held or voted down"], ["passed", "Passed one committee, died in the next"]];
+  const COMM_FATE = [["none", "Never acted on"], ["amended", "Revised by the sponsor, never voted on"], ["held", "Held without a vote"], ["defeated", "Voted down"], ["passed", "Passed one committee, died in the next"]];
   const FATE = [["committee", "Died in committee"], ["floor", "Died awaiting a floor vote"], ["oneHouse", "Passed one house only"], ["vetoed", "Vetoed"]];
   const pers = I.persistent?.[t] || [];
   const TRIES = [[p0, "First try", "t0"], [p1, "Second try", "t1"], [p2, "Third try", "t2"], [p3, "Fourth or later", "t3"]];
@@ -2144,7 +2145,7 @@ function renderStats() {
       return row + (!cf ? "" : COMM_FATE.map(([ck, cl]) => { const [cn, cb, claw] = cf[ck] || [0, 0, 0];
         return vrow(cl, `${num(cn)} bills`, [[pctOf(cb, cn), "a"], [pctOf(claw, cn), "l"]], `${pctOf(cb, cn)}% came back · <b class="big">${pctOf(claw, cn)}%</b> law`).replace('class="vrow"', 'class="vrow sub"'); }).join(""));
     }).join("")}</div>
-    <p class="note">“Held”: put on a committee's agenda and held for consideration, tabled or voted down.</p>
+    <p class="note">“Held without a vote”: put on a committee's agenda, then held for consideration (Assembly) or tabled (Senate). Committees rarely vote bills down; they hold them instead.</p>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${I.pastSessions[0]}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, followed through ${I.pastSessions[I.pastSessions.length - 1] + 1}.</p>
     ${(() => { const [n, moved, law] = I.stuck?.[t] || [0, 0, 0];
       return n ? `<p>Bills that sat in committee all of the first year: <b>${pctOf(moved, n)}%</b> were approved by a committee in the second year, <b>${pctOf(law, n)}%</b> became law.</p>
