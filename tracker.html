@@ -718,8 +718,8 @@ table.st col.c-m { width: 80px; }
             <select id="intro"><option value="">Either year</option></select>
           </div>
           <div class="field">
-            <label for="area">Places named</label>
-            <select id="area"><option value="">Anywhere</option></select>
+            <label for="area">Places</label>
+            <select id="area"><option value="">All places</option></select>
           </div>
           <div class="field" id="changedField">
             <label for="changed">New activity</label>
@@ -892,10 +892,11 @@ const PAGE = 100;
 const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "area", "changed"];
 const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", area: "", changed: "", shown: PAGE });
 
-// Bills that name Tompkins County or a place in it, in the title or summary.
+// "Places": leave out bills only about somewhere else, or keep only bills naming Tompkins County.
 const AREAS = {
+  near: { label: "Leave out bills only about other places", chip: "Leaving out bills only about other places", test: (b) => !b.elsewhere },
   // Town names that are also common words or other places count only as "town/village of".
-  tompkins: { label: "Tompkins County", re: /\b(Tompkins|Ithaca|Dryden|Trumansburg|Cayuga Heights|Freeville|(town|village)s? of (Lansing|Groton|Caroline|Danby|Enfield|Newfield|Ulysses))\b/i },
+  tompkins: { label: "Names Tompkins County", chip: "Names Tompkins County", test: (b) => AREAS.tompkins.re.test(`${b.title} ${b.summary}`), re: /\b(Tompkins|Ithaca|Dryden|Trumansburg|Cayuga Heights|Freeville|(town|village)s? of (Lansing|Groton|Caroline|Danby|Enfield|Newfield|Ulysses))\b/i },
 };
 // The day of this browser's previous visit, for "new activity since your last visit".
 let LAST_VISIT = "";
@@ -1029,7 +1030,7 @@ function matches(b, skip) {
   if (state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (state.intro && b.intro !== +state.intro) return false;
   if (state.party && b.parties !== state.party) return false;
-  if (state.area && !AREAS[state.area].re.test(`${b.title} ${b.summary}`)) return false;
+  if (state.area && !AREAS[state.area]?.test(b)) return false;
   if (state.changed && !CHANGED[state.changed].test(b)) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -2128,7 +2129,7 @@ function activeFilters() {
   if (state.house) out.push(["house", null, "Version in", opt("house", state.house)]);
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
   if (state.intro) out.push(["intro", null, "Introduced", state.intro]);
-  if (state.area) out.push(["area", null, "Names", AREAS[state.area].label]);
+  if (state.area && AREAS[state.area]) out.push(["area", null, "Places", AREAS[state.area].chip]);
   if (state.changed) out.push(["changed", null, "New activity", CHANGED[state.changed].label()]);
   return out;
 }
@@ -2625,7 +2626,7 @@ function decode(raw) {
       earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
       laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
       passedIn: passedIn || null, last: day(last),
-      sen: !!(flags & 2), asm: !!(flags & 8), budget: !!(flags & 4), passedS: !!(flags & 16), passedA: !!(flags & 32),
+      sen: !!(flags & 2), asm: !!(flags & 8), budget: !!(flags & 4), passedS: !!(flags & 16), passedA: !!(flags & 32), elsewhere: !!(flags & 64),
       nums: v.map((x) => x.p), sponsors: v.map((x) => x.sponsor).filter(Boolean), vers: v,
     };
   });
@@ -2755,8 +2756,8 @@ function hydrate(raw) {
   $("house").innerHTML = `<option value="">Either house</option>` + Object.entries(HOUSES)
     .map(([k, l]) => `<option value="${k}">${l} (${num(BILLS.filter((b) => b.house === k).length)})</option>`).join("");
   $("comm").innerHTML = `<option value="">All committees</option>` + raw.commList.map(([c, n]) => `<option value="${esc(c)}">${esc((COMM_LABELS[c] || c).replace(/ And /g, " and "))} (${num(n)})</option>`).join("");
-  $("area").innerHTML = `<option value="">Anywhere</option>` + Object.entries(AREAS)
-    .map(([k, a]) => `<option value="${k}">${esc(a.label)} (${num(BILLS.filter((b) => a.re.test(`${b.title} ${b.summary}`)).length)})</option>`).join("");
+  $("area").innerHTML = `<option value="">All places</option>` + Object.entries(AREAS)
+    .map(([k, a]) => `<option value="${k}">${esc(a.label)} (${num(BILLS.filter(a.test).length)})</option>`).join("");
   $("changed").innerHTML = `<option value="">Any time</option>` + Object.entries(CHANGED)
     .filter(([k]) => k !== "visit" || LAST_VISIT).map(([k, c]) => `<option value="${k}">${esc(c.label())} (${num(BILLS.filter(c.test).length)})</option>`).join("");
   $("changedField").hidden = !raw.current;
