@@ -3,6 +3,9 @@ name: Update bill tracker
 on:
   schedule:
     - cron: "0 10 * * *"   # every day at 10:00 UTC (6 a.m. Eastern in summer, 5 a.m. in winter)
+    # During the session (January-June), also four times each weekday, so committee agendas posted
+    # during the day (Senate agendas usually Thursday afternoon, added bills often the day before) show up.
+    - cron: "0 13,16,19,22 * 1-6 1-5"
   workflow_dispatch:        # "Run workflow" button on the Actions tab
   push:
     branches: [main]

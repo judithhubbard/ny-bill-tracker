@@ -553,6 +553,7 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.tag.narrow { background: none; border: 1px dashed var(--refer); }
 .tag.chap { background: var(--gold-soft); color: var(--ink); cursor: help; }
 .tag.chap i { font-style: normal; display: inline-block; width: 13px; height: 13px; line-height: 13px; text-align: center; border-radius: 50%; background: var(--gold); color: #fff; font-size: 9.5px; margin-left: 2px; }
 .chapam { background: var(--gold-soft); border-radius: 6px; padding: 8px 10px; }
@@ -730,8 +731,8 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
           <span class="subsel" id="votedWho"></span>
         </div>
         <div class="field">
-          <label for="area">Places</label>
-          <select id="area"><option value="">All places</option></select>
+          <label for="area">Which bills</label>
+          <select id="area"><option value="">All bills</option></select>
           <label class="subsel">Your county <select id="homeCounty"></select></label>
         </div>
         <div class="field" id="changedField">
@@ -945,6 +946,9 @@ try { HOME = localStorage.getItem("abt:county") || HOME; } catch (e) {}
 const AREAS = {
   near: { label: () => "Leave out bills only about other counties", chip: () => `Leaving out bills only about counties other than ${HOME}`,
     test: (b) => !b.places.length || b.places.includes(HOME), hides: true },
+  broad: { label: () => "Also leave out bills for one person or group, and road namings",
+    chip: () => `Leaving out other counties' bills, bills for one person or group, and road namings`,
+    test: (b) => b.places.includes(HOME) || (!b.places.length && !b.narrow), hides: true },
   about: { label: () => `About ${HOME} County`, chip: () => `About ${HOME} County`, test: (b) => b.places.includes(HOME) },
 };
 
@@ -2227,7 +2231,8 @@ function billRow(b) {
       const [first, second] = b.nums;
       const noes = DATA.current ? votePeople().filter((L) => floorVote(b, L) === "No") : [];
       const chap = amendedBills(b) ? `<span class="tag chap" title="${esc(CHAPTER_AMENDMENT)}">Chapter amendment <i aria-hidden="true">?</i></span>` : "";
-      const tags = chap + noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
+      const narrowTag = { person: "For one person", org: "For one group", naming: "Road or place naming" }[b.narrow];
+      const tags = (narrowTag ? `<span class="tag narrow">${narrowTag}</span>` : "") + chap + noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
       return `<details class="bill" data-idx="${b.idx}">
         <summary>
@@ -2263,7 +2268,7 @@ function activeFilters() {
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
   if (state.intro) out.push(["intro", null, "Introduced", state.intro]);
   if (state.voted) out.push(["voted", null, "Vote", opt("voted", state.voted)]);
-  if (state.area && AREAS[state.area]) out.push(["area", null, "Places", AREAS[state.area].chip()]);
+  if (state.area && AREAS[state.area]) out.push(["area", null, "Which bills", AREAS[state.area].chip()]);
   if (state.changed) out.push(["changed", null, "New activity", CHANGED[state.changed].label()]);
   return out;
 }
@@ -2485,7 +2490,7 @@ function selectOptions() {
     party: ["Any", Object.entries(PARTIES).map(([k, l]) => [k, l, (b) => b.parties === k])],
     house: ["Either house", Object.entries(HOUSES).map(([k, l]) => [k, l, (b) => b.house === k])],
     comm: ["All committees", DATA.commList.map(([c]) => [c, (COMM_LABELS[c] || c).replace(/ And /g, " and "), (b) => b.comms.includes(c)])],
-    area: ["All places", Object.entries(AREAS).map(([k, a]) => [k, a.label(), a.test, a.hides])],
+    area: ["All bills", Object.entries(AREAS).map(([k, a]) => [k, a.label(), a.test, a.hides])],
     voted: ["Any vote", DATA.current ? (() => {
       const people = votePeople(), out = [];
       if (people.length > 1) out.push(["any|No", "Either of them voted no"]);
@@ -2806,7 +2811,7 @@ function decode(raw) {
       earlier: hist.filter((e) => e[0] < raw.session), later: hist.filter((e) => e[0] > raw.session),
       laws: laws.map(str), comms: comms.map(str), law: str(law), program: str(program), comm: str(comm),
       passedIn: passedIn || null, last: day(last),
-      sen: !!(flags & 2), asm: !!(flags & 8), budget: !!(flags & 4), passedS: !!(flags & 16), passedA: !!(flags & 32),
+      sen: !!(flags & 2), asm: !!(flags & 8), budget: !!(flags & 4), passedS: !!(flags & 16), passedA: !!(flags & 32), narrow: ["", "person", "org", "naming"][(flags >> 6) & 3],
       nums: v.map((x) => x.p), sponsors: v.map((x) => x.sponsor).filter(Boolean), vers: v,
     };
   });

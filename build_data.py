@@ -195,6 +195,42 @@ REACHES_BEYOND = re.compile(r"\b(statewide|each county|every county|all counties
                             r"other than|excluding|limits the application|the counties and|counties and the city)\b", re.I)
 
 
+# Bills for one named person or organization, and namings of roads and bridges: stock formats such as
+# "Grants retroactive tier IV membership ... to Katie Adamek", "Authorizes the Congregation Atzei Chaim to
+# receive retroactive real property tax exempt status", "Dedicates a portion of the state highway system to ...".
+_NOT_NAME = set("""New York State County City Town Village Police Department Fire Retirement System Tier Local Employees Authority
+Sheriff Correction Correctional Office Commissioner University College Court Supreme Family Civil Service Teachers Transit Metropolitan
+Island Long Nassau Suffolk Westchester Erie Monroe Department's Board District School Union Free Central Volunteer Benevolent
+Association Inc Corporation Church Congregation Temple Foundation Society Hospital Center Highway Bridge Memorial Route Parkway
+Expressway Thruway Lake River Park Medicaid SUNY CUNY MTA Act Law Program Fund Trust Agency Development Housing Water Sewer Library
+Cemetery Lodge Post Club Academy Museum Health Council Senate Assembly Governor Comptroller Attorney General Division Bureau Unit
+Office's Troopers Trooper Parks Disease Syndrome Cancer Nation Indian Brook Creek United States America World Trade War Veterans
+Native American NY NYS Status""".split())
+_PERSON = re.compile(r"\b((?:[A-Z][a-z'’]+|[A-Z]\.)(?: (?:[A-Z]\.|[A-Z][a-z'’-]+|Mc[A-Z][a-z]+|O'[A-Z][a-z]+)){1,3})")
+_BENEFIT = re.compile(r"service credit|retirement|disability|death benefit|\btier\b|pension|civil service (?:examination|exam|list)|eligib|"
+                      r"sick leave|reinstat|deemed|appointed|accidental|vested|membership|annuity|survivor|widow|spouse|wife of|husband of|"
+                      r"salary|back pay|seniority|probationary|age requirement|maximum age|competitive", re.I)
+_ORG_TAX = re.compile(r"real property tax(?:es)? exempt|exempt(?:ion)? from (?:real property|school) tax|tax exempt status|"
+                      r"application for (?:an )?exemption|retroactive real property tax|from real property taxation", re.I)
+_NAMING = re.compile(r"^(?:Dedicates|Designates|Names|Renames|Redesignates)\b.*\b(?:portion|bridge|segment|section|route|interchange|"
+                     r"highway|overpass|memorial|building|facility|courthouse|post office|park|trail|exit)\b|\bMemorial (?:Highway|Bridge|Way|Parkway)\b", re.I)
+NARROW_KINDS = ["", "person", "org", "naming"]
+
+
+def narrow_kind(title):
+    """"person", "org" or "naming" for the stock narrow formats; "" otherwise."""
+    if _NAMING.search(title):
+        return "naming"
+    t = title[:1].lower() + title[1:]
+    if _ORG_TAX.search(title) and any(w not in ("New", "York", "State", "NY", "NYS") for w in re.findall(r"\b[A-Z][A-Za-z'’.-]+", t)):
+        return "org"
+    if _BENEFIT.search(title):
+        for m in _PERSON.finditer(t):
+            if not any(w in _NOT_NAME for w in m.group(1).replace(".", "").split()):
+                return "person"
+    return ""
+
+
 def counties_of_name(name):
     """Counties for a place name, trying shorter versions ("Johnson City Central" -> "Johnson City")."""
     name = re.sub(r"'s$", "", name.replace("’", "'").rstrip(".,")).replace("Mt. ", "Mount ")
@@ -474,6 +510,7 @@ def load_session(session):
             "comms": comms,
             "topics": topics,
             "places": place_counties(lead["title"] or "", lead["summary"] or "", lead["lawCode"] or ""),
+            "narrow": narrow_kind(lead["title"] or ""),
             "local": "local" in topics or bool(set(laws) & LOCAL_LAWS) or bool(LOCAL_WORDS.search(text)),
             "senDeleg": any(b["chamber"] == "SENATE" and b["district"] in deleg.get("SENATE", ()) for b in live),
             "asmDeleg": any(b["chamber"] == "ASSEMBLY" and b["district"] in deleg.get("ASSEMBLY", ()) for b in live),
@@ -1353,7 +1390,7 @@ def main():
                     for h, kind, comm, date, y, n, ny in votes]
         rows = []
         for i, r in enumerate(recs):
-            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32)
+            flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32) | (NARROW_KINDS.index(r["narrow"]) << 6)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
                      [S(n) for n in v["cosponsors"]] if session == current else [], v.get("district") or 0] for v in r["vers"]]
