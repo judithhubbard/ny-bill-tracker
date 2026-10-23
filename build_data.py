@@ -34,6 +34,10 @@ if "--github" in ARGS:
 ONLY = [int(a) for a in ARGS] or SESSIONS
 # The GitHub Pages address, used for share links and links to single bills.
 SITE_URL = os.environ.get("SITE_URL", "https://albanybilltracker.org/")
+# Visitor counts on the public site only (both are public values that appear in the page source).
+# Cloudflare Web Analytics: the token from its JS snippet. GoatCounter: the site code, as in <code>.goatcounter.com.
+CF_ANALYTICS_TOKEN = ""
+GOATCOUNTER_CODE = ""
 
 
 def read_session(session):
@@ -596,6 +600,20 @@ def load_session(session):
     return recs, index, raw["fetched"], names
 
 
+def analytics_tags():
+    """Visit counters for the public site; none for local test builds."""
+    if not SITE_URL.startswith("https://albanybilltracker.org"):
+        return ""
+    tags = ""
+    if CF_ANALYTICS_TOKEN:
+        tags += ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+                 f'data-cf-beacon=\'{{"token": "{CF_ANALYTICS_TOKEN}"}}\'></script>\n')
+    if GOATCOUNTER_CODE:
+        tags += (f'<script data-goatcounter="https://{GOATCOUNTER_CODE}.goatcounter.com/count" '
+                 'async src="https://gc.zgo.at/count.js"></script>\n')
+    return tags
+
+
 def github_page(html):
     """Claude artifacts get a document skeleton added when published; GitHub Pages doesn't."""
     split = html.index('<div class="wrap">')
@@ -603,7 +621,7 @@ def github_page(html):
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             '<meta name="robots" content="noindex, nofollow">\n'
             '<style>body { margin: 0; } [hidden] { display: none !important; }</style>\n'
-            + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
+            + analytics_tags() + html[:split] + '\n</head>\n<body>\n' + html[split:] + '\n</body>\n</html>\n')
 
 
 def assembly_resolver(session):

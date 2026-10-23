@@ -1056,6 +1056,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <div class="notes">
       <p id="fetched"></p>
       <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
+      <p>Privacy: this site counts visits and which features get used, without cookies and without tracking anyone. Your watchlist stays in your browser unless you publish it.</p>
       <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
       <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays, or about 30 days for bills delivered in the last days of the year.</p>
@@ -1476,6 +1477,7 @@ function countyReps(county) {
 }
 function setCounty(county) {
   HOME = county;
+  countUse(`county/${county}`);
   try { localStorage.setItem("abt:county", HOME); } catch (e) {}
   // Keep a chosen legislator who represents part of the new county; otherwise use its largest district.
   const d = countyDistricts(county), c = chosenReps();
@@ -2686,7 +2688,7 @@ function watchItems(list, stanceOf, rank) {
 }
 // My watched bills in the order they show, for share links and published lists.
 function myOrdered() { const { active, idle } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle].map((x) => x.b); }
-function toggleWatch(b) { setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
+function toggleWatch(b) { if (!isWatched(b)) countUse(`starred/${baseNum(b.nums[0])}`); setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
 function markSeen(b) { const e = watchEntry(b); if (e) setWatch(b, { ...e, seen: b.last || "" }); }
 function watchButton(b, withStance = true) {
   const e = watchEntry(b);
@@ -2706,6 +2708,9 @@ function pubText() { try { return JSON.parse(localStorage.getItem(PUBTEXT_STORE(
 function setPubText(v) { try { localStorage.setItem(PUBTEXT_STORE(), JSON.stringify(v)); } catch (e) {} }
 const watchCodes = () => myOrdered().map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
 const listUrl = (slug) => `${ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "")}watchlist/#list=${slug}`;
+// Counts a use of a feature ("copied an email", "starred S1234") on the public site, when its
+// counter is loaded. Only totals are kept; nothing identifies who did it.
+function countUse(name) { try { window.goatcounter?.count?.({ path: name, title: name, event: true }); } catch (e) {} }
 async function listsApi(path, opts = {}) {
   const r = await fetch(LISTS_API + path, { ...opts, headers: { "Content-Type": "application/json", ...(opts.headers || {}) } });
   const body = await r.json().catch(() => ({}));
@@ -2714,7 +2719,10 @@ async function listsApi(path, opts = {}) {
 }
 async function loadPublishedList(slug) {
   try {
-    const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
+    // The list's own editors send their key, so their visits aren't counted as views.
+    const mine = myPublished();
+    const l = await listsApi(`/lists/${encodeURIComponent(slug)}`, mine?.slug === slug ? { headers: { "X-Edit-Key": mine.editKey } } : {});
+    countUse("list-viewed");
     SHARED = new Map(l.session === DATA.session ? l.bills.map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])) : []);
     SHARED_META = { slug: l.slug, title: l.title, group: l.group, updated: l.updated, intro: l.intro || "", notes: l.notes || {}, other: l.session !== DATA.session ? l.session : null };
   } catch (e) {
@@ -2727,7 +2735,7 @@ async function publishAction(btn) {
   const what = btn.dataset.pub, mine = myPublished();
   const copy = async (text) => { try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; } catch (e) { btn.textContent = "Select and copy it"; } };
   try {
-    if (what === "copy") return copy(listUrl(mine.slug));
+    if (what === "copy") { countUse("list-link-copied"); return copy(listUrl(mine.slug)); }
     if (what === "copykey") return copy(`${mine.slug} ${mine.editKey}`);
     if (what === "forget") { if (confirm("Disconnect this browser from the published list? The list stays online; you'll need the edit key to update it again.")) { setMyPublished(null); renderWatchView(); } return; }
     if (what === "publish") {
@@ -2736,12 +2744,13 @@ async function publishAction(btn) {
       msg("Publishing…");
       const r = await listsApi("/lists", { method: "POST", body: JSON.stringify({ code, title, session: DATA.session, bills: watchCodes(), ...pubText() }) });
       setMyPublished({ slug: r.slug, editKey: r.editKey, title, group: r.group });
+      countUse("list-published");
       return renderWatchView();
     }
     if (what === "connect") {
       const [slug, editKey] = $("pubKey").value.trim().split(/\s+/);
       if (!slug || !editKey) return msg("Paste the edit key exactly as it was copied (a name and a key).");
-      const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
+      const l = await listsApi(`/lists/${encodeURIComponent(slug)}`, { headers: { "X-Edit-Key": editKey } });
       setMyPublished({ slug, editKey, title: l.title, group: l.group });
       setPubText({ intro: l.intro || "", notes: l.notes || {} });
       return renderWatchView();
@@ -2749,9 +2758,19 @@ async function publishAction(btn) {
     if (what === "update") {
       msg("Updating…");
       const l = await listsApi(`/lists/${encodeURIComponent(mine.slug)}`, { method: "PUT", headers: { "X-Edit-Key": mine.editKey }, body: JSON.stringify({ title: mine.title, session: DATA.session, bills: watchCodes(), ...pubText() }) });
+      countUse("list-updated");
       return msg(`Published: ${num(l.bills.length)} bills.`);
     }
   } catch (e) { msg(e.message); }
+}
+// How often my published list has been opened, fetched once per visit.
+let PUB_VIEWS = null;
+async function showPubViews() {
+  const mine = myPublished(), el = $("pubViews");
+  if (!mine || !el) return;
+  const say = (v) => { el.textContent = v.total ? `Opened ${num(v.total)} time${v.total === 1 ? "" : "s"} (${num(v.week)} in the past week), not counting you.` : "No one has opened it yet."; };
+  if (PUB_VIEWS?.slug === mine.slug) return say(PUB_VIEWS);
+  try { PUB_VIEWS = { slug: mine.slug, ...(await listsApi(`/lists/${encodeURIComponent(mine.slug)}/views`, { headers: { "X-Edit-Key": mine.editKey } })) }; say(PUB_VIEWS); } catch (e) {}
 }
 // The publish box under "My watchlist" (public site only).
 function publishBox() {
@@ -2761,6 +2780,7 @@ function publishBox() {
     <p class="sharerow"><input type="text" readonly value="${esc(listUrl(mine.slug))}" aria-label="Published list link"> <button class="act-btn" type="button" data-pub="copy">Copy link</button></p>
     <label class="pubintro-edit">Introduction (optional) <textarea id="pubIntro" rows="3" maxlength="3000" placeholder="Why these bills matter and what you'd like people to do">${esc(pubText().intro)}</textarea></label>
     <p class="muted">You can also add a note to each bill below.</p>
+    <p class="muted" id="pubViews"></p>
     <p><button class="act-btn primary" type="button" data-pub="update">Update</button> <span class="muted" id="pubMsg">Others see your changes once you click Update.</span></p>
     <details class="pubmore"><summary>Edit key (for updating from another computer)${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private. Anyone with it can change your list.</p>
       <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
@@ -2886,6 +2906,7 @@ function renderWatchView() {
       ${list.length && (!onClaude || ROOT) ? `</details>` : ""}`;
   }
 
+  if (!SHARED) showPubViews();
   const { active, idle } = watchItems(list, stanceOf, SHARED ? sharedRank : myRank);
   $("wlActions")._items = active;
 
@@ -3039,6 +3060,7 @@ function fillDetail(el) {
   d.dataset.done = "1";
   const b = BILLS[+el.dataset.idx];
   markSeen(b);
+  countUse(`opened/${baseNum(b.nums[0])}`);
   // On a watchlist card the summary and the key action are already shown above.
   const inCard = el.classList.contains("morebill");
   d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
@@ -3186,12 +3208,14 @@ function wire() {
     const f = e.target.closest("[data-logform]"); if (!f) return;
     e.preventDefault();
     const data = new FormData(f);
+    countUse("action-logged");
     addLog(BILLS[+f.dataset.logform], { d: data.get("d") || isoToday(), who: data.get("who"), how: data.get("how"), note: (data.get("note") || "").trim() });
     renderWatchView();
   });
   $("wlActions").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-multi]"); if (!btn) return;
     const xs = $("wlActions")._multi[btn.dataset.multi];
+    countUse("email-copied-several");
     copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
   });
   const toggleCard = (head) => {
@@ -3251,16 +3275,18 @@ function wire() {
     if (del) { removeLog(+del.dataset.unlog); renderWatchView(); return; }
     const btn = e.target.closest("[data-email]"); if (!btn) return;
     const x = $("wlActions")._items.find((i) => i.b.idx === +btn.dataset.email);
-    if (x) copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }]));
+    if (x) { countUse(`email-copied/${baseNum(x.b.nums[0])}`); copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }])); }
   });
   $("wl").addEventListener("click", async (e) => {
     const pb = e.target.closest("[data-pub]");
     if (pb) { publishAction(pb); return; }
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
     if (btn.dataset.wl === "copy") {
+      countUse("share-link-copied");
       const input = $("shareLink");
       try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
     } else if (btn.dataset.wl === "import") {
+      countUse("shared-list-added");
       for (const b of BILLS.filter(sharedStance).sort((x, y) => sharedRank(x) - sharedRank(y))) {
         const st = sharedStance(b);
         if (!isWatched(b)) WATCH.set(billKey(b), { seen: b.last || "", stance: st });

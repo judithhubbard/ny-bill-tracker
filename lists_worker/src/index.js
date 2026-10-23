@@ -6,6 +6,7 @@
 //
 // KV keys:  code:<code>  -> { group, active, created }
 //           list:<slug>  -> { slug, title, group, code, session, bills, editHash, created, updated }
+//           views:<slug> -> { total, days: { "2026-10-23": n, ... last 30 days } }  (how often the list was opened)
 
 const ALLOWED_ORIGINS = [
   "https://albanybilltracker.org",
@@ -78,10 +79,23 @@ function slugify(title) {
 const publicView = (l) => ({ slug: l.slug, title: l.title, group: l.group, session: l.session, bills: l.bills, intro: l.intro || "", notes: l.notes || {}, updated: l.updated });
 
 async function getJSON(env, key) { return JSON.parse((await env.LISTS.get(key)) || "null"); }
+// Counts one opening of a list. KV can drop a count when two land at once; close enough for a rough tally.
+async function countView(env, slug) {
+  const v = (await getJSON(env, `views:${slug}`)) || { total: 0, days: {} };
+  const day = new Date().toISOString().slice(0, 10);
+  v.total += 1;
+  v.days[day] = (v.days[day] || 0) + 1;
+  for (const d of Object.keys(v.days).sort().slice(0, -30)) delete v.days[d];
+  await env.LISTS.put(`views:${slug}`, JSON.stringify(v));
+}
+function viewSummary(v) {
+  const days = v?.days || {}, cut = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  return { total: v?.total || 0, week: Object.entries(days).filter(([d]) => d > cut).reduce((s, [, n]) => s + n, 0) };
+}
 async function codeActive(env, code) { const c = await getJSON(env, `code:${code}`); return c && c.active ? c : null; }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
     const url = new URL(req.url);
     const parts = url.pathname.split("/").filter(Boolean);
@@ -114,12 +128,13 @@ export default {
           const out = [];
           for (const k of (await env.LISTS.list({ prefix: "list:" })).keys) {
             const l = await getJSON(env, k.name);
-            if (l) out.push({ slug: l.slug, title: l.title, group: l.group, code: l.code, bills: l.bills.length, updated: l.updated });
+            if (l) out.push({ slug: l.slug, title: l.title, group: l.group, code: l.code, bills: l.bills.length, updated: l.updated, views: viewSummary(await getJSON(env, `views:${l.slug}`)) });
           }
           return reply(req, out);
         }
         if (parts[1] === "lists" && parts[2] && req.method === "DELETE") {
           await env.LISTS.delete(`list:${parts[2]}`);
+          await env.LISTS.delete(`views:${parts[2]}`);
           return reply(req, { deleted: parts[2] });
         }
         return fail(req, 404, "Unknown admin request.");
@@ -128,11 +143,20 @@ export default {
       if (parts[0] !== "lists") return fail(req, 404, "Not found.");
       const slug = parts[1];
 
-      // ---- Read a list: anyone. ----
-      if (slug && req.method === "GET") {
+      // ---- How often a list was opened: its editors only. ----
+      if (slug && parts[2] === "views" && req.method === "GET") {
+        const l = SLUG_RE.test(slug) && (await getJSON(env, `list:${slug}`));
+        if (!l || !same(await sha256(req.headers.get("X-Edit-Key") || ""), l.editHash)) return fail(req, 403, "That edit key doesn't match this list.");
+        return reply(req, viewSummary(await getJSON(env, `views:${slug}`)));
+      }
+
+      // ---- Read a list: anyone. Each opening is counted, except by its own editors. ----
+      if (slug && !parts[2] && req.method === "GET") {
         if (!SLUG_RE.test(slug)) return fail(req, 404, "No such list.");
         const l = await getJSON(env, `list:${slug}`);
         if (!l || !(await codeActive(env, l.code))) return fail(req, 404, "This list isn't available.");
+        const editor = same(await sha256(req.headers.get("X-Edit-Key") || ""), l.editHash);
+        if (!editor) ctx.waitUntil(countView(env, slug).catch(() => {}));
         return reply(req, publicView(l));
       }
 
@@ -157,7 +181,7 @@ export default {
         if (!l) return fail(req, 404, "No such list.");
         if (!same(await sha256(req.headers.get("X-Edit-Key") || ""), l.editHash)) return fail(req, 403, "That edit key doesn't match this list.");
         if (!(await codeActive(env, l.code))) return fail(req, 403, "This group's invite code has been revoked.");
-        if (req.method === "DELETE") { await env.LISTS.delete(`list:${slug}`); return reply(req, { deleted: slug }); }
+        if (req.method === "DELETE") { await env.LISTS.delete(`list:${slug}`); await env.LISTS.delete(`views:${slug}`); return reply(req, { deleted: slug }); }
         const fields = cleanList(await req.json().catch(() => null));
         if (fields.error) return fail(req, 400, fields.error);
         Object.assign(l, fields, { updated: new Date().toISOString() });

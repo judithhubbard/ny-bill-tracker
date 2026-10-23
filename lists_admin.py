@@ -46,7 +46,8 @@ def main():
         print(f"Revoked {r['revoked']} ({r['group']}); its lists are now hidden.")
     elif cmd == "lists":
         for l in sorted(call("GET", "/admin/lists"), key=lambda l: l["updated"], reverse=True):
-            print(f"{l['slug']}  “{l['title']}”  {l['group']}  {l['bills']} bills  updated {l['updated'][:10]}")
+            v = l.get("views") or {}
+            print(f"{l['slug']}  “{l['title']}”  {l['group']}  {l['bills']} bills  updated {l['updated'][:10]}  opened {v.get('total', 0)} times ({v.get('week', 0)} this week)")
     elif cmd == "list-delete" and len(args) == 2:
         print(f"Deleted {call('DELETE', f'/admin/lists/{args[1]}')['deleted']}.")
     else:
