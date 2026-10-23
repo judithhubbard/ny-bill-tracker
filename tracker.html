@@ -513,6 +513,23 @@ table.st col.c-m { width: 80px; }
 .spill.p3, .spill.p4 { background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold); }
 .spill.p5 { background: var(--signed-soft); color: var(--signed); }
 .spill.p6 { background: var(--veto-soft); color: var(--veto); }
+.wsec { border-radius: 12px; padding: 14px 16px 16px; margin-top: 14px; }
+.wsec + .wsec { margin-top: 28px; }
+.wsec h2 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.wsec h2 .n { font: 700 13px var(--body); border-radius: 999px; padding: 2px 9px; }
+.wsec .wsub { margin: 2px 0 12px; font-size: 13.5px; color: var(--ink-2); }
+.wsec.needs { background: color-mix(in srgb, var(--gold-soft) 60%, var(--paper)); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+.wsec.needs h2 .n { background: var(--gold); color: var(--sheet); }
+.wsec.needs .wtop { background: color-mix(in srgb, var(--gold-soft) 45%, var(--sheet)); }
+.wsec.idle { background: none; border: 1px dashed var(--rule); }
+.wsec.idle h2 { color: var(--ink-2); font-size: 18px; }
+.wsec.idle h2 .n { background: var(--pip-off); color: var(--ink-2); }
+.wcards.idle { gap: 6px; }
+.wcards.idle .wcard { box-shadow: none; border-left-width: 3px; background: var(--paper); }
+.wcards.idle .wcard:not(.open) .wtop { background: none; border-bottom: 0; padding-bottom: 0; }
+.wcards.idle .wcard:not(.open) .whead { gap: 2px; padding-bottom: 9px; }
+.wcards.idle .wcard:not(.open) h3 { font-size: 15px; font-weight: 600; color: var(--ink-2); margin: 0; }
+.wcards.idle .wcard:not(.open) .spill { font-size: 11.5px; padding: 2px 8px; }
 .wfold { margin: 0 0 -4px; font-size: 13px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .wfold .muted { color: var(--ink-2); }
 .wfold > span:last-child { margin-left: auto; }
@@ -2918,8 +2935,10 @@ function renderWatchView() {
   };
   $("wlList").innerHTML = !list.length ? "" : `
     ${list.length > 1 ? `<p class="wfold">${SHARED ? "" : `<span class="muted">Drag ⠿ to put your bills in priority order.</span>`}<span><button type="button" class="linkish" data-wfold="open">Open all</button> · <button type="button" class="linkish" data-wfold="close">Close all</button></span></p>` : ""}
-    ${active.length ? `<h2>Needs action</h2><div class="wcards needs">${active.map(cardFor).join("")}</div>` : ""}
-    ${idle.length ? `<h2>Can't move right now</h2><div class="wcards idle">${idle.map(cardFor).join("")}</div>` : ""}
+    ${active.length ? `<section class="wsec needs"><h2>Needs action <span class="n">${num(active.length)}</span></h2>
+      <p class="wsub">Something you can do now on each of these.</p><div class="wcards needs">${active.map(cardFor).join("")}</div></section>` : ""}
+    ${idle.length ? `<section class="wsec idle"><h2>Can't move right now <span class="n">${num(idle.length)}</span></h2>
+      <p class="wsub">Nothing to ask for until they move again. They'll show “New activity” when something changes.</p><div class="wcards idle">${idle.map(cardFor).join("")}</div></section>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
 }
 
