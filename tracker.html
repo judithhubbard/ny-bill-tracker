@@ -553,16 +553,15 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.intro { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; background: var(--chip); border-left: 3px solid var(--navy); border-radius: 8px; padding: 8px 12px; margin: 10px 0 2px; font-size: 13.5px; }
+.intro .intro-h { font-weight: 700; }
+.intro ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; flex: 1; }
+.intro li { display: inline-flex; align-items: center; gap: 6px; }
+.intro .n { width: 18px; height: 18px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 11px/18px var(--body); text-align: center; flex: none; }
+@media (max-width: 600px) { .intro ol { flex-basis: 100%; order: 3; } }
+.intro .intro-x { appearance: none; border: 0; background: none; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; padding: 0 2px; }
 ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 75ch; }
 .view-help { appearance: none; background: none; border: 0; padding: 5px 8px; font: 600 12.5px var(--body); color: var(--navy); text-decoration: underline; cursor: pointer; }
-.intro { background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--gold); border-radius: 8px; padding: 14px 16px; margin: 12px 0 4px; }
-.intro-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.intro h2 { margin: 0; font: 700 18px var(--display); font-stretch: 85%; }
-.intro ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 18px; }
-.intro li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; }
-.intro .n { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 13px/24px var(--body); text-align: center; }
-.intro b { font-size: 14px; }
-.intro p { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
 .ver details.acts > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--navy); margin-top: 4px; }
 .ver details.acts ol { margin-top: 6px; }
 .sankey { overflow-x: auto; margin: 6px 0 14px; }
@@ -2963,24 +2962,19 @@ function wire() {
 
 // "How to use this site": shown until dismissed, and again from the link by the tabs.
 const INTRO_STORE = "abt:intro";
+const PUBLIC_SITE = "https://judithhubbard.github.io/ny-bill-tracker/";
 function renderIntro(force) {
   const box = $("howto");
   let hidden = false;
   try { hidden = localStorage.getItem(INTRO_STORE) === "hidden"; } catch (e) {}
   if (!DATA.current || PRESET || SHARED || (hidden && !force)) { box.hidden = true; return; }
-  const share = !!ROOT;
-  const steps = [
-    ["Find bills", "Search by bill number, words or sponsor, or narrow the list with the filters: where a bill is now, its topic, or your county."],
-    ["Watch them", "Click ☆ next to a bill to add it to your Watchlist, and mark whether you support or oppose it."],
-    ["Weigh in", `Open a bill to see who decides its next step, what to ask, and how to reach them. Set where you live on the Weigh in tab so your own legislators show. <button type="button" class="linkish" data-impact>Tips for having an impact</button>`],
-    [share ? "Share your list" : "Write once for several bills", share
-      ? "Your Watchlist gives you a link to send to others: it shows them your bills and positions, so they can weigh in too. It can also copy one email covering several bills."
-      : "Your Watchlist can copy one email covering several bills for the same person."],
-    ["See how it works", "Statistics shows how often bills like yours have passed; How a bill becomes law explains the steps and the two-year calendar."],
-  ];
+  // One line: the four things a newcomer can do, sharing included. Share links work only on the public site.
+  const shareStep = ROOT ? "Share your watchlist so others can weigh in"
+    : `Share your watchlist from the <a href="${PUBLIC_SITE}" target="_blank" rel="noopener">public site</a> so others can weigh in`;
+  const steps = ["☆ Star bills to build your watchlist", "Mark whether you support or oppose them", "Open a bill to see who to contact and what to ask", shareStep];
   box.hidden = false;
-  box.innerHTML = `<div class="intro-h"><h2>How to use this site</h2><button type="button" class="act-btn" data-intro-close>Got it</button></div>
-    <ol>${steps.map(([h, t], i) => `<li><span class="n">${i + 1}</span><div><b>${h}</b><p>${t}</p></div></li>`).join("")}</ol>`;
+  box.innerHTML = `<b class="intro-h">New here?</b><ol>${steps.map((t, i) => `<li><span class="n">${i + 1}</span>${t}</li>`).join("")}</ol>
+    <button type="button" class="linkish" data-impact>Tips</button><button type="button" class="intro-x" data-intro-close aria-label="Hide these tips">×</button>`;
 }
 
 // "How a bill becomes law": the two-year session as a timeline with key dates called out.
