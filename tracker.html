@@ -492,8 +492,31 @@ table.st col.c-m { width: 80px; }
 .wcard .wtop { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0 -16px; padding: 9px 16px; background: var(--chip); border-bottom: 1px solid var(--rule); }
 .wcard .nums { display: flex; gap: 10px; align-items: center; font: 700 13px var(--mono); }
 .wcard .nums .watchbtn, .wcard .nums .stance { margin: 0; padding-top: 0; }
-.wcard .wstatus { min-width: 0; text-align: right; }
-.wcard h3 { margin: 4px 0 0; font: 700 19px/1.3 var(--body); }
+.wcard .wstatus { min-width: 0; }
+.wcard h3 { margin: 4px 0 0; font: 700 17px/1.3 var(--body); }
+.wcards { gap: 10px; }
+.wcard { padding-bottom: 0; gap: 0; }
+.wcard .whead { cursor: pointer; display: grid; gap: 6px; padding-bottom: 12px; }
+.wcard .whead:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.wcard .whead:hover h3 { color: var(--navy); }
+.wcard .chev::before { content: "▸"; display: inline-block; width: 1em; color: var(--ink-2); }
+.wcard.open .chev::before { content: "▾"; }
+.wcard .wbody { display: none; gap: 9px; padding-bottom: 14px; }
+.wcard.open .wbody { display: grid; }
+.wcard.open .wask { display: none; }
+.wcard .wask { margin: 0; font-size: 14px; background: var(--gold-soft); border-radius: 6px; padding: 6px 10px; justify-self: start; max-width: 100%; }
+.wcard .wwhen { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+.wcard .wlogged { margin: 0; font-size: 12.5px; color: var(--signed); font-weight: 600; }
+.wcard .wlogged::before { content: "✓ "; }
+.spill { font: 600 12.5px var(--body); border-radius: 999px; padding: 3px 10px; background: var(--pip-off); color: var(--ink); white-space: nowrap; }
+.spill.p2 { background: var(--chip); color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
+.spill.p3, .spill.p4 { background: var(--gold-soft); box-shadow: inset 0 0 0 1px var(--gold); }
+.spill.p5 { background: var(--signed-soft); color: var(--signed); }
+.spill.p6 { background: var(--veto-soft); color: var(--veto); }
+.wfold { margin: 0 0 -4px; font-size: 13px; text-align: right; }
+.sharebox > summary { cursor: pointer; font-weight: 600; color: var(--navy); font-size: 14px; }
+.sharebox[open] > summary { margin-bottom: 8px; }
+.sharebox .pubbox { margin-top: 8px; }
 .wcard .sum { margin: 0; color: var(--ink-2); font-size: 13.5px; max-width: 85ch; }
 .wcard .do { border-left: 3px solid var(--gold); padding: 4px 0 4px 12px; display: grid; gap: 3px; }
 .wcard .do p { margin: 0; font-size: 14px; }
@@ -2787,6 +2810,7 @@ function reachOf(p) {
     i.url && `<a href="${esc(i.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
 }
 
+const W_OPEN = new Set();
 function renderWatchView() {
   const tabCount = WATCH_COUNT();
   $("watchTabCount").textContent = tabCount ? ` (${tabCount})` : "";
@@ -2809,9 +2833,11 @@ function renderWatchView() {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
     card.innerHTML = `<h2>My watchlist</h2>
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
+      ${list.length && (!onClaude || ROOT) ? `<details class="sharebox"${myPublished() ? " open" : ""}><summary>Share this list</summary>` : ""}
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
       <p class="muted sharenote">This link is a snapshot. To share later changes, send a new link.</p>` : ""}
-      ${list.length ? publishBox() : ""}`;
+      ${list.length ? publishBox() : ""}
+      ${list.length && (!onClaude || ROOT) ? `</details>` : ""}`;
   }
 
   const items = list.map((b) => ({ b, stance: stanceOf(b), ...keyAction(b, stanceOf(b)) }));
@@ -2837,14 +2863,22 @@ function renderWatchView() {
         <p class="reach"><button class="act-btn primary" type="button" data-email="${b.idx}">Copy email</button> ${reachOf(x.key)}</p>
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
-    return `<article class="wcard" data-idx="${b.idx}">
-      <div class="wtop"><div class="nums">${esc(b.nums.join(" / "))}${SHARED
-        ? `${watchButton(b, false)}<span class="stance fixed ${x.stance}" title="The position of whoever shared this list">Shared as: ${x.stance === "oppose" ? "Oppose" : "Support"}</span>`
-        : watchButton(b)}</div><div class="wstatus">${statusText(b)}</div></div>
-      <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
+    const open = W_OPEN.has(billKey(b)), logged = SHARED ? 0 : logOf(b).length;
+    const due = DATA.current && b.stage === 4 && b.due ? ` · due ${fmtDate(b.due)}` : "";
+    return `<article class="wcard${open ? " open" : ""}" data-idx="${b.idx}">
+      <div class="whead" data-wtoggle="${b.idx}" role="button" tabindex="0" aria-expanded="${open}">
+        <div class="wtop"><div class="nums"><span class="chev" aria-hidden="true"></span>${esc(b.nums.join(" / "))}${SHARED
+          ? `${watchButton(b, false)}<span class="stance fixed ${x.stance}" title="The position of whoever shared this list">${x.stance === "oppose" ? "Oppose" : "Support"}</span>`
+          : watchButton(b)}</div><span class="spill p${b.stage}">${esc(TEXT.pipe[b.stage])}${esc(due)}</span></div>
+        <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
+        ${x.key ? `<p class="wask"><b>${esc(titleOf(x.key))}:</b> ${esc(x.key.ask)}</p>` : ""}
+        ${SHARED_META?.notes?.[baseNum(b.nums[0])] ? `<div class="pubnote"><b>Note from ${esc(SHARED_META.group)}:</b> ${esc(SHARED_META.notes[baseNum(b.nums[0])])}</div>` : ""}
+        ${logged ? `<p class="wlogged">${num(logged)} action${logged === 1 ? "" : "s"} logged</p>` : ""}
+      </div>
+      <div class="wbody">
+      <p class="wwhen">${statusText(b).match(/<small>(.*)<\/small>/)?.[1] || ""}</p>
       ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
-      ${SHARED_META?.notes?.[baseNum(b.nums[0])] ? `<div class="pubnote"><b>Note from ${esc(SHARED_META.group)}:</b> ${esc(SHARED_META.notes[baseNum(b.nums[0])])}</div>` : ""}
       ${action}
       ${x.key && oddsLine(b) ? `<p class="odds">${oddsLine(b)}</p>` : ""}
       ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
@@ -2852,9 +2886,11 @@ function renderWatchView() {
       ${!SHARED && myPublished() ? `<details class="noteedit"${pubText().notes[baseNum(b.nums[0])] ? " open" : ""}><summary>Add a note</summary><textarea data-pubnote="${esc(baseNum(b.nums[0]))}" rows="2" maxlength="1000" placeholder="Why this bill matters or what to say about it">${esc(pubText().notes[baseNum(b.nums[0])] || "")}</textarea></details>` : ""}
       ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
+      </div>
     </article>`;
   };
   $("wlList").innerHTML = !list.length ? "" : `
+    ${list.length > 1 ? `<p class="wfold"><button type="button" class="linkish" data-wfold="open">Open all</button> · <button type="button" class="linkish" data-wfold="close">Close all</button></p>` : ""}
     ${active.length ? `<h2>Needs action</h2><div class="wcards needs">${active.map(cardFor).join("")}</div>` : ""}
     ${idle.length ? `<h2>Can't move right now</h2><div class="wcards idle">${idle.map(cardFor).join("")}</div>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
@@ -3112,7 +3148,26 @@ function wire() {
     const xs = $("wlActions")._multi[btn.dataset.multi];
     copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
   });
+  const toggleCard = (head) => {
+    const card = head.closest(".wcard"), k = billKey(BILLS[+head.dataset.wtoggle]);
+    const open = card.classList.toggle("open");
+    open ? W_OPEN.add(k) : W_OPEN.delete(k);
+    head.setAttribute("aria-expanded", open);
+  };
+  $("wlList").addEventListener("keydown", (e) => {
+    const head = e.target.closest("[data-wtoggle]");
+    if (head && e.target === head && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleCard(head); }
+  });
   $("wlList").addEventListener("click", (e) => {
+    const fold = e.target.closest("[data-wfold]");
+    if (fold) {
+      for (const head of $("wlList").querySelectorAll("[data-wtoggle]")) {
+        if (head.closest(".wcard").classList.contains("open") !== (fold.dataset.wfold === "open")) toggleCard(head);
+      }
+      return;
+    }
+    const head = e.target.closest("[data-wtoggle]");
+    if (head && !e.target.closest("button, a, input, select, textarea, [data-tip]")) { toggleCard(head); return; }
     const open = e.target.closest("[data-logopen]");
     if (open) { const f = $("wlList").querySelector(`[data-logform="${open.dataset.logopen}"]`); f.hidden = false; open.hidden = true; return; }
     const cancel = e.target.closest("[data-logcancel]");
