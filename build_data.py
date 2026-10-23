@@ -177,6 +177,7 @@ CITY_NAMES = ["Buffalo", "Rochester", "Syracuse", "Yonkers", "Schenectady", "Bin
               "Gloversville", "Cohoes", "Watervliet", "Ogdensburg", "Oneonta", "Hornell", "Corning", "Dunkirk", "Batavia",
               "Canandaigua", "Port Jervis", "Salamanca", "North Tonawanda", "Ithaca", "Cortland", "Trumansburg", "Cayuga Heights"]
 PLACES_PATH = os.path.join(HERE, "data", "ny_places.json")
+DISTRICTS_PATH = os.path.join(HERE, "data", "district_counties.json")
 PLACE_COUNTIES = json.load(open(PLACES_PATH)) if os.path.exists(PLACES_PATH) else {}
 _NAME = r"(?:St\. )?[A-Z][A-Za-z'’.-]+(?:[ -](?:on[ -]the[ -])?[A-Z][A-Za-z'’.-]+)*"
 _CTY = "|".join(re.escape(c) for c in COUNTIES)
@@ -1384,6 +1385,8 @@ def main():
             "strings": strings,
             "rows": rows,
             "counties": COUNTIES,
+            # Current Senate and Assembly districts in each county, for "Where you live".
+            "districtCounties": json.load(open(DISTRICTS_PATH)) if session == current and os.path.exists(DISTRICTS_PATH) else {},
         }
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)

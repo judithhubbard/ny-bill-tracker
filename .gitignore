@@ -9,3 +9,4 @@ __pycache__/
 !data/assembly_votes_*.json
 !data/seat_parties.json
 !data/ny_places.json
+!data/district_counties.json

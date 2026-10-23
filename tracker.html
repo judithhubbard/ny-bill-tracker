@@ -553,6 +553,9 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.tag.chap { background: var(--gold-soft); color: var(--ink); cursor: help; }
+.tag.chap i { font-style: normal; display: inline-block; width: 13px; height: 13px; line-height: 13px; text-align: center; border-radius: 50%; background: var(--gold); color: #fff; font-size: 9.5px; margin-left: 2px; }
+.chapam { background: var(--gold-soft); border-radius: 6px; padding: 8px 10px; }
 .tag.vno { background: var(--veto-soft); color: var(--veto); }
 .bill[open] { background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--navy); border-radius: 8px; margin: 14px 0; box-shadow: 0 2px 10px rgba(20, 33, 61, .08); }
 .bill[open] > summary { border-bottom: 1px solid var(--rule); background: var(--chip); border-radius: 8px 8px 0 0; padding-left: 10px; }
@@ -569,6 +572,7 @@ table.st col.c-m { width: 80px; }
 .pg.decided .srow .sn { background: none; padding: 0; font: 700 20px/1.1 var(--display); }
 .pg.decided .srow[data-k="5"]:not([aria-pressed="true"]) { background: var(--signed-soft); }
 .pg.decided .srow[data-k="6"]:not([aria-pressed="true"]) { background: var(--veto-soft); }
+.pg.decided .srow[aria-pressed="true"] .sn { color: var(--sheet); }
 .pg.stale { border-left-color: var(--rule); padding-top: 6px; }
 .pg.stale .pg-h { color: var(--ink-2); }
 .pg.stale .pg-h span { display: block; font-weight: 400; font-size: 11.5px; }
@@ -723,6 +727,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
         <div class="field" id="votedField" hidden>
           <label for="voted" id="votedLabel">How your legislators voted</label>
           <select id="voted"><option value="">Any vote</option></select>
+          <span class="subsel" id="votedWho"></span>
         </div>
         <div class="field">
           <label for="area">Places</label>
@@ -995,6 +1000,29 @@ function billUrl(p, session = DATA.session) {
   return `https://www.nysenate.gov/legislation/bills/${session}/${p.replace(/[A-Z]$/, "")}`;
 }
 
+// The Senate's bill page has the text and, for Senate bills, the sponsor's memo; Assembly memos are on the Assembly's site.
+function asmUrl(p, session = DATA.session) {
+  return `https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A${p.slice(1).replace(/^\d+/, (n) => n.padStart(5, "0"))}&term=${session}&Summary=Y&Memo=Y`;
+}
+function textLinks(b) {
+  const s = b.vers.find((v) => v.p[0] === "S"), a = b.vers.find((v) => v.p[0] === "A");
+  const link = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener">${text} ↗</a>`;
+  return [link(billUrl(b.vers[0].p), "Full text"), s && link(billUrl(s.p), "Senate sponsor's memo"), a && link(asmUrl(a.p), "Assembly sponsor's memo")].filter(Boolean).join(" · ");
+}
+// A chapter amendment changes a law signed earlier, usually as agreed with the governor when she signed it.
+// The law code names the original bills: "as proposed in S.7359-A & A.7964-A".
+const CHAPTER_AMENDMENT = "Changes a law signed earlier. Governors often sign a bill on the condition that the Legislature passes agreed changes; this is that follow-up bill.";
+function amendedBills(b) {
+  const m = (b.lawCode || "").match(/as proposed in (?:legislative bills? (?:numbers? )?)?S\.?\s?(\d+)[-A-Z]*\s*(?:&|and)\s*A\.?\s?(\d+)/i);
+  return m ? [`S${m[1]}`, `A${m[2]}`] : null;
+}
+function chapterAmendment(b) {
+  const nums = amendedBills(b);
+  if (!nums) return "";
+  const orig = BILLS.find((x) => x.nums.some((n) => nums.includes(baseNum(n))));
+  return `<p class="chapam"><b>Chapter amendment.</b> ${CHAPTER_AMENDMENT} It changes ${orig ? `<button type="button" class="linkish" data-bill="${esc(baseNum(orig.nums[0]))}">${esc(nums.join(" / "))}</button>` : esc(nums.join(" / "))}.</p>`;
+}
+
 // Outcome wording for a bill in any session: finished sessions say "died", the open one doesn't.
 function outcomeLabel(stage, session, chapter, veto) {
   if (stage === -2) return "Withdrawn by sponsor";
@@ -1192,8 +1220,29 @@ const lastName = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "
 // the defaults the site was built with (Tompkins County: Sen. Webb, Asm. Kelles). ----
 const REPS_STORE = "abt:reps";
 function chosenReps() { try { return JSON.parse(localStorage.getItem(REPS_STORE) || "null"); } catch (e) { return null; } }
+// Your county sets your legislators unless you picked them (or looked up an address).
+function countyDistricts(county) { return DATA.districtCounties?.[county] || null; }
+function countyReps(county) {
+  const d = countyDistricts(county);
+  return d && d.S.length && d.A.length ? { S: d.S[0][0], A: d.A[0][0] } : null;
+}
+function setCounty(county) {
+  HOME = county;
+  try { localStorage.setItem("abt:county", HOME); } catch (e) {}
+  // Keep a chosen legislator who represents part of the new county; otherwise use its largest district.
+  const d = countyDistricts(county), c = chosenReps();
+  if (d && c) {
+    const next = { S: d.S.some(([x]) => x === c.S) ? c.S : d.S[0][0], A: d.A.some(([x]) => x === c.A) ? c.A : d.A[0][0] };
+    const auto = countyReps(county);
+    try {
+      if (auto && next.S === auto.S && next.A === auto.A) localStorage.removeItem(REPS_STORE);
+      else localStorage.setItem(REPS_STORE, JSON.stringify(next));
+    } catch (e) {}
+  }
+  renderMyReps(); renderOpenNow(); render();
+}
 function myReps() {
-  const c = chosenReps();
+  const c = chosenReps() || countyReps(HOME);
   if (!c || !LEGS.length) return DATA.contacts?.reps || [];
   return ["S", "A"].map((h) => LEGS.find((L) => L.id === `${h}:${c[h]}`)).filter(Boolean)
     .map((L) => ({ title: L.title, name: L.name, house: L.house, last: lastName(L.name) }));
@@ -1203,13 +1252,27 @@ function renderMyReps() {
   if (!box) return;
   if (!DATA.current || !LEGS.length || PRESET?.who) { box.hidden = true; return; }
   const reps = myReps(), c = chosenReps();
-  const opts = (h) => LEGS.filter((L) => L.house === h).sort((a, b) => a.district - b.district)
-    .map((L) => `<option value="${L.district}"${reps.some((r) => r.house === h && lastName(L.name) === r.last) ? " selected" : ""}>District ${L.district}: ${esc(L.name)}</option>`).join("");
-  box.innerHTML = `<h2>Your legislators</h2>
-    <p>${reps.map((r) => `<b>${esc(r.title)} ${esc(r.name)}</b>`).join(" and ") || "Not set"}${c ? "" : " (Tompkins County)"}. Contact suggestions throughout the site use these.</p>
+  const d = countyDistricts(HOME);
+  const opts = (h) => {
+    const inCounty = new Map((d?.[h] || []).map(([x, pct]) => [x, pct]));
+    const one = (L) => `<option value="${L.district}"${reps.some((r) => r.house === h && lastName(L.name) === r.last) ? " selected" : ""}>District ${L.district}: ${esc(L.name)}${inCounty.size > 1 ? ` (${inCounty.get(L.district)}% of the county)` : ""}</option>`;
+    const all = LEGS.filter((L) => L.house === h);
+    const here = all.filter((L) => inCounty.has(L.district)).sort((a, b) => inCounty.get(b.district) - inCounty.get(a.district));
+    const rest = all.filter((L) => !inCounty.has(L.district)).sort((a, b) => a.district - b.district);
+    return here.length ? `<optgroup label="In ${esc(HOME)} County">${here.map(one).join("")}</optgroup><optgroup label="Other districts">${rest.map(one).join("")}</optgroup>` : rest.map(one).join("");
+  };
+  const counties = (DATA.counties || []).map((x) => `<option${x === HOME ? " selected" : ""}>${esc(x)}</option>`).join("");
+  const split = d && (d.S.length > 1 || d.A.length > 1);
+  const where = !d ? "" : split
+    ? `${esc(HOME)} County is split among ${d.S.length} Senate and ${d.A.length} Assembly district${d.A.length === 1 ? "" : "s"}. ${ROOT ? "Look up your address, or pick" : "Pick"} yours below.`
+    : `${esc(HOME)} County is entirely in Senate District ${d.S[0][0]} and Assembly District ${d.A[0][0]}.`;
+  box.innerHTML = `<h2>Where you live</h2>
+    <div class="repsel"><label>County <select id="repC">${counties}</select></label></div>
+    ${where ? `<p class="muted">${where}</p>` : ""}
     ${ROOT ? `<form class="repfind" id="repFind"><label>Find by address <input type="search" id="repAddr" placeholder="Street, town, NY" autocomplete="street-address"></label> <button class="act-btn" type="submit">Look up</button></form>
-    <p class="muted" id="repMsg">The address goes to the U.S. Census Bureau's address lookup; only the district numbers are kept, in this browser.</p>` : ""}
-    <div class="repsel"><label>Senate <select id="repS">${opts("S")}</select></label> <label>Assembly <select id="repA">${opts("A")}</select></label>${c ? ` <button class="act-btn" type="button" id="repReset">Back to Tompkins County</button>` : ""}</div>`;
+    <p class="muted" id="repMsg">The address goes to the U.S. Census Bureau's address lookup; only your county and district numbers are kept, in this browser.</p>` : ""}
+    <div class="repsel"><label>Senate <select id="repS">${opts("S")}</select></label> <label>Assembly <select id="repA">${opts("A")}</select></label></div>
+    <p>Your legislators: ${reps.map((r) => `<b>${esc(r.title)} ${esc(r.name)}</b>`).join(" and ") || "not set"}. Contact suggestions and the "How your legislators voted" filter use them.</p>`;
 }
 function setReps(s, a) {
   try { localStorage.setItem(REPS_STORE, JSON.stringify({ S: +s, A: +a })); } catch (e) {}
@@ -1227,11 +1290,13 @@ function lookUpReps(address) {
     const g = data?.result?.addressMatches?.[0]?.geographies || {};
     const pick = (re) => { const k = Object.keys(g).find((x) => re.test(x)); return k && g[k][0] ? +g[k][0].BASENAME : null; };
     const sd = pick(/Upper/), ad = pick(/Lower/);
+    const county = (g.Counties?.[0]?.BASENAME || "").replace(/ County$/, "");
     if (!sd || !ad) return done("That address wasn't found in New York. Try adding the town and ZIP code, or choose from the lists below.");
     done("");
+    if (county && (DATA.counties || []).includes(county)) { HOME = county; try { localStorage.setItem("abt:county", HOME); } catch (e) {} }
     setReps(sd, ad);
   };
-  s.src = `https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&vintage=Current_Current&layers=56,58&format=jsonp&callback=${cb}`;
+  s.src = `https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&vintage=Current_Current&layers=all&format=jsonp&callback=${cb}`;
   s.onerror = () => { clearTimeout(timer); done("The address lookup isn't available here. Choose your districts from the lists below."); };
   document.head.appendChild(s);
 }
@@ -2161,7 +2226,8 @@ function partyTag(b) {
 function billRow(b) {
       const [first, second] = b.nums;
       const noes = DATA.current ? votePeople().filter((L) => floorVote(b, L) === "No") : [];
-      const tags = noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
+      const chap = amendedBills(b) ? `<span class="tag chap" title="${esc(CHAPTER_AMENDMENT)}">Chapter amendment <i aria-hidden="true">?</i></span>` : "";
+      const tags = chap + noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
       return `<details class="bill" data-idx="${b.idx}">
         <summary>
@@ -2435,6 +2501,8 @@ const MORE_KEYS = ["party", "progress", "law", "comm", "house", "hist", "intro"]
 function fillSelects() {
   $("votedField").hidden = !DATA.current || !votePeople().length;
   $("votedLabel").textContent = PRESET?.who ? "How they voted" : "How your legislators voted";
+  $("votedWho").innerHTML = PRESET?.who ? "" : `${votePeople().map((L) => esc(L.name)).join(" and ")} · <button type="button" class="linkish" data-goreps>change</button>`;
+  if ($("homeCounty").value !== HOME) $("homeCounty").value = HOME;
   for (const id of ["who", "law", "area", "voted", "changed", ...MORE_KEYS]) $(id)?.classList.toggle("on", !!state[id]);
   const more = MORE_KEYS.filter((k) => state[k]).length;
   $("moreCount").textContent = more ? `${more} active` : "";
@@ -2475,7 +2543,8 @@ function fillDetail(el) {
   const inCard = el.classList.contains("morebill");
   d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
     ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
-    <p class="textlink"><a href="${esc(billUrl(b.vers[0].p))}" target="_blank" rel="noopener">Full text and sponsor's memo ↗</a></p>
+    <p class="textlink">${textLinks(b)}</p>
+    ${chapterAmendment(b)}
     <div class="linkrow"><span>Link to this bill:</span><input type="text" readonly value="${esc(billLink(b))}" aria-label="Link to this bill" onclick="this.select()"><button class="act-btn" type="button" data-copylink>Copy</button></div>
     ${inCard ? "" : nextSteps(b)}
     ${keyDates(b)}
@@ -2582,6 +2651,7 @@ function wire() {
   // In-page links to one bill are buttons, not #S1234 anchors: some viewers (Claude's artifact
   // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
   document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
     e.preventDefault();
     if (!openNum(a.dataset.bill)) return;
@@ -2645,19 +2715,13 @@ function wire() {
     openShown += 25; renderOpenNow();
   });
   $("statTopic").addEventListener("change", renderStats);
-  $("homeCounty").addEventListener("change", (e) => {
-    HOME = e.target.value;
-    try { localStorage.setItem("abt:county", HOME); } catch (err) {}
-    render();
-  });
+  $("homeCounty").addEventListener("change", (e) => setCounty(e.target.value));
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
   $("myReps").addEventListener("submit", (e) => { e.preventDefault(); const a = $("repAddr").value.trim(); if (a) lookUpReps(a); else $("repMsg").textContent = "Enter a street address, then Look up."; });
-  $("myReps").addEventListener("change", (e) => { if (e.target.id === "repS" || e.target.id === "repA") setReps($("repS").value, $("repA").value); });
-  $("myReps").addEventListener("click", (e) => {
-    if (e.target.id !== "repReset") return;
-    try { localStorage.removeItem(REPS_STORE); } catch (err) {}
-    renderMyReps(); renderOpenNow(); render();
+  $("myReps").addEventListener("change", (e) => {
+    if (e.target.id === "repC") setCounty(e.target.value);
+    else if (e.target.id === "repS" || e.target.id === "repA") setReps($("repS").value, $("repA").value);
   });
   $("statNet").addEventListener("change", (e) => {
     if (e.target.matches("[data-nethouse]")) netHouse = e.target.value;
