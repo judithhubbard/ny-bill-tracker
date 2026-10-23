@@ -553,12 +553,18 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.ver details.acts > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--navy); margin-top: 4px; }
+.ver details.acts ol { margin-top: 6px; }
 .sankey { overflow-x: auto; margin: 6px 0 14px; }
 .sankey svg { display: block; width: 100%; min-width: 640px; max-width: 1000px; height: auto; }
 .sankey .sk-node { fill: var(--navy); }
 .sankey .sk-go { fill: var(--navy); opacity: .28; }
 .sankey .sk-out { fill: var(--refer); opacity: .45; }
 .sankey .sk-exit { fill: var(--refer); }
+.sankey .sk-c0 { fill: var(--refer); }
+.sankey .sk-c1 { fill: var(--gold); }
+.sankey .sk-c2 { fill: var(--veto); }
+.sankey .sk-c3 { fill: var(--navy); }
 .sankey .sk-law { fill: var(--law-bar); opacity: .45; }
 .sankey .sk-lawn { fill: var(--law-bar); }
 .sankey .sk-veto { fill: var(--veto); opacity: .4; }
@@ -1215,6 +1221,37 @@ function plainAction(t) {
     .replace(/\bcal\.(\d+)/g, "calendar $1").replace(/\bchap\.(\d+)/g, "chapter $1")
     .replace(/\b(memo|veto)\.(\d+)/g, "$1 $2").replace(/\b(senate|assembly|governor|rules)\b/g, (w) => w[0].toUpperCase() + w.slice(1))
     .replace(/\bthird reading (Rules) calendar/, "third reading, $1 calendar");
+  // The state's shorthand, in plain words.
+  const cap = (c) => c.replace(/\b[a-z]/g, (x) => x.toUpperCase()).replace(/ (And|Of|The|For|On)\b/g, (m, w) => ` ${w.toLowerCase()}`);
+  const comm = (c) => (/^rules$/i.test(c) ? "the Rules Committee" : /^calendar$/i.test(c) ? "the floor calendar" : `the ${cap(c)} Committee`);
+  const PLAIN = [
+    [/^reported (?:referred|and committed) to (.+)$/, (m, c) => `Approved by committee; sent to ${comm(c)}`],
+    [/^reported$/, () => "Approved by committee"],
+    [/^reported to calendar for consideration$/, () => "Sent to the floor calendar for consideration"],
+    [/^committee discharged and committed to (.+)$/, (m, c) => `Taken out of committee; sent to ${comm(c)}`],
+    [/^(?:re-)?referred to (.+)$/, (m, c) => `Referred to ${comm(c)}`],
+    [/^committed to (.+)$/, (m, c) => `Sent to ${comm(c)}`],
+    [/^recommitted to (.+)$/, (m, c) => `Sent back to ${comm(c)}`],
+    [/^held for consideration in (.+)$/, (m, c) => `Held in ${comm(c)} (not advanced)`],
+    [/^Rules report calendar (\d+)/, (m, n) => `Approved by the Rules Committee (calendar ${n})`],
+    [/^(?:ordered|advanced) to third reading,? (?:Rules )?calendar (\d+)/, (m, n) => `Placed on the floor calendar for a vote (calendar ${n})`],
+    [/^(?:ordered|advanced) to third reading$/, () => "Placed on the floor calendar for a vote"],
+    [/^3rd reading calendar (\d+)/, (m, n) => `On the floor calendar for a vote (calendar ${n})`],
+    [/^(1st|2nd) report cal(?:endar|\.)?.*$/, (m, n) => `${n === "1st" ? "First" : "Second"} report to the floor`],
+    [/^amend(?: \(t\))? and recommit to (.+)$/, (m, c) => `Amended by the sponsor; back to ${comm(c)}`],
+    [/^amended(?: \(t\))? on third reading (\w+)$/, (m, n) => `Amended while on the floor calendar (${n.toUpperCase()})`],
+    [/^print number (\w+)$/, (m, n) => `New version printed (${n.toUpperCase()})`],
+    [/^substituted by ([SA]\w+)$/, (m, n) => `Replaced by the other house's version, ${n}`],
+    [/^substituted for ([SA]\w+)$/, (m, n) => `Took the place of this house's own version, ${n}`],
+    [/^passed (Senate|Assembly)$/, (m, h) => `Passed the ${h}`],
+    [/^repassed (Senate|Assembly)$/, (m, h) => `Passed the ${h} again`],
+    [/^delivered to (Senate|Assembly)$/, (m, h) => `Sent to the ${h}`],
+    [/^returned to (Senate|Assembly)$/, (m, h) => `Sent back to the ${h} after passing`],
+    [/^delivered to Governor$/, () => "Sent to the governor"],
+    [/^died in (Senate|Assembly)$/, (m, h) => `Died in the ${h}`],
+    [/^signed chapter (\d+)$/, (m, n) => `Signed into law (chapter ${n})`],
+  ];
+  for (const [re, fn] of PLAIN) if (re.test(s)) { s = s.replace(re, fn); break; }
   // Committee names after "referred to" and similar read as names.
   s = s.replace(/^((?:re-)?referred to|recommitted to|committed to|reported and committed to|reference changed to|held for consideration in|amend and recommit to) (.+)$/, (m, v, c) => `${v} ${c.replace(/\b[a-z]/g, (x) => x.toUpperCase()).replace(/ And /g, " and ")}`);
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -1937,43 +1974,56 @@ function monthChart(I, t) {
     <div class="vrow wide"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 
-// How bills move: a Sankey diagram. Bills flow left to right through each step; at each step a gray
-// band drops down to the bills that stopped there. Band widths are numbers of bills.
-function sankey(odds) {
+// How bills move: a Sankey diagram. Bills flow left to right through each step; at each step a band
+// drops down to the bills that stopped there, labeled with how many were reintroduced the next session.
+// Bills that died in committee are split by what happened to them there.
+function sankey(odds, fate, cfate) {
   const n = (k) => (odds[k] || [0, 0])[0];
   const N = [n("intro"), n("floor"), n("house"), n("both")], law = (odds.intro || [0, 0])[1], vetoed = n("vetoed");
   if (!N[0] || !N[2]) return "";
-  const W = 900, top = 26, H0 = 190, k = H0 / N[0], nodeW = 12, gap = 28;
-  const xs = [0, 1, 2, 3, 4].map((i) => 10 + i * 200);
+  const W = 960, top = 30, H0 = 170, k = H0 / N[0], nodeW = 10, gap = 34;
+  const xs = [0, 1, 2, 3, 4].map((i) => 6 + i * 196);
   const h = (v) => Math.max(1.5, v * k);
   const band = (x0, a0, b0, x1, a1, b1, cls) => { const m = (x0 + x1) / 2;
     return `<path class="${cls}" d="M${x0},${a0} C${m},${a0} ${m},${a1} ${x1},${a1} L${x1},${b1} C${m},${b1} ${m},${b0} ${x0},${b0} Z"/>`; };
-  const pct = (v) => `${Math.round((v / N[0]) * 100)}%`;
+  const pct = (v, d = N[0]) => `${Math.round((v / d) * 100)}%`;
+  const back = (key) => { const f = fate?.[key]; return f && f[0] ? `${pct(f[1], f[0])} reintroduced next session` : ""; };
   const STEPS = ["Introduced", "Approved by a committee", "Passed one house", "Passed both houses"];
-  const EXITS = ["Died in committee", "Died awaiting a floor vote", "Passed one house only"];
+  const EXITS = [["Died in committee", "committee"], ["Died awaiting a floor vote", "floor"], ["Passed one house only", "oneHouse"]];
   const exitTop = top + H0 + gap;
+  const label = (x, y, lines) => lines.filter(Boolean).map((l, i) => `<text class="sk-l${i ? "" : " sk-b"}" x="${x}" y="${y + i * 15}">${l}</text>`).join("");
   let g = "", labels = "";
   for (let i = 0; i < 4; i++) {
     g += `<rect class="sk-node" x="${xs[i]}" y="${top}" width="${nodeW}" height="${h(N[i])}"/>`;
-    labels += `<text class="sk-l" x="${xs[i]}" y="${top - 8}"><tspan class="sk-b">${STEPS[i]}</tspan> ${num(N[i])}</text>`;
-    if (i < 3) {
-      // Continuing bills along the top; the rest drop to an exit below the next step.
-      g += band(xs[i] + nodeW, top, top + h(N[i + 1]), xs[i + 1], top, top + h(N[i + 1]), "sk-go");
-      const out = N[i] - N[i + 1];
-      g += band(xs[i] + nodeW, top + h(N[i + 1]), top + h(N[i]), xs[i + 1], exitTop, exitTop + h(out), "sk-out");
-      g += `<rect class="sk-exit" x="${xs[i + 1]}" y="${exitTop}" width="${nodeW}" height="${h(out)}"/>`;
-      labels += `<text class="sk-l" x="${xs[i + 1] + nodeW + 6}" y="${exitTop + 11}"><tspan class="sk-b">${EXITS[i]}</tspan></text><text class="sk-l" x="${xs[i + 1] + nodeW + 6}" y="${exitTop + 25}">${num(out)} · ${pct(out)}</text>`;
+    labels += `<text class="sk-l" x="${xs[i]}" y="${top - 10}"><tspan class="sk-b">${STEPS[i]}</tspan> ${num(N[i])}</text>`;
+    if (i === 3) break;
+    g += band(xs[i] + nodeW, top, top + h(N[i + 1]), xs[i + 1], top, top + h(N[i + 1]), "sk-go");
+    const out = N[i] - N[i + 1], ex = xs[i + 1];
+    g += band(xs[i] + nodeW, top + h(N[i + 1]), top + h(N[i]), ex, exitTop, exitTop + h(out), "sk-out");
+    const [name, key] = EXITS[i];
+    if (i === 0 && cfate) {
+      // Died in committee, in four parts.
+      const PARTS = [["none", "Never acted on", "sk-c0"], ["amended", "Amended by the sponsor only", "sk-c1"], ["held", "Held or voted down", "sk-c2"], ["passed", "Passed one committee, died in the next", "sk-c3"]];
+      const tot = PARTS.reduce((a, [pk]) => a + ((cfate[pk] || [0])[0]), 0) || 1;
+      let y = exitTop;
+      PARTS.forEach(([pk, , cls]) => { const hh = h(out) * ((cfate[pk] || [0])[0] / tot); g += `<rect class="${cls}" x="${ex}" y="${y}" width="${nodeW}" height="${hh}"/>`; y += hh; });
+      labels += label(ex + nodeW + 8, exitTop + 11, [name, `${num(out)} · ${pct(out)} of bills`, back(key)]);
+      labels += PARTS.map(([pk, pl, cls], j) => { const [cn, , claw] = cfate[pk] || [0, 0, 0];
+        return `<rect class="${cls}" x="${ex + nodeW + 8}" y="${exitTop + 50 + j * 17}" width="9" height="9"/><text class="sk-l" x="${ex + nodeW + 22}" y="${exitTop + 58 + j * 17}">${pl} ${pct(cn, tot)}</text>`; }).join("");
+    } else {
+      g += `<rect class="sk-exit" x="${ex}" y="${exitTop}" width="${nodeW}" height="${h(out)}"/>`;
+      labels += label(ex + nodeW + 8, exitTop + 11, [name, `${num(out)} · ${pct(out)} of bills`, back(key)]);
     }
   }
   // Passed both houses: signed or vetoed.
-  const x4 = xs[4];
+  const x4 = xs[4], vy = top + h(law) + 22;
   g += band(xs[3] + nodeW, top, top + h(law), x4, top, top + h(law), "sk-law");
-  g += band(xs[3] + nodeW, top + h(law), top + h(law) + h(vetoed), x4, top + h(law) + 14, top + h(law) + 14 + h(vetoed), "sk-veto");
-  g += `<rect class="sk-lawn" x="${x4}" y="${top}" width="${nodeW}" height="${h(law)}"/><rect class="sk-veton" x="${x4}" y="${top + h(law) + 14}" width="${nodeW}" height="${h(vetoed)}"/>`;
-  labels += `<text class="sk-l" x="${x4 + nodeW + 6}" y="${top + 11}"><tspan class="sk-b">Became law</tspan></text><text class="sk-l" x="${x4 + nodeW + 6}" y="${top + 25}">${num(law)} · ${pct(law)}</text>`
-    + `<text class="sk-l" x="${x4 + nodeW + 6}" y="${top + h(law) + 25}"><tspan class="sk-b">Vetoed</tspan> ${num(vetoed)} · ${pct(vetoed)}</text>`;
-  const height = exitTop + h(N[0] - N[1]) + 10;
-  return `<div class="sankey"><svg viewBox="0 0 ${W + 60} ${height}" role="img" aria-label="How bills move from introduction to law">${g}${labels}</svg></div>`;
+  g += band(xs[3] + nodeW, top + h(law), top + h(law) + h(vetoed), x4, vy, vy + h(vetoed), "sk-veto");
+  g += `<rect class="sk-lawn" x="${x4}" y="${top}" width="${nodeW}" height="${h(law)}"/><rect class="sk-veton" x="${x4}" y="${vy}" width="${nodeW}" height="${h(vetoed)}"/>`;
+  labels += label(x4 + nodeW + 8, top + 11, ["Became law", `${num(law)} · ${pct(law)} of bills`]);
+  labels += label(x4 + nodeW + 8, vy + 8, ["Vetoed", `${num(vetoed)} · ${pct(vetoed)} of bills`, back("vetoed")]);
+  const height = exitTop + Math.max(h(N[0] - N[1]), 120) + 12;
+  return `<div class="sankey"><svg viewBox="0 0 ${W + 150} ${height}" role="img" aria-label="How bills move from introduction to law">${g}${labels}</svg></div>`;
 }
 
 // The Statistics switch: the same figures for general bills only (leaving out bills about one place,
@@ -2002,7 +2052,7 @@ function renderStats() {
   const odds = I.odds[t] || {};
   const [nI, lI] = odds.intro || [0, 0], [nF, lF] = odds.floor || [0, 0];
   $("statOdds").innerHTML = `<h2>Odds of becoming law</h2>
-    ${sankey(odds)}
+    ${sankey(odds, I.fate?.[t], I.commFate?.[t])}
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)}, ${pastSpan()}. Band widths are numbers of bills.</p>
     <p class="key"><span><i class="k-law"></i>Share that became law</span></p>
     <div class="vlist">${ODDS_POINTS.map(([k, l]) => { const [n, law] = odds[k] || [0, 0];
@@ -2291,12 +2341,12 @@ function cosponsorList(v) {
 
 function verBlock(v) {
   if (!v) return "";
-  const acts = v.actions.slice().reverse().map((a) => `<li><time>${esc(a[0])}</time><span>${esc(plainAction(a[1]))}</span></li>`).join("");
+  const acts = v.actions.slice().reverse().map((a) => `<li><time>${fmtDate(a[0])}</time><span>${esc(plainAction(a[1]))}</span></li>`).join("");
   return `<div class="ver">
-    <h3><span>${esc(v.p)}</span><a href="${billUrl(v.p)}" target="_blank" rel="noopener">Bill text and memo ↗</a></h3>
+    <h3><span>${esc(v.p)}</span></h3>
     <div class="who">${esc(v.sponsor || "No sponsor listed")}${v.cosp ? ` · ${cosponsorList(v)}` : ""}</div>
     <div class="who"><b>${esc(v.statusDesc)}</b>${v.committee ? " · " + esc(commPlain(v.committee)) : ""}</div>
-    <ol>${acts}</ol>
+    <details class="acts"><summary>Every action (${v.actions.length})</summary><ol>${acts}</ol></details>
   </div>`;
 }
 
@@ -2670,7 +2720,6 @@ function fillDetail(el) {
   // On a watchlist card the summary and the key action are already shown above.
   const inCard = el.classList.contains("morebill");
   d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
-    ${b.act ? `<div class="act">${esc(b.act)}</div>` : ""}
     <p class="textlink">${textLinks(b)}</p>
     ${chapterAmendment(b)}
     <div class="linkrow"><span>Link to this bill:</span><input type="text" readonly value="${esc(billLink(b))}" aria-label="Link to this bill" onclick="this.select()"><button class="act-btn" type="button" data-copylink>Copy</button></div>

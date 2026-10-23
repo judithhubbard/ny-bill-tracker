@@ -1448,7 +1448,7 @@ def main():
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
-                         S(r["comm"]), r["last"].replace("-", ""), r["cosp"], r["act"], r["lawCode"],
+                         S(r["comm"]), r["last"].replace("-", ""), r["cosp"], "", r["lawCode"],
                          S(r["program"]), S(r["law"]), vers, max(session, int((r["first"] or str(session))[:4])), h,
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"]),
