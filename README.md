@@ -2,7 +2,7 @@
 
 Every New York Senate and Assembly bill, paired across the two houses, with filters by
 stage, topic, law amended, committee, and history in earlier and later sessions.
-Published at https://judithhubbard.github.io/ny-bill-tracker/ and rebuilt every morning.
+Published at https://albanybilltracker.org/ and rebuilt every morning.
 
 Data: New York State Senate [Open Legislation API](https://legislation.nysenate.gov/).
 

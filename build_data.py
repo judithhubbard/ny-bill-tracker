@@ -33,7 +33,7 @@ if "--github" in ARGS:
     del ARGS[i:i + 2]
 ONLY = [int(a) for a in ARGS] or SESSIONS
 # The GitHub Pages address, used for share links and links to single bills.
-SITE_URL = os.environ.get("SITE_URL", "https://judithhubbard.github.io/ny-bill-tracker/")
+SITE_URL = os.environ.get("SITE_URL", "https://albanybilltracker.org/")
 
 
 def read_session(session):
