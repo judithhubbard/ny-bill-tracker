@@ -185,7 +185,9 @@ _COUNTY = re.compile(r"\b(" + _CTY + r")[ -][Cc]ount(?:y|ies)\b|\b[Cc]ount(?:y|i
 _ENTITY = re.compile(r"\b(" + _NAME + r") (?:[Vv]olunteer )?(?:[Ff]ire (?:[Dd]epartment|[Cc]ompany|[Dd]istrict)|[Aa]mbulance"
                      r"|(?:[Pp]ublic |[Ff]ree )?[Ll]ibrary(?: [Dd]istrict)?|(?:[Cc]entral |[Uu]nion [Ff]ree |[Cc]ity )?[Ss]chool [Dd]istrict"
                      r"|[Ww]ater [Dd]istrict|[Ss]ewer [Dd]istrict|[Hh]ousing [Aa]uthority|[Ii]ndustrial [Dd]evelopment [Aa]gency"
-                     r"|[Pp]arking [Aa]uthority|Cemetery|Hospital|Rescue Squad)\b")
+                     r"|[Pp]arking [Aa]uthority|Cemetery|Hospital|Rescue Squad|Community College"
+                     r"|(?:(?:[Vv]olunteer|Exempt) )*(?:Fire(?:fighter|men)(?:'s|s'|’s|s)? )?Benevolent Association"
+                     r"|(?:First |United |Reformed |Evangelical |Lutheran |Baptist |Methodist |Presbyterian |Episcopal |Catholic )*Church)\b")
 _NAMED = re.compile(r"\b(" + "|".join(re.escape(k) for k in sorted(list(REGIONS) + CITY_NAMES, key=len, reverse=True)) + r")\b")
 # Wording that makes a bill reach beyond the places it names, e.g. "counties outside the city of New York".
 REACHES_BEYOND = re.compile(r"\b(statewide|each county|every county|all counties|any county|state of New York|outside|except|"
@@ -201,6 +203,8 @@ def counties_of_name(name):
     # Longest leading run first ("Johnson City Central" -> "Johnson City"), then without a leading
     # direction ("East Ramapo" -> "Ramapo").
     for cand in [words[:k] for k in range(len(words), 0, -1)] + [words[1:]] * (len(words) > 1):
+        if " ".join(cand) in COUNTIES and " ".join(cand) != "New York":
+            return [" ".join(cand)]
         hit = PLACE_COUNTIES.get(" ".join(cand).lower())
         if hit:
             return hit
@@ -226,8 +230,14 @@ def place_counties(title, summary, law_code):
         found.update(c for c in COUNTIES if c != "New York" and re.search(r"\b" + re.escape(c) + r"\b", t))
     for m in _NAMED.finditer(t):
         found.update(REGIONS.get(m.group(1)) or PLACE_COUNTIES.get(m.group(1).lower(), []))
-    if found or unknown:
+    if found:
         # The summary often names the county ("town of Brookhaven, county of Suffolk").
+        for m in _COUNTY.finditer(summary):
+            found.add(m.group(1) or m.group(2))
+    elif unknown:
+        # A place the list doesn't have; the summary may say where it is.
+        for m in _MUNI.finditer(summary):
+            found.update(counties_of_name(m.group(1)))
         for m in _COUNTY.finditer(summary):
             found.add(m.group(1) or m.group(2))
     else:

@@ -553,6 +553,8 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.pg.stale .srow:not([aria-pressed="true"]) { opacity: .6; }
+.pg-note { margin: 0 0 4px; font-size: 11.5px; color: var(--ink-2); }
 details.morefilters { margin-top: 4px; }
 #topicBox .topics { margin-top: 10px; }
 details.morefilters > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; }
@@ -1089,7 +1091,11 @@ function renderPipeline() {
   };
   const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
        <span class="sl">${TEXT.pipe[k]}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
-  $("pipeline").innerHTML = `
+  // After the second year's last floor votes, only bills that passed both houses can still move.
+  $("pipeline").innerHTML = floorVotesOver() ? `
+    <div class="pg"><div class="pg-h">Still in play</div>${[3, 4].map(row).join("")}</div>
+    <div class="pg"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
+    <div class="pg stale"><div class="pg-h">Out of time</div><p class="pg-note">Die December 31 unless lawmakers return for a special session.</p>${[0, 1, 2].map(row).join("")}</div>` : `
     <div class="pg"><div class="pg-h">In the Legislature</div>${[0, 1, 2, 3].map(row).join("")}</div>
     <div class="pg"><div class="pg-h">With the governor</div>${[4, 5, 6].map(row).join("")}</div>`;
 }
@@ -2695,6 +2701,13 @@ function decode(raw) {
 
 // A one-paragraph note on where the session stands, worked out from the data and today's date,
 // so it stays accurate as the year goes on. Returns "" while the Legislature is actively voting.
+// True once the current session's second year has had no floor votes for three weeks.
+function floorVotesOver() {
+  if (!DATA.current) return false;
+  const lv = DATA.lastVote || "", today = isoToday();
+  return lv.startsWith(String(DATA.session + 1)) && (new Date(today) - new Date(lv)) / 864e5 > 21;
+}
+
 function sessionNotice(raw) {
   if (!raw.current) return "";
   const today = isoToday(), y1 = raw.session, y2 = raw.session + 1;
