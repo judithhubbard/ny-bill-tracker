@@ -248,7 +248,9 @@ table.oc th { vertical-align: bottom; }
 .side .toggles { display: grid; gap: 6px; }
 .side label.inline { display: inline-flex; gap: 6px; align-items: center; font: 400 13px var(--body); letter-spacing: 0; text-transform: none; color: var(--ink-2); margin-top: 4px; }
 .person { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; padding: 14px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
-.person .photo { width: 96px; height: 120px; object-fit: cover; border-radius: 4px; background: var(--chip); }
+.person .photo { position: relative; width: 96px; height: 120px; border-radius: 4px; background: var(--chip); overflow: hidden; display: flex; align-items: center; justify-content: center; flex: none; }
+.person .photo span { font: 700 30px var(--display); color: var(--ink-2); }
+.person .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .person .who-body { display: grid; gap: 3px; min-width: 0; grid-column: -2; }
 .person h2 { margin: 0 0 2px; font: 700 22px var(--display); font-stretch: 85%; }
 .person p { margin: 0; font-size: 13.5px; color: var(--ink-2); max-width: 90ch; }
@@ -645,6 +647,8 @@ ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 7
 .pg.decided .pg-h { grid-column: 1 / -1; padding: 0 2px; }
 .pg.decided .srow { display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 0; padding: 8px 10px; border-radius: 8px; }
 .pg.decided .srow .sn { background: none; padding: 0; font: 700 20px/1.1 var(--display); }
+.pg.decided .srow { justify-content: flex-end; }
+.pg.decided .srow .sl { white-space: nowrap; display: inline-flex; align-items: center; }
 .pg.decided .srow[data-k="5"]:not([aria-pressed="true"]) { background: var(--signed-soft); }
 .pg.decided .srow[data-k="6"]:not([aria-pressed="true"]) { background: var(--veto-soft); }
 .pg.decided .srow[aria-pressed="true"] .sn { color: var(--sheet); }
@@ -1679,11 +1683,14 @@ function renderOpenNow() {
   // On a legislator's page, only bills they sponsor or co-sponsor.
   const L = PRESET?.who && LEG_BY_ID[PRESET.who];
   const mine = (b) => !L || sponsoredBy(b, L, true);
-  const desk = BILLS.filter((b) => b.stage === 4 && mine(b)).sort((a, b) => (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
-  const waiting = BILLS.filter((b) => b.stage === 3 && mine(b)).sort((a, b) => (b.last || "").localeCompare(a.last || ""));
+  // Their own bills first, then ones they co-sponsor.
+  const own = (b) => (L && sponsoredBy(b, L, false) ? 0 : 1);
+  const desk = BILLS.filter((b) => b.stage === 4 && mine(b)).sort((a, b) => own(a) - own(b) || (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
+  const waiting = BILLS.filter((b) => b.stage === 3 && mine(b)).sort((a, b) => own(a) - own(b) || (b.last || "").localeCompare(a.last || ""));
+  const all = [...desk, ...waiting], nOwn = all.filter((b) => !own(b)).length;
   const more = waiting.length - openShown;
   $("openNow").innerHTML = `<h2>${L ? `${esc(L.label)}'s bills open for comment` : "Open for comment"}</h2>
-    ${L ? `<p class="muted">Bills they sponsor or co-sponsor.</p>` : ""}
+    ${L ? `<p class="muted">${num(nOwn)} they sponsor and ${num(all.length - nOwn)} they co-sponsor; their own bills are listed first.</p>` : ""}
     <h3>On the governor's desk (${num(desk.length)}), soonest deadline first</h3>
     <div class="list">${desk.map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
     <h3>Passed both houses, not yet requested by her (${num(waiting.length)})</h3>
@@ -1753,27 +1760,30 @@ const isNarrow = (b) => !!(b.narrow || b.places.length);
 function oddsLine(b) {
   // Constitutional amendments don't go to the governor.
   if (b.topics.includes("const")) return "A constitutional amendment doesn't go to the governor: it has to pass two separately elected Legislatures, then the voters.";
+  if (b.stage > 4 || !DATA.insights) return "";
+  // Compared with past bills of the same kind (about one place, person or group, or not) and, where there
+  // were enough of them, the same topic: one plain sentence.
   const kind = isNarrow(b) ? "n" : "g";
-  const like = kind === "n" ? "bills about one place, person or group" : "bills not about one place, person or group";
-  const odds = DATA.insights?.odds?.[`all|${kind}`] || DATA.insights?.odds?.all;
-  if (!odds || b.stage > 4) return "";
   const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
-  const [n, law] = odds[point] || [0, 0];
+  const w = DATA.insights.waiting;
+  const waiting = b.stage === 3 && w;
+  const pick = (t) => {
+    if (waiting) { const x = w.kinds?.[t ? `${t}|${kind}` : kind]; return x && x[0] >= 30 ? x : null; }
+    const o = DATA.insights.odds?.[`${t || "all"}|${kind}`]?.[point];
+    return o && o[0] >= 40 ? o : null;
+  };
+  // The topic of the committee it was first sent to; other topics only if that one lacks history.
+  const topic = [b.mainTopic, ...b.topics].find((t) => t && pick(t));
+  const [n, law] = pick(topic) || pick(null) || [0, 0];
   if (!n) return "";
-  const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
-  // The same figure for each of the bill's topics, where past sessions had enough such bills.
-  const rates = b.topics.map((t) => { const o = DATA.insights?.odds?.[`${t}|${kind}`]?.[point]; return o && o[0] >= 40 ? `${esc(TOPICS[t])} ${pctOf(o[1], o[0])}%` : ""; }).filter(Boolean);
-  const byTopic = rates.length ? `<br>By topic, of those that ${label}: ${rates.join(" · ")}.` : "";
-  // Not yet requested: compare with bills still waiting on this same date in past sessions.
-  const w = DATA.insights?.waiting;
-  const [wn, wl] = w?.kinds?.[kind] || [w?.n, w?.law];
-  if (b.stage === 3 && w && wn >= 30) {
+  const what = topic ? `${esc(TOPICS[topic].toLowerCase())} bills` : "bills like this one";
+  if (waiting) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    const wt = b.topics.map((t) => { const x = w.kinds?.[`${t}|${kind}`]; return x && x[0] >= 30 ? `${esc(TOPICS[t])} ${pctOf(x[1], x[0])}%` : ""; }).filter(Boolean);
-    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.${wt.length ? `<br>By topic: ${wt.join(" · ")}.` : ""}`;
+    return `In past sessions, ${pctOf(law, n)}% of ${what} still waiting on the governor on ${day} were signed into law.`;
   }
-  return `Past sessions: ${pctOf(law, n)}% of ${like} that ${label} became law.${byTopic}`;
+  const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
+  return `In past sessions, ${pctOf(law, n)}% of ${what} that ${label} became law.`;
 }
 
 // One bar: full length is the share approved by committee; the darker part, the share that became law.
@@ -2481,7 +2491,10 @@ function lineage(b) {
 
 function renderList() {
   const rows = sortBills(BILLS.filter((b) => matches(b)));
-  $("count").innerHTML = `<b>${num(rows.length)}</b> of ${num(BILLS.length)} bills`;
+  // On a legislator's page, count against their own bills, not the whole Legislature's.
+  const page = PRESET?.who && LEG_BY_ID[PRESET.who];
+  const total = page ? BILLS.filter((b) => sponsoredBy(b, page, state.whoCos)).length : BILLS.length;
+  $("count").innerHTML = page && rows.length === total ? `<b>${num(total)}</b> bills` : `<b>${num(rows.length)}</b> of ${page ? "their " : ""}${num(total)} bills`;
   const slice = rows.slice(0, state.shown);
   if (!slice.length) {
     $("list").innerHTML = `<div class="empty">No bills match all of these filters. Remove one of the filters listed above, or clear them all.</div>`;
@@ -3210,7 +3223,7 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places, mainTopic] = r;
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -3225,6 +3238,7 @@ function decode(raw) {
       parties: Array.isArray(parties) ? (parties[0] && parties[1] ? "DR" : parties[0] ? "D" : parties[1] ? "R" : "") : parties || "",
       agenda: (agenda || []).map(([c, when]) => ({ committee: str(c), when })),
       places: (places || []).map((i) => (raw.counties || [])[i] || "?"),
+      mainTopic: mainTopic || (topics || [])[0] || "",
       votes: (votes || []).map(([house, kind, cm, date, yes, no, ny]) => ({
         house, kind, committee: str(cm), date: day(date), yes, no, notYes: new Map(ny.map(([m, code]) => [T[m], code])),
       })),
@@ -3309,7 +3323,7 @@ function renderPerson(L) {
   const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, phonesHtml(L),
     L.url && `<a href="${esc(L.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
   $("person").innerHTML = `
-    ${L.image ? `<img class="photo" src="${esc(L.image)}" alt="" loading="lazy" onerror="this.remove()">` : ""}
+    <div class="photo"><span>${esc(L.name.split(" ").filter((w) => /^[A-Z]/.test(w) && !/^(Jr|Sr|II|III)\.?$/.test(w)).map((w) => w[0]).filter((c, i, a) => i === 0 || i === a.length - 1).join(""))}</span>${L.image ? `<img src="${esc(L.image)}" alt="" onerror="this.remove()">` : ""}</div>
     <div class="who-body">
       <h2>${esc(L.label)}</h2>
       <p>${[L.party, `${house} District ${L.district}`, since].filter(Boolean).map(esc).join(" · ")}</p>
