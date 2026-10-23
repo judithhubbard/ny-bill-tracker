@@ -17,6 +17,8 @@ const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,60}$/;
 const BILL_RE = /^-?[SA]\d{1,5}$/; // "-" in front means oppose
 const MAX_BILLS = 500;
 const MAX_TITLE = 120;
+const MAX_INTRO = 3000;
+const MAX_NOTE = 1000;
 
 const enc = new TextEncoder();
 async function sha256(s) {
@@ -59,12 +61,21 @@ function cleanList(body) {
   if (bills.some((b) => !BILL_RE.test(b))) return { error: "Bills must look like S1234 or A1234." };
   const session = Number(body?.session);
   if (!Number.isInteger(session) || session < 2009 || session > 2099 || session % 2 === 0) return { error: "Unknown session." };
-  return { title, bills: [...new Set(bills)], session };
+  // Plain text only; the site escapes it when showing it.
+  const intro = String(body?.intro || "").trim().slice(0, MAX_INTRO);
+  const notes = {};
+  const plain = new Set(bills.map((b) => b.replace(/^-/, "")));
+  for (const [k, v] of Object.entries(body?.notes && typeof body.notes === "object" ? body.notes : {})) {
+    const key = String(k).toUpperCase();
+    const text = String(v || "").trim().slice(0, MAX_NOTE);
+    if (plain.has(key) && text) notes[key] = text;
+  }
+  return { title, bills: [...new Set(bills)], session, intro, notes };
 }
 function slugify(title) {
   return title.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "list";
 }
-const publicView = (l) => ({ slug: l.slug, title: l.title, group: l.group, session: l.session, bills: l.bills, updated: l.updated });
+const publicView = (l) => ({ slug: l.slug, title: l.title, group: l.group, session: l.session, bills: l.bills, intro: l.intro || "", notes: l.notes || {}, updated: l.updated });
 
 async function getJSON(env, key) { return JSON.parse((await env.LISTS.get(key)) || "null"); }
 async function codeActive(env, code) { const c = await getJSON(env, `code:${code}`); return c && c.active ? c : null; }

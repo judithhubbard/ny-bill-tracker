@@ -556,6 +556,12 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.pubintro { white-space: pre-wrap; margin: 8px 0 4px; padding: 10px 12px; border-left: 3px solid var(--navy); background: var(--chip); border-radius: 6px; font-size: 14.5px; }
+.pubintro-edit { display: grid; gap: 4px; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+.pubintro-edit textarea, .noteedit textarea { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 5px; background: var(--sheet); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
+.pubnote { white-space: pre-wrap; padding: 8px 10px; border-radius: 6px; background: var(--chip); font-size: 14px; }
+.noteedit > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--navy); }
+.noteedit textarea { margin-top: 4px; }
 .tip { position: relative; appearance: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; padding: 0; margin: 0 0 0 3px; border-radius: 50%; border: 1px solid var(--ink-2); background: none; color: var(--ink-2); font: italic 700 10px/1 Georgia, serif; vertical-align: 1px; cursor: help; text-transform: none; letter-spacing: 0; }
 .srow[aria-pressed="true"] .tip { border-color: var(--sheet); color: var(--sheet); }
 #tipbox { position: fixed; z-index: 100; max-width: 260px; padding: 8px 10px; border-radius: 6px; background: var(--ink); color: var(--paper); font: 400 12.5px/1.4 var(--body); box-shadow: 0 4px 14px rgba(0,0,0,.18); pointer-events: none; }
@@ -2596,6 +2602,10 @@ let SHARED_META = null;   // a published list being viewed: { slug, title, group
 const PUB_STORE = () => `abt:published:${DATA.session}`;
 function myPublished() { try { return JSON.parse(localStorage.getItem(PUB_STORE()) || "null"); } catch (e) { return null; } }
 function setMyPublished(v) { try { v ? localStorage.setItem(PUB_STORE(), JSON.stringify(v)) : localStorage.removeItem(PUB_STORE()); } catch (e) {} }
+// The introduction and per-bill notes for my published list, kept in this browser until I update the list.
+const PUBTEXT_STORE = () => `abt:pubtext:${DATA.session}`;
+function pubText() { try { return JSON.parse(localStorage.getItem(PUBTEXT_STORE()) || "null") || { intro: "", notes: {} }; } catch (e) { return { intro: "", notes: {} }; } }
+function setPubText(v) { try { localStorage.setItem(PUBTEXT_STORE(), JSON.stringify(v)); } catch (e) {} }
 const watchCodes = () => BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
 const listUrl = (slug) => `${ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "")}watchlist/#list=${slug}`;
 async function listsApi(path, opts = {}) {
@@ -2608,7 +2618,7 @@ async function loadPublishedList(slug) {
   try {
     const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
     SHARED = new Map(l.session === DATA.session ? l.bills.map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])) : []);
-    SHARED_META = { slug: l.slug, title: l.title, group: l.group, updated: l.updated, other: l.session !== DATA.session ? l.session : null };
+    SHARED_META = { slug: l.slug, title: l.title, group: l.group, updated: l.updated, intro: l.intro || "", notes: l.notes || {}, other: l.session !== DATA.session ? l.session : null };
   } catch (e) {
     SHARED = new Map(); SHARED_META = { error: e.message };
   }
@@ -2626,7 +2636,7 @@ async function publishAction(btn) {
       const title = $("pubTitle").value.trim(), code = $("pubCode").value.trim();
       if (!title || !code) return msg("Give the list a name and enter your invite code.");
       msg("Publishing…");
-      const r = await listsApi("/lists", { method: "POST", body: JSON.stringify({ code, title, session: DATA.session, bills: watchCodes() }) });
+      const r = await listsApi("/lists", { method: "POST", body: JSON.stringify({ code, title, session: DATA.session, bills: watchCodes(), ...pubText() }) });
       setMyPublished({ slug: r.slug, editKey: r.editKey, title, group: r.group });
       return renderWatchView();
     }
@@ -2635,11 +2645,12 @@ async function publishAction(btn) {
       if (!slug || !editKey) return msg("Paste the edit key exactly as it was copied (a name and a key).");
       const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
       setMyPublished({ slug, editKey, title: l.title, group: l.group });
+      setPubText({ intro: l.intro || "", notes: l.notes || {} });
       return renderWatchView();
     }
     if (what === "update") {
       msg("Updating…");
-      const l = await listsApi(`/lists/${encodeURIComponent(mine.slug)}`, { method: "PUT", headers: { "X-Edit-Key": mine.editKey }, body: JSON.stringify({ title: mine.title, session: DATA.session, bills: watchCodes() }) });
+      const l = await listsApi(`/lists/${encodeURIComponent(mine.slug)}`, { method: "PUT", headers: { "X-Edit-Key": mine.editKey }, body: JSON.stringify({ title: mine.title, session: DATA.session, bills: watchCodes(), ...pubText() }) });
       return msg(`Updated: ${num(l.bills.length)} bills, as of now.`);
     }
   } catch (e) { msg(e.message); }
@@ -2650,6 +2661,8 @@ function publishBox() {
   const mine = myPublished();
   if (mine) return `<div class="pubbox"><p><b>Published as “${esc(mine.title)}”</b>${mine.group ? ` · ${esc(mine.group)}` : ""}. Anyone with this link sees it:</p>
     <p class="sharerow"><input type="text" readonly value="${esc(listUrl(mine.slug))}" aria-label="Published list link"> <button class="act-btn" type="button" data-pub="copy">Copy link</button></p>
+    <label class="pubintro-edit">Introduction, shown at the top of your list <textarea id="pubIntro" rows="3" maxlength="3000" placeholder="Why these bills matter, and what you're asking people to do.">${esc(pubText().intro)}</textarea></label>
+    <p class="muted">Add a note to any bill with the “Note for your published list” box on its card below.</p>
     <p><button class="act-btn" type="button" data-pub="update">Update the published list</button> <span class="muted" id="pubMsg">Changes to your watchlist show up for others after you click this.</span></p>
     <details class="pubmore"><summary>Edit key, to update this list from another computer${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private: anyone with it can change the list.</p>
       <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
@@ -2757,6 +2770,7 @@ function renderWatchView() {
     card.innerHTML = `<h2>Published list</h2><p>${esc(SHARED_META.error)}${back}</p><p><button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else if (SHARED && SHARED_META) {
     card.innerHTML = `<h2>${esc(SHARED_META.title)}</h2><p>Maintained by <b>${esc(SHARED_META.group)}</b> · ${num(list.length)} bill${list.length === 1 ? "" : "s"} · updated ${fmtDate(SHARED_META.updated.slice(0, 10))}.${back}</p>
+      ${SHARED_META.intro ? `<div class="pubintro">${esc(SHARED_META.intro)}</div>` : ""}
       ${SHARED_META.other ? `<p class="muted">This list is for the ${span(SHARED_META.other)} session.</p>` : ""}
       <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else if (SHARED) {
@@ -2801,10 +2815,12 @@ function renderWatchView() {
       <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
       ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
+      ${SHARED_META?.notes?.[baseNum(b.nums[0])] ? `<div class="pubnote"><b>Note from ${esc(SHARED_META.group)}:</b> ${esc(SHARED_META.notes[baseNum(b.nums[0])])}</div>` : ""}
       ${action}
       ${x.key && oddsLine(b) ? `<p class="odds">${oddsLine(b)}</p>` : ""}
       ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
       ${!x.key ? reintroAsk(b, x.stance) : ""}
+      ${!SHARED && myPublished() ? `<details class="noteedit"${pubText().notes[baseNum(b.nums[0])] ? " open" : ""}><summary>Note for your published list</summary><textarea data-pubnote="${esc(baseNum(b.nums[0]))}" rows="2" maxlength="1000" placeholder="Why this bill matters, or what to say about it.">${esc(pubText().notes[baseNum(b.nums[0])] || "")}</textarea></details>` : ""}
       ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
     </article>`;
@@ -3091,6 +3107,15 @@ function wire() {
     } else if (btn.dataset.wl === "mine") {
       SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
     }
+  });
+  // Typing an introduction or a note saves it in this browser; "Update the published list" sends it.
+  $("view-watch").addEventListener("input", (e) => {
+    const t = pubText();
+    if (e.target.id === "pubIntro") t.intro = e.target.value;
+    else if (e.target.dataset.pubnote) { const k = e.target.dataset.pubnote; if (e.target.value.trim()) t.notes[k] = e.target.value; else delete t.notes[k]; }
+    else return;
+    setPubText(t);
+    if ($("pubMsg")) $("pubMsg").textContent = "Not published yet: click “Update the published list”.";
   });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
   $("openNow").addEventListener("click", (e) => {
