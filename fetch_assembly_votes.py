@@ -14,7 +14,7 @@ SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "data", f"bills_{SESSION}.json")
 OUT = os.path.join(HERE, "data", f"assembly_votes_{SESSION}.json")
-UA = "Mozilla/5.0 (compatible; ny-bill-tracker; +https://github.com/judithhubbard/ny-bill-tracker)"
+UA = "Mozilla/5.0 (compatible; AlbanyBillTracker/1.0; +https://albanybilltracker.org/)"
 
 
 def page(print_no):
@@ -25,7 +25,9 @@ def page(print_no):
     for attempt in range(3):
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
-                return r.read().decode("utf-8", "replace")
+                text = r.read().decode("utf-8", "replace")
+            time.sleep(1)  # be gentle with the Assembly's site
+            return text
         except Exception as e:
             time.sleep(3 * (attempt + 1))
             err = e
@@ -77,7 +79,7 @@ def main():
             return print_no, None
 
     done = 0
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:
         for print_no, result in pool.map(work, todo):
             if result is not None:
                 cache[print_no] = result

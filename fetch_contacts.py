@@ -23,7 +23,7 @@ from zoneinfo import ZoneInfo
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Set in main(), so build_data.py can import the name helpers without an API key.
 SESSION = KEY = OUT = None
-UA = "Mozilla/5.0 (compatible; ny-bill-tracker; +https://github.com/judithhubbard/ny-bill-tracker)"
+UA = "Mozilla/5.0 (compatible; AlbanyBillTracker/1.0; +https://albanybilltracker.org/)"
 
 # nysenate.gov page addresses, keyed by first + last name (see name_key).
 SENATE_SLUGS = {

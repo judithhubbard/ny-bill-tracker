@@ -28,7 +28,7 @@ ASM = "https://nyassembly.gov/leg/"
 
 
 def page(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (ny-bill-tracker)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; AlbanyBillTracker/1.0; +https://albanybilltracker.org/)"})
     for attempt in range(3):
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
