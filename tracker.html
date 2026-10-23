@@ -58,6 +58,7 @@ a { color: var(--navy); }
 header { display: grid; gap: 4px; }
 .eyebrow { font: 600 12px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--display); font-stretch: 80%; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h1 a { color: inherit; text-decoration: none; }
 .sub { color: var(--ink-2); margin: 4px 0 0; max-width: 70ch; }
 .sub b { color: var(--ink); font-weight: 600; }
 
@@ -767,7 +768,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <div class="mast-top">
       <div>
         <div class="eyebrow" id="sessionLabel">New York State Legislature</div>
-        <h1>Albany Bill Tracker</h1>
+        <h1><a id="homeLink" href="./">Albany Bill Tracker</a></h1>
       </div>
       <nav class="sessions" id="sessions" aria-label="Legislative sessions"></nav>
     </div>
@@ -1163,6 +1164,17 @@ function clearHash() { try { history.replaceState(null, "", location.pathname + 
 
 // A link to one bill (#S4574) shows just that bill, whatever the other filters.
 let ONE = null;
+// A past session opened from a legislator's page: ?who=Name&h=A&slug=kelles shows only their bills.
+const PAST_WHO = (() => {
+  const q = new URLSearchParams(location.search), name = q.get("who"), house = q.get("h");
+  const served = (q.get("s") || "").split(",").map(Number).filter((n) => n > 2000);
+  return name && /^[SA]$/.test(house || "") ? { name, house, slug: (q.get("slug") || "").replace(/[^a-z0-9-]/g, ""), served: served.length ? served : null } : null;
+})();
+// Matched by house and last name (and first initial), since the name a member sponsors under can vary by session.
+function pastWhoTest(b) {
+  const want = lastName(PAST_WHO.name), initial = PAST_WHO.name.trim()[0]?.toLowerCase();
+  return b.vers.some((v) => v.p[0] === PAST_WHO.house && v.sponsor && lastName(v.sponsor) === want && v.sponsor.trim()[0]?.toLowerCase() === initial);
+}
 function billLink(b) {
   const num_ = baseNum(b.nums[0]);
   const here = DATA.sessions.find((s) => s.session === DATA.session);
@@ -1184,6 +1196,7 @@ function openNum(num_) {
 
 function matches(b, skip) {
   if (ONE != null) return b.idx === ONE;
+  if (PAST_WHO && !pastWhoTest(b)) return false;
   if (skip !== "stage" && state.stage != null && b.stage !== state.stage) return false;
   if (skip !== "topic" && state.topics.size) {
     for (const t of state.topics) if (!b.topics.includes(t)) return false;
@@ -2492,8 +2505,8 @@ function lineage(b) {
 function renderList() {
   const rows = sortBills(BILLS.filter((b) => matches(b)));
   // On a legislator's page, count against their own bills, not the whole Legislature's.
-  const page = PRESET?.who && LEG_BY_ID[PRESET.who];
-  const total = page ? BILLS.filter((b) => sponsoredBy(b, page, state.whoCos)).length : BILLS.length;
+  const page = (PRESET?.who && LEG_BY_ID[PRESET.who]) || PAST_WHO;
+  const total = PAST_WHO ? BILLS.filter(pastWhoTest).length : page ? BILLS.filter((b) => sponsoredBy(b, page, state.whoCos)).length : BILLS.length;
   $("count").innerHTML = page && rows.length === total ? `<b>${num(total)}</b> bills` : `<b>${num(rows.length)}</b> of ${page ? "their " : ""}${num(total)} bills`;
   const slice = rows.slice(0, state.shown);
   if (!slice.length) {
@@ -3331,9 +3344,30 @@ function renderPerson(L) {
       ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
       <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.</p>
       <p>${reach}</p>
-      <p><a href="${esc(BASE || "./")}">All bills</a></p>
+      <p><a href="${esc(BASE || "./")}">← All bills in the Legislature</a></p>
     </div>`;
   $("person").hidden = false;
+}
+
+function renderSessions(raw) {
+  // On a legislator's page (or a past session opened for one), the session buttons stay with that person:
+  // only sessions they served in, each opening that session's page filtered to their bills.
+  const pageL = PRESET?.who && LEG_BY_ID[PRESET.who];
+  const person = pageL ? { name: pageL.name, house: pageL.house, slug: pageL.slug || "" } : PAST_WHO;
+  const served = pageL ? new Set((raw.profiles?.[pageL.id]?.history || []).map((h) => h[0]).concat(raw.session))
+    : PAST_WHO?.served ? new Set(PAST_WHO.served) : null;
+  $("sessions").innerHTML = raw.sessions.filter(({ session }) => !served || served.has(session)).map(({ session, url }) => {
+    const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
+    if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
+    if (!url) return `<span class="off">${label}</span>`;
+    const external = /^https?:/.test(url) ? ` target="_blank" rel="noopener"` : "";
+    let href = external ? url : BASE + url;
+    if (person && !external) {
+      href = session === LATEST && person.slug && ROOT ? `${ROOT}${person.slug}/`
+        : `${href}?who=${encodeURIComponent(person.name)}&h=${person.house}${person.slug ? `&slug=${encodeURIComponent(person.slug)}` : ""}${served ? `&s=${[...served].sort().join(",")}` : ""}`;
+    }
+    return `<a href="${esc(href)}"${external}>${label}</a>`;
+  }).join("");
 }
 
 function hydrate(raw) {
@@ -3365,13 +3399,14 @@ function hydrate(raw) {
   $("notice").textContent = notice;
   $("notice").hidden = !notice;
   if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option>`);
-  $("sessions").innerHTML = raw.sessions.map(({ session, url }) => {
-    const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
-    if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
-    if (!url) return `<span class="off">${label}</span>`;
-    const external = /^https?:/.test(url) ? ` target="_blank" rel="noopener"` : "";
-    return `<a href="${esc(external ? url : BASE + url)}"${external}>${label}</a>`;
-  }).join("");
+  // The title goes home: the current session's main page.
+  const home = raw.sessions.find((x) => x.session === LATEST)?.url;
+  $("homeLink").href = ROOT || (home && /^https?:/.test(home) ? home : BASE || "./");
+  if (PAST_WHO) {
+    const n = BILLS.filter(pastWhoTest).length;
+    $("notice").hidden = false;
+    $("notice").innerHTML = `<b>${esc(PAST_WHO.name)}'s bills in ${span(raw.session)}</b> (${num(n)}). ${PAST_WHO.slug && ROOT ? `<a href="${esc(ROOT + PAST_WHO.slug)}/">Their current page</a> · ` : ""}<a href="${esc(location.pathname)}">All bills in ${span(raw.session)}</a>`;
+  }
 
   const opt = (v, n) => `<option value="${esc(v)}">${esc(v)} (${num(n)})</option>`;
   $("lawOptions").innerHTML = raw.lawList.map(([l, n]) => `<option value="${esc(l)}">${num(n)} bill${n === 1 ? "" : "s"}</option>`).join("");
@@ -3380,6 +3415,7 @@ function hydrate(raw) {
   if (!raw.current) state.changed = "";
   $("homeCounty").innerHTML = (raw.counties || []).map((c) => `<option${c === HOME ? " selected" : ""}>${esc(c)}</option>`).join("");
   setupLegislators(raw);
+  renderSessions(raw);
   loadWatch();
   loadLog();
   const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.-]+)$/);
