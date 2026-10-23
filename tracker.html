@@ -560,14 +560,14 @@ table.st col.c-m { width: 80px; }
 .tl .lane .gov { background: var(--law-bar); color: #fff; }
 .tl .lane .gov.light { background: var(--signed-soft); color: var(--signed); }
 .tl .lab { font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-top: 10px; }
-.tl .pins { position: relative; height: 26px; margin-top: 6px; }
-.tl .pin { position: absolute; transform: translateX(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 12px/22px var(--body); text-align: center; }
 .tl .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--veto); }
 .tl .now i { position: absolute; top: -2px; left: 4px; font: 600 11px var(--body); font-style: normal; color: var(--veto); white-space: nowrap; }
-ol.tlkey { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 70ch; }
-ol.tlkey li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: baseline; }
-ol.tlkey li span { width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 12px/22px var(--body); text-align: center; }
-@media (max-width: 600px) { .tl .lane b { font-size: 10.5px; padding: 0 4px; } .tl .mos { font-size: 9px; } }
+.tl .notes2 { position: relative; height: 84px; margin-top: 2px; }
+.tl .tn { position: absolute; max-width: 23%; padding-left: 7px; border-left: 2px solid var(--gold); font: 600 12px/1.25 var(--body); color: var(--ink); }
+.tl .tn.r0 { top: 0; padding-top: 2px; }
+.tl .tn.r1 { top: 42px; }
+.tl .tn.right { padding: 0 7px 0 0; border-left: 0; border-right: 2px solid var(--gold); text-align: right; }
+@media (max-width: 600px) { .tl .tn { font-size: 10.5px; max-width: 30%; } .tl .notes2 { height: 132px; } .tl .tn.r1.right { top: 90px; } .tl .lane b { font-size: 10.5px; padding: 0 4px; } .tl .mos { font-size: 9px; } }
 
 .steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 75ch; }
 .steps b { font-weight: 600; }
@@ -2557,14 +2557,13 @@ function renderHowCal() {
   const f1 = floor(String(Y)), f2 = floor(String(Y + 1));
   const s1 = [`${Y}-01-07`, f1[f1.length - 1] || `${Y}-06-10`], s2 = [`${Y + 1}-01-07`, f2[f2.length - 1] || `${Y + 1}-06-10`];
   const bar = (cls, a, z, text) => `<b class="${cls}" style="left:${pos(a)}%;width:${pos(z) - pos(a)}%">${text}</b>`;
-  const pins = [
-    [`${Y}-01-07`, `<b>January ${Y}:</b> the Legislature convenes. Bills are introduced all year, but committees meet and floor votes happen only while it's in session.`],
-    [`${Y}-04-01`, `<b>April 1:</b> the state budget is due.`],
-    [s1[1], `<b>${MD(s1[1])}:</b> the first year's session ends. Bills that didn't pass carry over to the second year.`],
-    [`${Y}-09-15`, `<b>All year:</b> the governor's office asks for passed bills in batches and signs or vetoes each one within 10 days. About a fifth of her decisions come during the session; most come from June through December, and most vetoes in November and December.`],
-    [`${Y + 1}-01-07`, `<b>January ${Y + 1}:</b> bills that passed only one house go back to committee and have to pass again.`],
-    [s2[1], `<b>${MD(s2[1])}:</b> the session ends. It's the last chance for floor votes, and the busiest weeks of the year.`],
-    [`${Y + 1}-12-31`, `<b>December 31, ${Y + 1}:</b> bills that haven't passed both houses die. Next session they start over with new numbers. Bills sent to the governor in late December can be decided in January.`],
+  // Milestones, labeled on the timeline; two rows so neighbors don't collide.
+  const notes = [
+    [`${Y}-01-07`, 0, "Session opens"],
+    [s1[1], 0, `${MD(s1[1])}: session ends. Bills carry over`],
+    [`${Y + 1}-01-07`, 1, "Bills that passed one house go back to committee"],
+    [s2[1], 0, `${MD(s2[1])}: session ends. Last floor votes`],
+    [`${Y + 1}-12-31`, 1, "Dec 31: bills not passed by both houses die"],
   ];
   const today = new Date().toISOString().slice(0, 10);
   const now = DATA.current && today < `${Y + 2}` ? `<span class="now" style="left:${pos(today)}%"><i>Today</i></span>` : "";
@@ -2575,9 +2574,10 @@ function renderHowCal() {
     <div class="lane">${bar("leg", ...s1, "In session")}${bar("leg", ...s2, "In session")}${now}</div>
     <div class="lab">Governor</div>
     <div class="lane">${bar("gov light", `${Y}-01-01`, s1[1], "Signs or vetoes some bills")}${bar("gov", s1[1], `${Y}-12-31`, "Signs or vetoes most bills")}${bar("gov light", `${Y + 1}-01-01`, s2[1], "Signs or vetoes some bills")}${bar("gov", s2[1], `${Y + 1}-12-31`, "Signs or vetoes most bills")}${now.replace(/<i>.*<\/i>/, "")}</div>
-    <div class="pins">${pins.map(([d], k) => `<span class="pin" style="left:${Math.min(98.5, Math.max(1.5, pos(d)))}%">${k + 1}</span>`).join("")}</div>
+    <div class="notes2">${notes.map(([d, row, t]) => { const x = +pos(d), right = x > 80;
+      return `<span class="tn r${row}${right ? " right" : ""}" style="${right ? `right:${(100 - x).toFixed(2)}%` : `left:${x}%`}">${esc(t)}</span>`; }).join("")}</div>
   </div>
-  <ol class="tlkey">${pins.map(([, t], k) => `<li><span>${k + 1}</span><div>${t}</div></li>`).join("")}</ol>`;
+  <p class="note">The governor's office asks for passed bills in batches; she has 10 days, not counting Sundays, to sign or veto each one. Most vetoes come in November and December.</p>`;
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
