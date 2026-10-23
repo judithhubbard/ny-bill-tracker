@@ -576,6 +576,10 @@ table.st col.c-m { width: 80px; }
 .seg button { font: inherit; font-size: 12.5px; padding: 3px 10px; min-height: 28px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .textlink { margin: 6px 0; font-size: 13.5px; }
+.cosp { display: inline; }
+.cosp summary { display: inline; cursor: pointer; text-decoration: underline dotted; }
+.cosp[open] p { margin: 6px 0 2px; font-size: 13px; line-height: 1.5; }
+.meta .role-tag { font-weight: 600; color: var(--ink); background: var(--chip); border-radius: 3px; padding: 0 6px; margin-right: 8px; }
 .next .hint { font-size: 12px; color: var(--ink-2); }
 
 /* Weigh in tab */
@@ -1980,12 +1984,31 @@ function historyTags(b) {
   return tags.join("");
 }
 
+// On a legislator's page, what part they play in each bill.
+function pageRole(b) {
+  const L = PRESET?.who && LEG_BY_ID[PRESET.who];
+  if (!L) return "";
+  const role = sponsoredBy(b, L, false) ? "sponsor" : sponsoredBy(b, L, true) ? "co-sponsor" : "";
+  return role ? `<span class="role-tag">${esc(L.name.split(" ").pop())}: ${role}</span>` : "";
+}
+
+// "31 co-sponsors", opening into the names (current session only). The page's legislator and
+// your own legislators come first, in bold.
+function cosponsorList(v) {
+  const label = `${v.cosp} co-sponsor${v.cosp === 1 ? "" : "s"}`;
+  if (!v.cosponsors.length) return label;
+  const page = PRESET?.who && LEG_BY_ID[PRESET.who];
+  const mine = new Set([...myReps().filter((r) => r.house === v.p[0]).map((r) => r.last), ...(page && page.house === v.p[0] ? [lastName(page.name)] : [])]);
+  const names = v.cosponsors.slice().sort((a, b) => mine.has(lastName(b)) - mine.has(lastName(a)) || lastName(a).localeCompare(lastName(b)));
+  return `<details class="cosp"><summary>${label}</summary><p>${names.map((n) => mine.has(lastName(n)) ? `<b>${esc(n)}</b>` : esc(n)).join(", ")}</p></details>`;
+}
+
 function verBlock(v) {
   if (!v) return "";
   const acts = v.actions.slice().reverse().map((a) => `<li><time>${esc(a[0])}</time><span>${esc(plainAction(a[1]))}</span></li>`).join("");
   return `<div class="ver">
     <h3><span>${esc(v.p)}</span><a href="${billUrl(v.p)}" target="_blank" rel="noopener">Bill text and memo ↗</a></h3>
-    <div class="who">${esc(v.sponsor || "No sponsor listed")}${v.cosp ? ` · ${v.cosp} cosponsor${v.cosp === 1 ? "" : "s"}` : ""}</div>
+    <div class="who">${esc(v.sponsor || "No sponsor listed")}${v.cosp ? ` · ${cosponsorList(v)}` : ""}</div>
     <div class="who"><b>${esc(v.statusDesc)}</b>${v.committee ? " · " + esc(commPlain(v.committee)) : ""}</div>
     <ol>${acts}</ol>
   </div>`;
@@ -2034,7 +2057,7 @@ function billRow(b) {
           <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}${watchButton(b)}</div>
           <div class="main">
             <div class="title">${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</div>
-            <div class="meta">${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
+            <div class="meta">${pageRole(b)}${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
             <div class="tags">${tags}</div>
           </div>
           <div class="status">${track(b)}${statusText(b)}</div>
