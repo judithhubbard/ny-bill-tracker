@@ -550,24 +550,39 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
-.tl { position: relative; max-width: 900px; margin-top: 4px; }
-.tl .yrs, .tl .mos { display: grid; grid-template-columns: repeat(24, 1fr); font: 11px var(--mono); color: var(--ink-2); }
-.tl .yrs span { grid-column: span 12; font: 700 13px var(--body); color: var(--ink); border-left: 2px solid var(--ink); padding-left: 6px; }
-.tl .mos span { text-align: center; border-left: 1px solid var(--rule); }
-.tl .lane { position: relative; height: 34px; margin: 6px 0; background: var(--chip); border-radius: 4px; }
-.tl .lane b { position: absolute; top: 0; bottom: 0; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font: 600 12px/1.15 var(--body); overflow: hidden; }
-.tl .lane .leg { background: var(--navy); color: var(--sheet); }
-.tl .lane .gov { background: var(--law-bar); color: #fff; }
-.tl .lane .gov.light { background: var(--signed-soft); color: var(--signed); }
-.tl .lab { font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-top: 10px; }
-.tl .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--veto); }
-.tl .now i { position: absolute; top: -2px; left: 4px; font: 600 11px var(--body); font-style: normal; color: var(--veto); white-space: nowrap; }
-.tl .notes2 { position: relative; height: 84px; margin-top: 2px; }
-.tl .tn { position: absolute; max-width: 23%; padding-left: 7px; border-left: 2px solid var(--gold); font: 600 12px/1.25 var(--body); color: var(--ink); }
-.tl .tn.r0 { top: 0; padding-top: 2px; }
-.tl .tn.r1 { top: 42px; }
-.tl .tn.right { padding: 0 7px 0 0; border-left: 0; border-right: 2px solid var(--gold); text-align: right; }
-@media (max-width: 600px) { .tl .tn { font-size: 10.5px; max-width: 30%; } .tl .notes2 { height: 132px; } .tl .tn.r1.right { top: 90px; } .tl .lane b { font-size: 10.5px; padding: 0 4px; } .tl .mos { font-size: 9px; } }
+.tl { position: relative; height: 270px; max-width: 940px; margin: 8px 0 0; padding-left: 96px; }
+.tl .plot { position: relative; height: 100%; }
+.tl .rl { position: absolute; left: 0; width: 90px; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); line-height: 22px; }
+.tl .track { position: absolute; left: 0; right: 0; height: 22px; background: var(--chip); border-radius: 4px; }
+.tl .track b { position: absolute; top: 0; bottom: 0; border-radius: 4px; font: 600 11.5px/22px var(--body); padding: 0 8px; overflow: hidden; white-space: nowrap; }
+.tl .leg b { background: var(--navy); color: var(--sheet); }
+.tl .gov b { background: var(--law-bar); color: #fff; }
+.tl .gov b.light { background: var(--signed-soft); color: var(--signed); }
+.tl .yrs { position: absolute; top: 0; left: 0; right: 0; height: 16px; }
+.tl .yrs span { position: absolute; font: 700 12px var(--body); color: var(--ink-2); padding-left: 5px; border-left: 1px solid var(--ink-2); }
+.tl .now { position: absolute; width: 2px; background: var(--veto); }
+.tl .now i { position: absolute; top: -15px; left: 4px; font: 600 11px var(--body); font-style: normal; color: var(--veto); }
+.tl ol { list-style: none; margin: 0; padding: 0; }
+.tl li { position: absolute; width: 0; border-left: 1px solid var(--ink-2); }
+.tl li::after { content: ""; position: absolute; left: -7px; width: 11px; height: 11px; border-radius: 50%; background: var(--gold); border: 1.5px solid var(--sheet); }
+.tl li.up::after { bottom: -6px; }
+.tl li.down::after { top: -6px; }
+.tl li div { position: absolute; width: 158px; left: 8px; font-size: 12.5px; line-height: 1.3; color: var(--ink); }
+.tl li.up div { top: 0; }
+.tl li.down div { bottom: 0; }
+.tl li.right div { left: auto; right: 8px; text-align: right; }
+.tl li b { display: block; }
+.tl-note { margin-top: 2px; }
+@media (max-width: 960px) {
+  .tl { height: auto; padding-left: 0; }
+  .tl .plot { height: auto; }
+  .tl .rl, .tl .track, .tl .yrs, .tl .now { display: none; }
+  .tl ol { border-left: 2px solid var(--rule); margin-left: 6px; display: grid; gap: 14px; padding: 4px 0; }
+  .tl li { position: relative; left: auto !important; top: auto !important; height: auto !important; width: auto; border: 0; padding-left: 16px; }
+  .tl li::after, .tl li.up::after, .tl li.down::after { left: -8px; top: 4px; bottom: auto; }
+  .tl li div, .tl li.right div { position: static; width: auto; text-align: left; }
+}
+
 
 .steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 75ch; }
 .steps b { font-weight: 600; }
@@ -2547,37 +2562,41 @@ function wire() {
   });
 }
 
-// "How a bill becomes law": the two-year session as a simple timeline, with dates from this session's data.
+// "How a bill becomes law": the two-year session as a timeline with key dates called out.
 function renderHowCal() {
   const Y = DATA.session, start = Date.UTC(Y, 0, 1), span_ = Date.UTC(Y + 2, 0, 1) - start;
-  const pos = (d) => (((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - start) / span_) * 100).toFixed(2);
+  const pos = (d) => +(((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - start) / span_) * 100).toFixed(2);
   const MD = (d) => new Date(d + "T12:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
-  // The first and last floor votes of each year mark when the Legislature is in session.
-  const floor = (yr) => BILLS.flatMap((b) => [...b.dates.passSAll, ...b.dates.passAAll]).filter((d) => d.startsWith(yr)).sort();
-  const f1 = floor(String(Y)), f2 = floor(String(Y + 1));
-  const s1 = [`${Y}-01-07`, f1[f1.length - 1] || `${Y}-06-10`], s2 = [`${Y + 1}-01-07`, f2[f2.length - 1] || `${Y + 1}-06-10`];
-  const bar = (cls, a, z, text) => `<b class="${cls}" style="left:${pos(a)}%;width:${pos(z) - pos(a)}%">${text}</b>`;
-  // Milestones, labeled on the timeline; two rows so neighbors don't collide.
-  const notes = [
-    [`${Y}-01-07`, 0, "Session opens"],
-    [s1[1], 0, `${MD(s1[1])}: session ends. Bills carry over`],
-    [`${Y + 1}-01-07`, 1, "Bills that passed one house go back to committee"],
-    [s2[1], 0, `${MD(s2[1])}: session ends. Last floor votes`],
-    [`${Y + 1}-12-31`, 1, "Dec 31: bills not passed by both houses die"],
-  ];
+  // The last floor vote of each year marks the end of that year's session.
+  const last = (yr) => BILLS.flatMap((b) => [...b.dates.passSAll, ...b.dates.passAAll]).filter((d) => d.startsWith(yr)).sort().pop();
+  const end1 = last(String(Y)) || `${Y}-06-10`, end2 = last(String(Y + 1)) || `${Y + 1}-06-10`;
+  // Rows: the Legislature's track, then the governor's; callouts go above (Legislature) or below.
+  const LEG = 112, GOV = 150, H = 22, mid = (row) => row + H / 2;
+  const events = [
+    [`${Y}-01-07`, "up", LEG, `January ${Y}`, "Session opens. Committees meet and floor votes happen only in session."],
+    [end1, "up", LEG, MD(end1), "Session ends. Bills that didn't pass carry over to next year."],
+    [`${Y + 1}-01-07`, "up", LEG, `January ${Y + 1}`, "Bills that passed only one house go back to committee."],
+    [end2, "up", LEG, MD(end2), "Session ends: the last floor votes."],
+    [`${Y}-11-20`, "down", GOV, "November–December", "Most vetoes come now, though the governor acts on bills all year."],
+    [`${Y + 1}-12-31`, "down", LEG, `December 31, ${Y + 1}`, "Bills not passed by both houses die."],
+  ].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const bar = (cls, a, z, text) => `<b${cls ? ` class="${cls}"` : ""} style="left:${pos(a)}%;width:${(pos(z) - pos(a)).toFixed(2)}%">${text}</b>`;
   const today = new Date().toISOString().slice(0, 10);
-  const now = DATA.current && today < `${Y + 2}` ? `<span class="now" style="left:${pos(today)}%"><i>Today</i></span>` : "";
+  const now = DATA.current && today < `${Y + 2}` ? `<span class="now" style="left:${pos(today)}%;top:${LEG - 4}px;height:${GOV + H - LEG + 8}px"><i>Today</i></span>` : "";
+  const BOTTOM = 262;
   $("howCal").innerHTML = `<div class="tl">
-    <div class="yrs"><span>First year · ${Y}</span><span>Second year · ${Y + 1}</span></div>
-    <div class="mos">${Array.from({ length: 24 }, (_, m) => `<span>${"JFMAMJJASOND"[m % 12]}</span>`).join("")}</div>
-    <div class="lab">Legislature</div>
-    <div class="lane">${bar("leg", ...s1, "In session")}${bar("leg", ...s2, "In session")}${now}</div>
-    <div class="lab">Governor</div>
-    <div class="lane">${bar("gov light", `${Y}-01-01`, s1[1], "Signs or vetoes some bills")}${bar("gov", s1[1], `${Y}-12-31`, "Signs or vetoes most bills")}${bar("gov light", `${Y + 1}-01-01`, s2[1], "Signs or vetoes some bills")}${bar("gov", s2[1], `${Y + 1}-12-31`, "Signs or vetoes most bills")}${now.replace(/<i>.*<\/i>/, "")}</div>
-    <div class="notes2">${notes.map(([d, row, t]) => { const x = +pos(d), right = x > 80;
-      return `<span class="tn r${row}${right ? " right" : ""}" style="${right ? `right:${(100 - x).toFixed(2)}%` : `left:${x}%`}">${esc(t)}</span>`; }).join("")}</div>
+    <span class="rl" style="top:${LEG}px">Legislature</span><span class="rl" style="top:${GOV}px">Governor</span>
+    <div class="plot">
+      <div class="yrs"><span style="left:0">${Y}</span><span style="left:50%">${Y + 1}</span></div>
+      <div class="track leg" style="top:${LEG}px">${bar("", `${Y}-01-07`, end1, "In session")}${bar("", `${Y + 1}-01-07`, end2, "In session")}</div>
+      <div class="track gov" style="top:${GOV}px">${bar("light", `${Y}-01-01`, end1, "Signs or vetoes some bills")}${bar("", end1, `${Y}-12-31`, "Signs or vetoes most bills")}${bar("light", `${Y + 1}-01-01`, end2, "Signs or vetoes some bills")}${bar("", end2, `${Y + 1}-12-31`, "Signs or vetoes most bills")}</div>
+      ${now}
+      <ol>${events.map(([d, side, row, when, text]) => { const x = pos(d);
+        const style = side === "up" ? `top:22px;height:${mid(row) - 22}px` : `top:${mid(row)}px;height:${BOTTOM - mid(row)}px`;
+        return `<li class="${side}${x > 80 ? " right" : ""}" style="left:${x}%;${style}"><div><b>${esc(when)}</b>${esc(text)}</div></li>`; }).join("")}</ol>
+    </div>
   </div>
-  <p class="note">The governor's office asks for passed bills in batches; she has 10 days, not counting Sundays, to sign or veto each one. Most vetoes come in November and December.</p>`;
+  <p class="note tl-note">Once a bill reaches her desk, the governor has 10 days, not counting Sundays, to sign or veto it.</p>`;
 }
 
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
