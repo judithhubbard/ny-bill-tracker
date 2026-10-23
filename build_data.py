@@ -1195,6 +1195,14 @@ def profiles(session, recs, legs, party_of):
     return stats, peers
 
 
+_PEOPLE_NOW = {}
+
+
+def people_now():
+    """Current legislators keyed by page slug, with the sessions each one served in (set by the build)."""
+    return _PEOPLE_NOW
+
+
 def person_history(loaded, current, legs):
     """Each sitting legislator's bills in every loaded session, by the name they sponsor under,
     with the typical (median) member of the same party and house that session:
@@ -1415,6 +1423,12 @@ def main():
     current = max(SESSIONS)
     insight = insights(loaded, hist, current)
 
+    # Current legislators for past sessions' pages (profile card and the sessions they served in).
+    legs_now = legislators(current)
+    served_by = {seat: sorted({row[0] for row in rows}) for seat, rows in person_history(loaded, current, legs_now).items()}
+    keep = ("id", "slug", "name", "title", "party", "house", "district", "since", "image", "url", "email", "phone", "phones")
+    _PEOPLE_NOW.update({L["slug"]: {**{k: L.get(k) for k in keep}, "served": served_by.get(L["id"], [])} for L in legs_now if L.get("slug")})
+
     for session in ONLY:
         recs, _, fetched, names = loaded[session]
         law_count, comm_count = Counter(), Counter()
@@ -1496,6 +1510,9 @@ def main():
             # Current Senate and Assembly districts in each county, for "Where you live".
             "districtCounties": json.load(open(DISTRICTS_PATH)) if session == current and os.path.exists(DISTRICTS_PATH) else {},
         }
+        if session != current:
+            # Current legislators, so a past session opened for one of them can show their profile card.
+            data["peopleNow"] = people_now()
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)
             data["legislators"] = legislators(session)

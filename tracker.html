@@ -485,14 +485,16 @@ table.st col.c-m { width: 80px; }
 .peers table { margin-top: 8px; max-width: 640px; }
 .peers .note { margin: 6px 0 0; font-size: 12px; max-width: 80ch; }
 .peers .muted { color: var(--ink-2); font-size: 12px; }
-.wcards { display: grid; gap: 12px; }
-.wcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
-.wcard .wtop { display: flex; justify-content: space-between; gap: 12px; align-items: start; flex-wrap: wrap; }
+.wcards { display: grid; gap: 18px; }
+.wcard { background: var(--sheet); border: 1px solid var(--rule); border-left: 5px solid var(--gold); border-radius: 8px; padding: 0 16px 14px; display: grid; gap: 9px; box-shadow: 0 2px 8px rgba(20, 33, 61, .07); overflow: hidden; }
+.wcards.idle .wcard { border-left-color: var(--refer); }
+/* A shaded strip across the top of each card: bill number, star, position and status. */
+.wcard .wtop { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin: 0 -16px; padding: 9px 16px; background: var(--chip); border-bottom: 1px solid var(--rule); }
 .wcard .nums { display: flex; gap: 10px; align-items: center; font: 700 13px var(--mono); }
 .wcard .nums .watchbtn, .wcard .nums .stance { margin: 0; padding-top: 0; }
 .wcard .wstatus { min-width: 0; text-align: right; }
-.wcard h3 { margin: 0; font: 700 17px/1.3 var(--body); }
-.wcard .sum { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 85ch; }
+.wcard h3 { margin: 4px 0 0; font: 700 19px/1.3 var(--body); }
+.wcard .sum { margin: 0; color: var(--ink-2); font-size: 13.5px; max-width: 85ch; }
 .wcard .do { border-left: 3px solid var(--gold); padding: 4px 0 4px 12px; display: grid; gap: 3px; }
 .wcard .do p { margin: 0; font-size: 14px; }
 .wcard .do .star { color: var(--gold); }
@@ -559,6 +561,7 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.psessions { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
 .pubintro { white-space: pre-wrap; margin: 8px 0 4px; padding: 10px 12px; border-left: 3px solid var(--navy); background: var(--chip); border-radius: 6px; font-size: 14.5px; }
 .pubintro-edit { display: grid; gap: 4px; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
 .pubintro-edit textarea, .noteedit textarea { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 5px; background: var(--sheet); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
@@ -2852,8 +2855,8 @@ function renderWatchView() {
     </article>`;
   };
   $("wlList").innerHTML = !list.length ? "" : `
-    ${active.length ? `<h2>Needs action</h2><div class="wcards">${active.map(cardFor).join("")}</div>` : ""}
-    ${idle.length ? `<h2>Can't move right now</h2><div class="wcards">${idle.map(cardFor).join("")}</div>` : ""}
+    ${active.length ? `<h2>Needs action</h2><div class="wcards needs">${active.map(cardFor).join("")}</div>` : ""}
+    ${idle.length ? `<h2>Can't move right now</h2><div class="wcards idle">${idle.map(cardFor).join("")}</div>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
 }
 
@@ -3184,7 +3187,7 @@ function renderIntro(force) {
   const box = $("howto");
   let hidden = false;
   try { hidden = localStorage.getItem(INTRO_STORE) === "hidden"; } catch (e) {}
-  if (!DATA.current || PRESET || SHARED || (hidden && !force)) { box.hidden = true; return; }
+  if (!DATA.current || PRESET?.watch || SHARED || (hidden && !force)) { box.hidden = true; return; }
   // One line: the four things a newcomer can do, sharing included. Share links work only on the public site.
   const shareStep = ROOT ? "Share your watchlist so others can weigh in"
     : `Share your watchlist from the <a href="${PUBLIC_SITE}" target="_blank" rel="noopener">public site</a> so others can weigh in`;
@@ -3325,11 +3328,11 @@ function openOne() {
   if (el) { el.open = true; fillDetail(el); el.scrollIntoView({ block: "start" }); }
 }
 
-function renderPerson(L) {
+function renderPerson(L, past) {
   if (!L) return;
   const house = L.house === "S" ? "Senate" : "Assembly";
   const since = L.since ? (L.since <= 2009 ? `In the ${house} since 2009 or earlier` : `In the ${house} since ${L.since}`) : "";
-  const mine = BILLS.filter((b) => sponsoredBy(b, L, false));
+  const mine = past ? BILLS.filter(pastWhoTest) : BILLS.filter((b) => sponsoredBy(b, L, false));
   const signed = mine.filter((b) => b.stage === 5).length;
   const chairs = (L.committees || []).filter((c) => c.chair).map((c) => c.name);
   const member = (L.committees || []).filter((c) => !c.chair).map((c) => c.name);
@@ -3340,11 +3343,12 @@ function renderPerson(L) {
     <div class="who-body">
       <h2>${esc(L.label)}</h2>
       <p>${[L.party, `${house} District ${L.district}`, since].filter(Boolean).map(esc).join(" · ")}</p>
-      ${chairs.length ? `<p><b>Chairs:</b> ${chairs.map(esc).join(", ")}</p>` : ""}
-      ${member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
-      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} this session; ${num(signed)} signed into law.</p>
+      ${!past && chairs.length ? `<p><b>Chairs:</b> ${chairs.map(esc).join(", ")}</p>` : ""}
+      ${!past && member.length ? `<p><b>Committees:</b> ${member.map(esc).join(", ")}</p>` : ""}
+      <p>Sponsored ${num(mine.length)} bill${mine.length === 1 ? "" : "s"} ${past ? `in ${span(DATA.session)}` : "this session"}; ${num(signed)} signed into law.</p>
       <p>${reach}</p>
-      <p><a href="${esc(BASE || "./")}">← All bills in the Legislature</a></p>
+      <nav class="sessions psessions" id="personSessions" aria-label="Their sessions"></nav>
+      <p>${past && ROOT && L.slug ? `<a href="${esc(ROOT + L.slug)}/">Their current page</a> · <a href="${esc(location.pathname)}">All bills in ${span(DATA.session)}</a> · ` : ""}<a href="${esc(ROOT || BASE || "./")}">← All bills in the Legislature</a></p>
     </div>`;
   $("person").hidden = false;
 }
@@ -3355,8 +3359,8 @@ function renderSessions(raw) {
   const pageL = PRESET?.who && LEG_BY_ID[PRESET.who];
   const person = pageL ? { name: pageL.name, house: pageL.house, slug: pageL.slug || "" } : PAST_WHO;
   const served = pageL ? new Set((raw.profiles?.[pageL.id]?.history || []).map((h) => h[0]).concat(raw.session))
-    : PAST_WHO?.served ? new Set(PAST_WHO.served) : null;
-  $("sessions").innerHTML = raw.sessions.filter(({ session }) => !served || served.has(session)).map(({ session, url }) => {
+    : PAST_WHO ? new Set(DATA.peopleNow?.[PAST_WHO.slug]?.served?.concat(LATEST) || PAST_WHO.served || []) : null;
+  const html = raw.sessions.filter(({ session }) => !served || served.has(session)).map(({ session, url }) => {
     const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
     if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
     if (!url) return `<span class="off">${label}</span>`;
@@ -3368,6 +3372,9 @@ function renderSessions(raw) {
     }
     return `<a href="${esc(href)}"${external}>${label}</a>`;
   }).join("");
+  // With a legislator's card on the page, their sessions go in the card instead of the page header.
+  if (person && $("personSessions")) { $("personSessions").innerHTML = html; $("sessions").innerHTML = ""; }
+  else $("sessions").innerHTML = html;
 }
 
 function hydrate(raw) {
@@ -3403,9 +3410,10 @@ function hydrate(raw) {
   const home = raw.sessions.find((x) => x.session === LATEST)?.url;
   $("homeLink").href = ROOT || (home && /^https?:/.test(home) ? home : BASE || "./");
   if (PAST_WHO) {
-    const n = BILLS.filter(pastWhoTest).length;
-    $("notice").hidden = false;
-    $("notice").innerHTML = `<b>${esc(PAST_WHO.name)}'s bills in ${span(raw.session)}</b> (${num(n)}). ${PAST_WHO.slug && ROOT ? `<a href="${esc(ROOT + PAST_WHO.slug)}/">Their current page</a> · ` : ""}<a href="${esc(location.pathname)}">All bills in ${span(raw.session)}</a>`;
+    const p = DATA.peopleNow?.[PAST_WHO.slug];
+    const L = p ? { ...p, label: `${p.title} ${p.name}`, committees: [] } : { name: PAST_WHO.name, house: PAST_WHO.house, label: PAST_WHO.name, slug: PAST_WHO.slug };
+    renderPerson(L, true);
+    renderSessions(raw);
   }
 
   const opt = (v, n) => `<option value="${esc(v)}">${esc(v)} (${num(n)})</option>`;
@@ -3439,6 +3447,7 @@ function hydrate(raw) {
     $("who").hidden = true;
     $("who").previousElementSibling.hidden = true;
     renderPerson(LEG_BY_ID[PRESET.who]);
+    renderSessions(DATA);
     // A legislator's page is only about them: no watchlist, statistics for all bills, or
     // general guidance; Weigh in becomes just their bills open for comment.
     for (const v of ["watch", "stats", "how"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true;
