@@ -553,6 +553,13 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.pubbox { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); }
+.pubbox > summary { cursor: pointer; font-weight: 600; color: var(--navy); }
+.pubbox p { margin: 6px 0 0; }
+.pubform { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; }
+.pubform label { display: grid; gap: 3px; font-size: 12.5px; color: var(--ink-2); }
+.pubform input { font: inherit; font-size: 14px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 5px; background: var(--sheet); color: var(--ink); min-width: 220px; }
+.pubmore > summary { cursor: pointer; font-size: 13px; color: var(--navy); margin-top: 6px; }
 .intro { display: grid; grid-template-columns: 1fr auto auto; grid-template-areas: "h tips x" "ol ol ol"; align-items: center; gap: 4px 14px; background: var(--chip); border-left: 3px solid var(--navy); border-radius: 8px; padding: 8px 12px; margin: 10px 0 2px; font-size: 13.5px; }
 .intro .intro-h { grid-area: h; font-weight: 700; }
 .intro [data-impact] { grid-area: tips; }
@@ -2515,6 +2522,78 @@ function watchButton(b, withStance = true) {
   return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${!!e}" title="${e ? "Remove from" : "Add to"} my watchlist">${e ? "★" : "☆"}</button>`
     + (e && withStance ? `<button class="stance ${e.stance}" type="button" data-stance="${b.idx}" title="Switch between support and oppose">${e.stance === "oppose" ? "Oppose" : "Support"}</button>` : "");
 }
+// ---- Published lists: kept online, updated by whoever holds the edit key, readable by anyone with the link.
+// Creating one needs an invite code from the site's owner (one per group).
+const LISTS_API = "https://albany-lists.lists-worker.workers.dev";
+let SHARED_META = null;   // a published list being viewed: { slug, title, group, updated } or { error }
+const PUB_STORE = () => `abt:published:${DATA.session}`;
+function myPublished() { try { return JSON.parse(localStorage.getItem(PUB_STORE()) || "null"); } catch (e) { return null; } }
+function setMyPublished(v) { try { v ? localStorage.setItem(PUB_STORE(), JSON.stringify(v)) : localStorage.removeItem(PUB_STORE()); } catch (e) {} }
+const watchCodes = () => BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
+const listUrl = (slug) => `${ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "")}watchlist/#list=${slug}`;
+async function listsApi(path, opts = {}) {
+  const r = await fetch(LISTS_API + path, { ...opts, headers: { "Content-Type": "application/json", ...(opts.headers || {}) } });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.error || `The list service answered ${r.status}.`);
+  return body;
+}
+async function loadPublishedList(slug) {
+  try {
+    const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
+    SHARED = new Map(l.session === DATA.session ? l.bills.map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])) : []);
+    SHARED_META = { slug: l.slug, title: l.title, group: l.group, updated: l.updated, other: l.session !== DATA.session ? l.session : null };
+  } catch (e) {
+    SHARED = new Map(); SHARED_META = { error: e.message };
+  }
+  render();
+}
+async function publishAction(btn) {
+  const msg = (t) => { if ($("pubMsg")) $("pubMsg").textContent = t; };
+  const what = btn.dataset.pub, mine = myPublished();
+  const copy = async (text) => { try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; } catch (e) { btn.textContent = "Select and copy it"; } };
+  try {
+    if (what === "copy") return copy(listUrl(mine.slug));
+    if (what === "copykey") return copy(`${mine.slug} ${mine.editKey}`);
+    if (what === "forget") { if (confirm("Disconnect this browser from the published list? The list stays online; you'll need the edit key to update it again.")) { setMyPublished(null); renderWatchView(); } return; }
+    if (what === "publish") {
+      const title = $("pubTitle").value.trim(), code = $("pubCode").value.trim();
+      if (!title || !code) return msg("Give the list a name and enter your invite code.");
+      msg("Publishing…");
+      const r = await listsApi("/lists", { method: "POST", body: JSON.stringify({ code, title, session: DATA.session, bills: watchCodes() }) });
+      setMyPublished({ slug: r.slug, editKey: r.editKey, title, group: r.group });
+      return renderWatchView();
+    }
+    if (what === "connect") {
+      const [slug, editKey] = $("pubKey").value.trim().split(/\s+/);
+      if (!slug || !editKey) return msg("Paste the edit key exactly as it was copied (a name and a key).");
+      const l = await listsApi(`/lists/${encodeURIComponent(slug)}`);
+      setMyPublished({ slug, editKey, title: l.title, group: l.group });
+      return renderWatchView();
+    }
+    if (what === "update") {
+      msg("Updating…");
+      const l = await listsApi(`/lists/${encodeURIComponent(mine.slug)}`, { method: "PUT", headers: { "X-Edit-Key": mine.editKey }, body: JSON.stringify({ title: mine.title, session: DATA.session, bills: watchCodes() }) });
+      return msg(`Updated: ${num(l.bills.length)} bills, as of now.`);
+    }
+  } catch (e) { msg(e.message); }
+}
+// The publish box under "My watchlist" (public site only).
+function publishBox() {
+  if (!ROOT) return "";
+  const mine = myPublished();
+  if (mine) return `<div class="pubbox"><p><b>Published as “${esc(mine.title)}”</b>${mine.group ? ` · ${esc(mine.group)}` : ""}. Anyone with this link sees it:</p>
+    <p class="sharerow"><input type="text" readonly value="${esc(listUrl(mine.slug))}" aria-label="Published list link"> <button class="act-btn" type="button" data-pub="copy">Copy link</button></p>
+    <p><button class="act-btn" type="button" data-pub="update">Update the published list</button> <span class="muted" id="pubMsg">Changes to your watchlist show up for others after you click this.</span></p>
+    <details class="pubmore"><summary>Edit key, to update this list from another computer</summary><p class="muted">Keep it private: anyone with it can change the list.</p>
+      <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
+  return `<details class="pubbox"><summary>Publish this list for others to follow</summary>
+    <p class="muted">A published list has its own link and changes for everyone when you update it. Publishing needs an invite code.</p>
+    <p class="pubform"><label>List name <input type="text" id="pubTitle" maxlength="120" placeholder="e.g. Priority bills, office of …"></label>
+      <label>Invite code <input type="text" id="pubCode" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="publish">Publish</button></p>
+    <p class="pubform"><label>Already published elsewhere? Paste its edit key <input type="text" id="pubKey" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="connect">Connect</button></p>
+    <p class="muted" id="pubMsg"></p></details>`;
+}
+
 function shareLink() {
   const nums = BILLS.filter(isWatched).map((b) => (watchStance(b) === "oppose" ? "-" : "") + baseNum(b.nums[0]));
   const root = ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
@@ -2607,7 +2686,13 @@ function renderWatchView() {
   const stanceOf = (b) => (SHARED ? sharedStance(b) : watchStance(b)) || "support";
   const back = PRESET?.watch ? ` <a href="${esc(BASE || "./")}">All bills</a>` : "";
   const card = $("wl");
-  if (SHARED) {
+  if (SHARED && SHARED_META?.error) {
+    card.innerHTML = `<h2>Published list</h2><p>${esc(SHARED_META.error)}${back}</p><p><button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
+  } else if (SHARED && SHARED_META) {
+    card.innerHTML = `<h2>${esc(SHARED_META.title)}</h2><p>Maintained by <b>${esc(SHARED_META.group)}</b> · ${num(list.length)} bill${list.length === 1 ? "" : "s"} · updated ${fmtDate(SHARED_META.updated.slice(0, 10))}.${back}</p>
+      ${SHARED_META.other ? `<p class="muted">This list is for the ${span(SHARED_META.other)} session.</p>` : ""}
+      <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
+  } else if (SHARED) {
     card.innerHTML = `<h2>Shared watchlist</h2><p>${num(list.length)} bill${list.length === 1 ? "" : "s"} someone shared with you.${back}</p>
       <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else {
@@ -2615,7 +2700,8 @@ function renderWatchView() {
     card.innerHTML = `<h2>My watchlist</h2>
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
-      <p class="muted sharenote">The link holds your list as it is now. If you change your list, send a new link.</p>` : ""}`;
+      <p class="muted sharenote">The link holds your list as it is now. If you change your list, send a new link.</p>` : ""}
+      ${list.length ? publishBox() : ""}`;
   }
 
   const items = list.map((b) => ({ b, stance: stanceOf(b), ...keyAction(b, stanceOf(b)) }));
@@ -2922,15 +3008,17 @@ function wire() {
     if (x) copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }]));
   });
   $("wl").addEventListener("click", async (e) => {
+    const pb = e.target.closest("[data-pub]");
+    if (pb) { publishAction(pb); return; }
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
     if (btn.dataset.wl === "copy") {
       const input = $("shareLink");
       try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
     } else if (btn.dataset.wl === "import") {
       for (const b of BILLS) { const st = sharedStance(b); if (st && !isWatched(b)) WATCH.set(billKey(b), { seen: b.last || "", stance: st }); }
-      saveWatch(); SHARED = null; clearHash(location.pathname); render();
+      saveWatch(); SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
     } else if (btn.dataset.wl === "mine") {
-      SHARED = null; clearHash(location.pathname); render();
+      SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
     }
   });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
@@ -3185,6 +3273,8 @@ function hydrate(raw) {
   loadWatch();
   loadLog();
   const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.-]+)$/);
+  const pub = location.hash.match(/^#list=([a-z0-9-]{1,61})$/);
+  if (pub) { SHARED = new Map(); SHARED_META = { title: "Loading the list…", group: "", updated: new Date().toISOString() }; loadPublishedList(pub[1]); }
   if (m && +m[1] === raw.session) SHARED = new Map(m[2].split(".").filter(Boolean).map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])));
   const saved = recall("filters");
   if (saved) {

@@ -55,3 +55,18 @@ commits it as `data/bills_YEAR.json.gz`. Until the new session has bills, the ol
 the current page. The Webb and Kelles checkboxes carry forward for Senate District 52 and
 Assembly District 125, and drop out on their own if someone else holds either seat
 (`DELEGATION` in `build_data.py`).
+
+## Published watchlists
+
+Groups with an invite code can publish a watchlist with its own link (`/watchlist/#list=<name>`). It updates
+for everyone when they click "Update the published list". The lists live in a small Cloudflare Worker
+(`lists_worker/`, deployed with `npx wrangler deploy` from that folder) that stores them in Workers KV. The site
+itself stays on GitHub Pages.
+
+- Anyone can read a published list. Creating one needs an invite code; there is one code per group.
+- Whoever creates a list gets a private edit key, kept in their browser. They can copy it to use on another computer.
+- Revoking a group's code hides all of that group's lists.
+
+`lists_admin.py` manages codes and lists (`code-new "Group name"`, `codes`, `code-revoke CODE`, `lists`,
+`list-delete NAME`). It reads the admin token from `~/.albany_lists_admin`, which is also stored as the Worker
+secret `ADMIN_TOKEN`; neither goes in the repository.

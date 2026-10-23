@@ -1,0 +1,10 @@
+name = "albany-lists"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# Published watchlists and the invite codes that may create them.
+[[kv_namespaces]]
+binding = "LISTS"
+id = "b642430e568b483a9a84adbd636f89a2"
+
+# ADMIN_TOKEN is a secret (wrangler secret put ADMIN_TOKEN); it is never stored here.
