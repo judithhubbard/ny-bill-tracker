@@ -553,6 +553,11 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+#youReps { display: block; }
+.wcard .do:not(.reintro) { border-left: 0; background: var(--gold-soft); border-radius: 8px; padding: 10px 12px; gap: 5px; }
+.wcard .do .askbig { font-size: 16px; font-weight: 700; color: var(--ink); }
+.act-btn.primary { background: var(--navy); color: var(--sheet); border-color: var(--navy); }
+.wcard .odds { font-size: 12.5px; }
 .pubbox { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); }
 .pubbox > summary { cursor: pointer; font-weight: 600; color: var(--navy); }
 .pubbox p { margin: 6px 0 0; }
@@ -767,6 +772,11 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <details class="side" id="side" open>
       <summary class="side-toggle">Filters <span id="filterCount"></span></summary>
       <div class="side-body">
+        <div class="field you">
+          <label for="homeCounty">Your county</label>
+          <select id="homeCounty"></select>
+          <span class="subsel" id="youReps"></span>
+        </div>
         <div class="group">
           <div class="group-h">Where it is now</div>
           <div id="pipeline" role="group" aria-label="Filter by where bills are now"></div>
@@ -784,12 +794,10 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
         <div class="field" id="votedField" hidden>
           <label for="voted" id="votedLabel">How your legislators voted</label>
           <select id="voted"><option value="">Any vote</option></select>
-          <span class="subsel" id="votedWho"></span>
         </div>
         <div class="field">
           <label for="area">Which bills</label>
           <select id="area"><option value="">All bills</option></select>
-          <label class="subsel">Your county <select id="homeCounty"></select></label>
         </div>
         <div class="field" id="changedField">
           <label for="changed">New activity</label>
@@ -2722,8 +2730,9 @@ function renderWatchView() {
     const summary = b.summary && b.summary !== b.title ? `<p class="sum">${esc(b.summary.length > 260 ? b.summary.slice(0, 257) + "…" : b.summary)}</p>` : "";
     const action = x.key ? `
       <div class="do">
-        <p class="who"><b>${esc(titleOf(x.key))}</b> <span class="decides">Decides</span> ${esc(x.key.ask)}</p>
-        <p class="reach">${reachOf(x.key)} <button class="act-btn small" type="button" data-email="${b.idx}">Copy email</button></p>
+        <p class="who"><b>${esc(titleOf(x.key))}</b> <span class="decides">Decides</span></p>
+        <p class="askbig">Ask: ${esc(x.key.ask)}</p>
+        <p class="reach"><button class="act-btn primary" type="button" data-email="${b.idx}">Copy email</button> ${reachOf(x.key)}</p>
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
     return `<article class="wcard" data-idx="${b.idx}">
@@ -2803,7 +2812,8 @@ const MORE_KEYS = ["party", "progress", "law", "comm", "house", "hist", "intro"]
 function fillSelects() {
   $("votedField").hidden = !DATA.current || !votePeople().length;
   $("votedLabel").textContent = PRESET?.who ? "How they voted" : "How your legislators voted";
-  $("votedWho").innerHTML = PRESET?.who ? "" : `${votePeople().map((L) => esc(L.name)).join(" and ")} · <button type="button" class="linkish" data-goreps>change</button>`;
+  const reps = PRESET?.who ? [] : votePeople();
+  $("youReps").innerHTML = reps.length ? `Your legislators: ${reps.map((L) => esc(L.name)).join(" and ")} · <button type="button" class="linkish" data-goreps>change</button>` : "";
   if ($("homeCounty").value !== HOME) $("homeCounty").value = HOME;
   for (const id of ["who", "law", "area", "voted", "changed", ...MORE_KEYS]) $(id)?.classList.toggle("on", !!state[id]);
   const more = MORE_KEYS.filter((k) => state[k]).length;
