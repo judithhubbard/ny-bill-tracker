@@ -362,7 +362,8 @@ table.oc th { vertical-align: bottom; }
 .perscards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .pcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
 .pcard .ptop { display: flex; justify-content: space-between; gap: 8px; }
-.pcard .bn { font: 700 13px var(--mono); }
+.pcard .bn { font: 700 13px var(--mono); justify-self: start; }
+.linkish { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: var(--navy); text-decoration: underline; cursor: pointer; text-align: left; }
 .pcard .ptitle { font-weight: 600; font-size: 14px; line-height: 1.35; }
 .pcard .muted { color: var(--ink-2); font-size: 12.5px; }
 .dots { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -989,8 +990,10 @@ function billLink(b) {
 }
 function openFromHash() {
   const m = location.hash.match(/^#([SA]\d{1,5})$/i);
-  if (!m) return false;
-  const want = m[1].toUpperCase();
+  return m ? openNum(m[1]) : false;
+}
+function openNum(num_) {
+  const want = num_.toUpperCase();
   const b = BILLS.find((x) => x.nums.some((n) => baseNum(n) === want));
   if (!b) return false;
   ONE = b.idx;
@@ -1137,8 +1140,8 @@ function renderMyReps() {
     .map((L) => `<option value="${L.district}"${reps.some((r) => r.house === h && lastName(L.name) === r.last) ? " selected" : ""}>District ${L.district}: ${esc(L.name)}</option>`).join("");
   box.innerHTML = `<h2>Your legislators</h2>
     <p>${reps.map((r) => `<b>${esc(r.title)} ${esc(r.name)}</b>`).join(" and ") || "Not set"}${c ? "" : " (Tompkins County)"}. Contact suggestions throughout the site use these.</p>
-    <form class="repfind" id="repFind"><label>Find by address <input type="search" id="repAddr" placeholder="Street, town, NY" autocomplete="street-address"></label> <button class="act-btn" type="submit">Look up</button></form>
-    <p class="muted" id="repMsg">The address goes to the U.S. Census Bureau's address lookup; only the district numbers are kept, in this browser.</p>
+    ${ROOT ? `<form class="repfind" id="repFind"><label>Find by address <input type="search" id="repAddr" placeholder="Street, town, NY" autocomplete="street-address"></label> <button class="act-btn" type="submit">Look up</button></form>
+    <p class="muted" id="repMsg">The address goes to the U.S. Census Bureau's address lookup; only the district numbers are kept, in this browser.</p>` : ""}
     <div class="repsel"><label>Senate <select id="repS">${opts("S")}</select></label> <label>Assembly <select id="repA">${opts("A")}</select></label>${c ? ` <button class="act-btn" type="button" id="repReset">Back to Tompkins County</button>` : ""}</div>`;
 }
 function setReps(s, a) {
@@ -1625,14 +1628,14 @@ function drawNet({ nodes, links }) {
     const unit = netBills === "law" ? "laws" : "bills";
     const ties = x ? links.filter((l) => l.source.id === id || l.target.id === id).sort((a, b) => b.count - a.count)
       .map((l) => { const o = l.source.id === id ? l.target : l.source; return `${esc(o.L.name)} ${num(l.count)}`; }) : [];
-    $("netSel").innerHTML = x ? `<b>${esc(x.L.label)}</b> · ${num(x.n)} ${unit} · ${L && ROOT && L.slug && DATA.current ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : L ? `<a href="#" data-netbills="${esc(id)}">Their ${unit === "laws" ? "bills" : unit}</a>` : ""}${ties.length ? `<br><span class="muted">Shared ${unit}: ${ties.join(" · ")}</span>` : ""}` : "";
+    $("netSel").innerHTML = x ? `<b>${esc(x.L.label)}</b> · ${num(x.n)} ${unit} · ${L && ROOT && L.slug && DATA.current ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : L ? `<button type="button" class="linkish" data-netbills="${esc(id)}">Their ${unit === "laws" ? "bills" : unit}</button>` : ""}${ties.length ? `<br><span class="muted">Shared ${unit}: ${ties.join(" · ")}</span>` : ""}` : "";
     if (x) find.value = x.L.label;
   };
   svg.addEventListener("click", (e) => { const c = node(e); select(c ? c.dataset.id : null); if (!c) find.value = ""; });
   $("netSel").onclick = (e) => {
     const a = e.target.closest("[data-netbills]"); if (!a) return;
     e.preventDefault();
-    Object.assign(state, blank()); state.who = a.dataset.netbills; syncControls(); showView("bills"); render();
+    Object.assign(state, blank()); state.who = a.dataset.netbills; ONE = null; syncControls(); showView("bills"); render();
   };
   // Find: a typed name stays highlighted until cleared.
   const find = $("netFind");
@@ -1664,7 +1667,7 @@ function persCard(n, title) {
     dots.push(`<span class="d"><i class="dot ${cls}${s === DATA.session ? " now" : ""}" title="${span(s)}: ${esc(what)}"></i><small>${String(s).slice(2)}</small></span>`);
   }
   const tries = [...entries.keys()].filter((s) => s < DATA.session).length;
-  return `<div class="pcard"><div class="ptop"><a class="bn" href="#${esc(baseNum(n))}">${esc(n)}</a><span class="muted">${tries} earlier sessions</span></div>
+  return `<div class="pcard"><div class="ptop"><button type="button" class="bn linkish" data-bill="${esc(baseNum(n))}">${esc(n)}</button><span class="muted">${tries} earlier sessions</span></div>
     <div class="ptitle">${esc(title)}</div><div class="dots">${dots.join("")}</div>
     <div class="muted">This session: ${esc(b ? TEXT.long[b.stage] : "")}</div></div>`;
 }
@@ -2450,9 +2453,26 @@ function wire() {
     const input = btn.previousElementSibling;
     try { await navigator.clipboard.writeText(input.value); btn.textContent = "Copied"; } catch (err) { input.select(); btn.textContent = "Press Ctrl/Cmd+C"; }
   });
-  window.addEventListener("hashchange", () => { if (openFromHash()) { showView("bills"); render(); openOne(); } });
-  // Back and Forward between tabs.
-  window.addEventListener("popstate", () => { const h = location.hash.slice(1); if (VIEWS.includes(h) || !h) showView(h || "bills", false); });
+  // In-page links to one bill are buttons, not #S1234 anchors: some viewers (Claude's artifact
+  // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-bill]"); if (!a) return;
+    e.preventDefault();
+    if (!openNum(a.dataset.bill)) return;
+    try { history.pushState(null, "", `#${a.dataset.bill}`); } catch (err) {}
+    showView("bills", false); render(); openOne();
+  });
+  // Back, Forward and typed addresses: a bill number opens that bill; a tab name opens the tab.
+  const syncFromUrl = () => {
+    const h = location.hash.slice(1);
+    if (openFromHash()) { showView("bills", false); render(); openOne(); return; }
+    if (VIEWS.includes(h) || !h) {
+      if (ONE != null) { ONE = null; render(); }
+      showView(h || "bills", false);
+    }
+  };
+  // Browsers fire popstate for Back, Forward and any change to the #part of the address.
+  window.addEventListener("popstate", syncFromUrl);
   // Copy an email: one bill (button on its card) or several bills for the same person.
   const copyText = async (btn, text) => {
     try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
@@ -2501,7 +2521,7 @@ function wire() {
   $("statTopic").addEventListener("change", renderStats);
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
-  $("myReps").addEventListener("submit", (e) => { e.preventDefault(); const a = $("repAddr").value.trim(); if (a) lookUpReps(a); });
+  $("myReps").addEventListener("submit", (e) => { e.preventDefault(); const a = $("repAddr").value.trim(); if (a) lookUpReps(a); else $("repMsg").textContent = "Enter a street address, then Look up."; });
   $("myReps").addEventListener("change", (e) => { if (e.target.id === "repS" || e.target.id === "repA") setReps($("repS").value, $("repA").value); });
   $("myReps").addEventListener("click", (e) => {
     if (e.target.id !== "repReset") return;
