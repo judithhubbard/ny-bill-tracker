@@ -1066,9 +1066,9 @@ def net_views(spons, w, cross, info, minimum=3):
                 p[4] += c
             return list(res.values())
         keep = {}
-        groups = [(pairs(w, "co", True), 3 if sel == "B" else 4)]
+        groups = [(pairs(w, "co", True), 2 if sel == "B" else 4)]
         if sel == "B":
-            groups.append((pairs(cross, "x", False), 3))
+            groups.append((pairs(cross, "x", False), 2))
         # Rank ties by how many bills two members share, not by share of a sponsor's bills:
         # a member with few bills would otherwise be everyone's "strongest" tie.
         for lst, n in groups:

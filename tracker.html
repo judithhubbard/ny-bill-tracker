@@ -312,14 +312,20 @@ table.oc th { vertical-align: bottom; }
 .repsel select { width: auto; max-width: 80vw; }
 .resultbar .csv { padding: 4px 10px; font-size: 12.5px; }
 .netsel { min-height: 1.4em; font-size: 13.5px; margin: 4px 0; }
-.net line { stroke: var(--ink-2); stroke-opacity: .35; }
+.net line { stroke: var(--ink-2); stroke-opacity: .25; vector-effect: non-scaling-stroke; }
+.net circle, .net rect { vector-effect: non-scaling-stroke; }
+.net { position: relative; }
+.net svg { touch-action: pan-y; cursor: grab; overflow: hidden; }
+.netzoom { position: absolute; right: 8px; top: 8px; display: flex; gap: 4px; z-index: 1; }
+.netzoom button { font: 600 13px var(--body); min-width: 30px; height: 28px; padding: 0 8px; border: 1px solid var(--rule); border-radius: 5px; background: var(--sheet); color: var(--ink); cursor: pointer; }
+.net svg.zoomed text { opacity: 1; }
 .net circle, .net rect { stroke: var(--paper); stroke-width: 1; cursor: pointer; fill: var(--ink-2); }
 .net .dem, .key .k-dem { fill: #3b6fd1; background: #3b6fd1; }
 .net .rep, .key .k-rep { fill: #c8423a; background: #c8423a; }
 .net line.x { stroke: var(--gold); stroke-opacity: .55; }
 .key .k-cross { background: var(--gold); height: 3px !important; width: 14px !important; }
 .commctl input[type="search"] { width: 220px; padding: 4px 8px; font-size: 13px; }
-.net text { font: 600 9px var(--body); fill: var(--ink); text-anchor: middle; pointer-events: none; opacity: 0; }
+.net text { font: 600 9px var(--body); font-size: calc(10px / var(--k, 1)); fill: var(--ink); text-anchor: middle; pointer-events: none; opacity: 0; }
 .net svg.focus circle:not(.on), .net svg.focus rect:not(.on), .net svg.focus line:not(.on) { opacity: .15; }
 .net svg.focus text.on { opacity: 1; }
 .net svg.focus line.on { stroke-opacity: .9; }
@@ -1482,7 +1488,7 @@ function netData(sel, t, lawOnly) {
   const keep = new Set();
   // Rank ties by how many bills two members share, not by share of a sponsor's bills: a member
   // with few bills would otherwise be everyone's "strongest" tie.
-  for (const [list, n] of [[pairs(w, "co", true), sel === "B" ? 3 : 4], [pairs(cross, "x", false), 3]])
+  for (const [list, n] of [[pairs(w, "co", true), sel === "B" ? 2 : 4], [pairs(cross, "x", false), 2]])
     for (const x of nodes) list.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.count - a.count || b.share - a.share).slice(0, n).forEach((p) => keep.add(p));
   // Members with no strong ties are still drawn, as dots on their own.
   return { nodes, links: [...keep].map((p) => ({ ...p })) };
@@ -1517,7 +1523,7 @@ function renderNet() {
     <div class="net" id="netBox"><p class="muted">Loading…</p></div>
     <p class="netsel" id="netSel"></p>
     <p class="note">${live && t !== "all" ? `${esc(TOPICS[t])} ${law ? "laws" : "bills"}` : law ? "Bills that became law" : "All bills"}, ${span_}. ${(() => { const w = law ? "laws" : "bills", min = law && (live || !DATA.current) ? 2 : 3;
-      return both ? `Gray lines: one co-sponsors many of the other's ${w}. Gold lines: they carry the same ${w} in the two houses.` : `Lines join members when one co-sponsors many of the other's ${w} (each member's strongest ties, of ${min} or more ${w}).`; })()} Members close together work together often; directions mean nothing. Tap or click a member to highlight them.</p>`;
+      return both ? `Gray lines: one co-sponsors many of the other's ${w}. Gold lines: they carry the same ${w} in the two houses.` : `Lines join members when one co-sponsors many of the other's ${w} (each member's strongest ties, of ${min} or more ${w}).`; })()} Members close together work together often; directions mean nothing. Tap or click a member to highlight them; zoom with the buttons, a pinch, or Ctrl-scroll, and drag to move.</p>`;
   loadD3().then(() => drawNet(data)).catch(() => { $("netBox").innerHTML = `<p class="muted">The chart couldn't load.</p>`; });
 }
 function drawNet({ nodes, links }) {
@@ -1554,11 +1560,28 @@ function drawNet({ nodes, links }) {
     if (x.L.house === "S" && netHouse === "B") { const s = r(x) * 1.7; return `<rect data-id="${x.id}" class="${cls}" x="${(x.x - s / 2).toFixed(1)}" y="${(x.y - s / 2).toFixed(1)}" width="${s.toFixed(1)}" height="${s.toFixed(1)}">${t}</rect>`; }
     return `<circle data-id="${x.id}" class="${cls}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${r(x).toFixed(1)}">${t}</circle>`;
   };
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Co-sponsorship network">
+  el.innerHTML = `<div class="netzoom"><button type="button" data-zoom="1.6" aria-label="Zoom in">+</button><button type="button" data-zoom="0.625" aria-label="Zoom out">−</button><button type="button" data-zoom="0" aria-label="Reset zoom">Reset</button></div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Co-sponsorship network"><g class="vp">
     <g class="links">${links.map((l) => `<line class="${l.kind === "x" ? "x" : ""}" data-a="${l.source.id}" data-b="${l.target.id}" x1="${l.source.x.toFixed(1)}" y1="${l.source.y.toFixed(1)}" x2="${l.target.x.toFixed(1)}" y2="${l.target.y.toFixed(1)}" stroke-width="${(0.5 + 2.5 * Math.min(1, l.share)).toFixed(2)}"></line>`).join("")}</g>
     <g class="nodes">${nodes.map(shape).join("")}</g>
-    <g class="labels">${nodes.map((x) => `<text data-id="${x.id}" x="${x.x.toFixed(1)}" y="${(x.y - r(x) - 3).toFixed(1)}">${esc(last(x))}</text>`).join("")}</g></svg>`;
+    <g class="labels">${nodes.map((x) => `<text data-id="${x.id}" x="${x.x.toFixed(1)}" y="${(x.y - r(x) - 3).toFixed(1)}">${esc(last(x))}</text>`).join("")}</g></g></svg>`;
   const svg = el.querySelector("svg");
+  // Zoom and pan: pinch or Ctrl/⌘-scroll, drag to move, or the buttons. Plain scrolling and
+  // one-finger swipes still scroll the page. Zoomed in far enough, every name shows.
+  const vp = d3.select(svg).select(".vp");
+  const zoom = d3.zoom().scaleExtent([1, 8]).clickDistance(4)
+    .filter((e) => (e.type === "wheel" ? e.ctrlKey || e.metaKey : e.type.startsWith("touch") ? e.touches.length > 1 : !e.button))
+    .on("zoom", (e) => {
+      vp.attr("transform", e.transform);
+      svg.style.setProperty("--k", e.transform.k);
+      svg.classList.toggle("zoomed", e.transform.k >= 2.5);
+    });
+  d3.select(svg).call(zoom).on("dblclick.zoom", null);
+  el.querySelector(".netzoom").onclick = (e) => {
+    const b = e.target.closest("[data-zoom]"); if (!b) return;
+    const f = +b.dataset.zoom;
+    d3.select(svg).transition().duration(250).call(f ? zoom.scaleBy : zoom.transform, f || d3.zoomIdentity);
+  };
   const focus = (id) => {
     svg.classList.toggle("focus", !!id);
     const keep = id ? nb.get(id) : null;
