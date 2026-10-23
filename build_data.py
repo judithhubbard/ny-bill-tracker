@@ -231,6 +231,11 @@ def narrow_kind(title):
     return ""
 
 
+def narrow_bill(r):
+    """About one place, person or group, or a naming: the bills the "leave out narrow bills" switches drop."""
+    return bool(r["narrow"] or r["places"])
+
+
 def counties_of_name(name):
     """Counties for a place name, trying shorter versions ("Johnson City Central" -> "Johnson City")."""
     name = re.sub(r"'s$", "", name.replace("’", "'").rstrip(".,")).replace("Mt. ", "Mount ")
@@ -813,8 +818,16 @@ def reached(r):
 
 def insights(loaded, hist, current):
     past = [s for s in sorted(loaded) if s != current]
-    topics = ["all"] + list(TOPICS)
-    has = lambda r, t: t == "all" or t in r["topics"]
+    # Each topic also comes as "t|g" (general bills only: not about one place, person or group, nor a
+    # naming), and "all|n" covers the narrow ones, for the Statistics switch and each bill's odds line.
+    base = ["all"] + list(TOPICS)
+    topics = base + [t + "|g" for t in base] + ["all|n"]
+
+    def has(r, t):
+        t, _, kind = t.partition("|")
+        if kind and (kind == "n") != narrow_bill(r):
+            return False
+        return t == "all" or t in r["topics"]
 
     current_comms = {f"{h} · {n}" for r in loaded[current][0] for h, n, _ in r["firstComms"]}
 
@@ -947,6 +960,8 @@ def insights(loaded, hist, current):
     tries.sort(key=lambda x: (-x[0], -rank(x[3]) if x[3] >= 0 else 1, x[1]))
     persistent = {}
     for t in topics:
+        if "|" in t:
+            continue
         rows = [x for x in tries if has(cur_recs[x[1]], t)][:12]
         persistent[t] = [[cur_recs[i]["nums"][0], cur_recs[i]["title"], n, first, best, cur_recs[i]["stage"]] for n, i, first, best in rows]
 
@@ -1012,6 +1027,7 @@ def insights(loaded, hist, current):
     if year in (0, 1):
         md = today.strftime("%m-%d")
         n = law = 0
+        kinds = {"g": [0, 0], "n": [0, 0]}
         for s in past:
             cut = f"{s + year}-{md}"
             for r in loaded[s][0]:
@@ -1022,7 +1038,10 @@ def insights(loaded, hist, current):
                     continue
                 n += 1
                 law += r["stage"] == 5
-        waiting = {"date": md, "year": year, "n": n, "law": law}
+                kk = kinds["n" if narrow_bill(r) else "g"]
+                kk[0] += 1
+                kk[1] += r["stage"] == 5
+        waiting = {"date": md, "year": year, "n": n, "law": law, "kinds": kinds}
 
     return {
         "waiting": waiting,
@@ -1055,7 +1074,7 @@ def profiles(session, recs, legs, party_of):
     first_bill, votes_seen = {}, []
     for r in recs:
         got = reached(r)
-        local = bool(CEREMONIAL.search(r["title"] or ""))
+        local = narrow_bill(r) or bool(CEREMONIAL.search(r["title"] or ""))
         for v in r["vers"]:
             house = v["p"][0]
             seat = f"{house}:{v.get('district')}"

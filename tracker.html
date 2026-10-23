@@ -553,6 +553,14 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.next .mainask { background: var(--gold-soft); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+.next .mainask ul { margin: 0; }
+.next .mainask li.key { border-left: 0; padding-left: 0; }
+.next .mainask .ask { font-size: 15px; font-weight: 700; color: var(--ink); }
+.next details.others { margin-top: 8px; }
+.next details.others > summary { cursor: pointer; font-weight: 600; font-size: 13px; color: var(--navy); }
+.next details.others ul { margin-top: 6px; }
+.statgen { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-2); margin-left: 14px; }
 .tag.narrow { background: none; border: 1px dashed var(--refer); }
 .tag.chap { background: var(--gold-soft); color: var(--ink); cursor: help; }
 .tag.chap i { font-style: normal; display: inline-block; width: 13px; height: 13px; line-height: 13px; text-align: center; border-radius: 50%; background: var(--gold); color: #fff; font-size: 9.5px; margin-left: 2px; }
@@ -803,6 +811,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <div class="field stattopic">
       <label for="statTopic">Topic</label>
       <select id="statTopic"><option value="all">All bills</option></select>
+      <label class="inline statgen"><input type="checkbox" id="statGeneral"> Leave out bills about one place, person or group, and road namings</label>
     </div>
     <nav class="subtabs" id="statTabs" aria-label="Statistics sections">
       <button type="button" data-sec="statOdds">Odds of becoming law</button>
@@ -1006,12 +1015,14 @@ function billUrl(p, session = DATA.session) {
 
 // The Senate's bill page has the text and, for Senate bills, the sponsor's memo; Assembly memos are on the Assembly's site.
 function asmUrl(p, session = DATA.session) {
-  return `https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A${p.slice(1).replace(/^\d+/, (n) => n.padStart(5, "0"))}&term=${session}&Summary=Y&Memo=Y`;
+  return `https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A${p.slice(1).replace(/^\d+/, (n) => n.padStart(5, "0"))}&term=${session}&Summary=Y&Text=Y&Memo=Y`;
 }
 function textLinks(b) {
+  // Each house's site has its own version's text and its sponsor's memo.
   const s = b.vers.find((v) => v.p[0] === "S"), a = b.vers.find((v) => v.p[0] === "A");
   const link = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener">${text} ↗</a>`;
-  return [link(billUrl(b.vers[0].p), "Full text"), s && link(billUrl(s.p), "Senate sponsor's memo"), a && link(asmUrl(a.p), "Assembly sponsor's memo")].filter(Boolean).join(" · ");
+  return [s && link(billUrl(s.p), `${esc(s.p)} on the Senate's site: text and sponsor's memo`),
+    a && link(asmUrl(a.p), `${esc(a.p)} on the Assembly's site: text and sponsor's memo`)].filter(Boolean).join("<br>");
 }
 // A chapter amendment changes a law signed earlier, usually as agreed with the governor when she signed it.
 // The law code names the original bills: "as proposed in S.7359-A & A.7964-A".
@@ -1484,7 +1495,15 @@ function nextSteps(b) {
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
   if (plan.actionable && who) what += `<p class="hint">Asks if you <span class="seg">${["support", "oppose"].map((s) => `<button type="button" data-panelstance="${s}" data-idx="${b.idx}" aria-pressed="${(plan.opp ? "oppose" : "support") === s}">${s}</button>`).join("")}</span> this bill</p>`;
-  return `<div class="next"><h4>What's next and who to contact</h4>${what}${who ? `<ul>${who}</ul>` : ""}</div>`;
+  // The person who decides the next step comes first, set apart; everyone else folds away.
+  const box = document.createElement("ul");
+  box.innerHTML = who;
+  const items = [...box.children], keys = items.filter((li) => li.classList.contains("key")), rest = items.filter((li) => !keys.includes(li));
+  const list = (lis) => `<ul>${lis.map((li) => li.outerHTML).join("")}</ul>`;
+  const contacts = !items.length ? "" : keys.length
+    ? `<div class="mainask">${list(keys)}</div>${rest.length ? `<details class="others"><summary>Others to contact (${rest.length})</summary>${list(rest)}</details>` : ""}`
+    : list(rest);
+  return `<div class="next"><h4>What's next and who to contact</h4>${what}${contacts}</div>`;
 }
 
 // Bills still open for comment, listed right here (filters on the Bills tab don't apply).
@@ -1565,21 +1584,27 @@ const ODDS_POINTS = [
 ];
 
 // For one bill: how often bills that got this far became law in past sessions.
+// Bills about one place, person or group (or a naming) pass far more often, so each bill is compared
+// with past bills of its own kind.
+const isNarrow = (b) => !!(b.narrow || b.places.length);
 function oddsLine(b) {
-  const odds = DATA.insights?.odds?.all;
+  const kind = isNarrow(b) ? "n" : "g";
+  const like = kind === "n" ? "bills about one place, person or group" : "bills not about one place, person or group";
+  const odds = DATA.insights?.odds?.[`all|${kind}`] || DATA.insights?.odds?.all;
   if (!odds || b.stage > 4) return "";
   const point = b.stage >= 3 ? "both" : b.stage === 2 ? (b.passedIn === "Senate" ? "passS" : "passA") : b.stage === 1 ? "floor" : "intro";
   const [n, law] = odds[point] || [0, 0];
   if (!n) return "";
   // Not yet requested: compare with bills still waiting on this same date in past sessions.
   const w = DATA.insights?.waiting;
-  if (b.stage === 3 && w && w.n >= 30) {
+  const [wn, wl] = w?.kinds?.[kind] || [w?.n, w?.law];
+  if (b.stage === 3 && w && wn >= 30) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    return `Past sessions: ${pctOf(w.law, w.n)}% of bills still waiting for the governor's request on ${day} became law.`;
+    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.`;
   }
   const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
-  return `Past sessions: ${pctOf(law, n)}% of bills that ${label} became law.`;
+  return `Past sessions: ${pctOf(law, n)}% of ${like} that ${label} became law.`;
 }
 
 // One bar: full length is the share approved by committee; the darker part, the share that became law.
@@ -1889,12 +1914,23 @@ function monthChart(I, t) {
     <div class="vrow wide"><div class="lab"></div><div class="myears"><span>First year</span><span>Second year</span></div><div></div></div></div>`;
 }
 
-function renderStats() {
+// The Statistics switch: the same figures for general bills only (leaving out bills about one place,
+// person or group, and namings). The build stores those under "topic|g".
+let STAT_GENERAL = false;
+function statView() {
   const I = DATA.insights;
+  if (!STAT_GENERAL || !I) return I;
+  const pick = (o) => o && Object.fromEntries(Object.keys(o).filter((k) => !k.includes("|")).map((k) => [k, o[`${k}|g`] ?? o[k]]));
+  return { ...I, odds: pick(I.odds), persistence: pick(I.persistence), comeback: pick(I.comeback), stuck: pick(I.stuck), fate: pick(I.fate),
+    cosponsors: pick(I.cosponsors), party: pick(I.party), months: pick(I.months), monthsNow: pick(I.monthsNow),
+    committees: { current: pick(I.committees.current), past: pick(I.committees.past) } };
+}
+function renderStats() {
+  const I = statView();
   if (!I) return;
   const t = $("statTopic").value || "all";
 
-  const topicName = t === "all" ? "all bills" : `${TOPICS[t]} bills`;
+  const topicName = (t === "all" ? (STAT_GENERAL ? "general bills" : "all bills") : `${TOPICS[t]} bills`) + (STAT_GENERAL && t !== "all" ? " (general bills only)" : "");
   const bar = (p, max = 100) => `<div class="sharebar"><i style="width:${(p / max) * 70}%"></i><b>${p}%</b></div>`;
 
   // Bars instead of tables: one row per item, a label, a bar, and a short reading.
@@ -2051,7 +2087,7 @@ function renderPersonStats(L) {
   const path = PATH.map(([k, label]) => {
     const n = val(me, k), p = peer ? val(peer, k) : null;
     return vrow(label, "", [[(n / scale) * 100, "a"]],
-      `<b class="big">${num(n)}</b>${k === "sponsored" ? "" : ` (${pctOf(n, me.sponsored)}%)`}${p != null ? `<small>Typical: ${num(Math.round(p))}${k === "sponsored" ? "" : ` (${pctOf(p, peer.sponsored)}%)`}</small>` : ""}`,
+      `<b class="big">${num(n)}</b>${k === "sponsored" ? "" : ` (${pctOf(n, me.sponsored)}%)`}${k === "law" && me.lawsLocal ? `<small>${num(me.lawsLocal)} about one place, person or group</small>` : ""}${p != null ? `<small>Typical: ${num(Math.round(p))}${k === "sponsored" ? "" : ` (${pctOf(p, peer.sponsored)}%)`}</small>` : ""}`,
       p != null ? [[(p / scale) * 100, "p", `Typical: ${num(Math.round(p))}`]] : null);
   }).join("");
 
@@ -2720,6 +2756,7 @@ function wire() {
     openShown += 25; renderOpenNow();
   });
   $("statTopic").addEventListener("change", renderStats);
+  $("statGeneral").addEventListener("change", (e) => { STAT_GENERAL = e.target.checked; renderStats(); });
   $("homeCounty").addEventListener("change", (e) => setCounty(e.target.value));
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
