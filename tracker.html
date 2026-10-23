@@ -2667,7 +2667,7 @@ function publishBox() {
     <details class="pubmore"><summary>Edit key (for updating from another computer)${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private. Anyone with it can change your list.</p>
       <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
   return `<details class="pubbox"><summary>Publish a list others can follow</summary>
-    <p class="muted">Get a lasting link that updates when you do. Requires an invite code.</p>
+    <p class="muted">Share one link that always shows your latest list. Requires an invite code.</p>
     <p class="pubform"><label>List name <input type="text" id="pubTitle" maxlength="120" placeholder="e.g. Our priority bills"></label>
       <label>Invite code <input type="text" id="pubCode" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="publish">Publish</button></p>
     <p class="pubform"><label>Updating your list from another computer? Paste your edit key <input type="text" id="pubKey" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="connect">Connect</button></p>
