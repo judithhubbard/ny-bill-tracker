@@ -56,8 +56,8 @@ jobs:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: python3 fetch_bills.py "$CURRENT_SESSION"
 
-      # Senate committee agendas: which bills each committee takes up, and when.
-      - name: Download Senate committee agendas
+      # Senate and Assembly committee agendas: which bills each committee takes up, and when.
+      - name: Download committee agendas
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: python3 fetch_agendas.py "$CURRENT_SESSION" || echo "Agendas failed; building without them"

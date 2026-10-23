@@ -1314,12 +1314,12 @@ function nextSteps(b) {
   const plan = planFor(b, panelStance(b));
   if (!plan) return "";
   let what = plan.what;
-  // An upcoming Senate committee meeting with this bill on the agenda.
+  // The next committee meeting with this bill on the agenda.
   const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16);
-  const meet = DATA.current && b.agenda.find((a) => a.when >= now);
+  const meet = DATA.current && b.agenda.filter((a) => a.when >= now).sort((x, y) => (x.when < y.when ? -1 : 1))[0];
   if (meet) {
     const d = new Date(meet.when);
-    what += `<p class="when">On the agenda: Senate ${esc(meet.committee)} Committee, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>`;
+    what += `<p class="when">On the agenda: ${esc(meet.committee)} Committee, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>`;
   }
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
