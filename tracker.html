@@ -553,6 +553,16 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 75ch; }
+.view-help { appearance: none; background: none; border: 0; padding: 5px 8px; font: 600 12.5px var(--body); color: var(--navy); text-decoration: underline; cursor: pointer; }
+.intro { background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--gold); border-radius: 8px; padding: 14px 16px; margin: 12px 0 4px; }
+.intro-h { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.intro h2 { margin: 0; font: 700 18px var(--display); font-stretch: 85%; }
+.intro ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 18px; }
+.intro li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; }
+.intro .n { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 13px/24px var(--body); text-align: center; }
+.intro b { font-size: 14px; }
+.intro p { margin: 2px 0 0; font-size: 13px; color: var(--ink-2); line-height: 1.4; }
 .ver details.acts > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--navy); margin-top: 4px; }
 .ver details.acts ol { margin-top: 6px; }
 .sankey { overflow-x: auto; margin: 6px 0 14px; }
@@ -741,8 +751,10 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <button class="view-tab" type="button" data-view="act">Weigh in</button>
     <button class="view-tab" type="button" data-view="stats">Statistics</button>
     <button class="view-tab" type="button" data-view="person" hidden>Their numbers</button>
-    <button class="view-tab view-tab-end" type="button" data-view="how">How a bill becomes law in New York</button>
+    <button class="view-help view-tab-end" type="button" data-intro aria-controls="howto">How to use this site</button>
+    <button class="view-tab" type="button" data-view="how">How a bill becomes law in New York</button>
   </nav>
+  <section class="intro" id="howto" hidden aria-label="How to use this site"></section>
 
   <!-- Bills and Statistics share the filter sidebar -->
   <section class="layout" id="filtered">
@@ -945,6 +957,16 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     </ol>
     <h2>The two-year calendar</h2>
     <div id="howCal"></div>
+    <h2 id="impact">How to have an impact</h2>
+    <ul class="impact">
+      <li><b>Contact whoever decides the next step.</b> In committee, that's the committee chair. On the floor, it's the house's leaders, who choose which bills get a vote. Once a bill has passed both houses, it's the governor's office. Each bill on this site names that person and what to ask.</li>
+      <li><b>Bring in your own legislators.</b> Your senator and Assembly member listen most to their own constituents. Ask them to co-sponsor a bill, to press the chair or leaders to move it, and to vote for it.</li>
+      <li><b>Time it.</b> Committee agendas usually come out the week before a meeting, so write to the chair before then. A bill sent to the governor starts her 10-day clock; if you write her only once, write then.</li>
+      <li><b>Write again only with something new,</b> such as a new fact, a local impact, or a new stage ("it was just delivered; please sign it"). The same message twice from the same person usually counts once.</li>
+      <li><b>Multiply people, not messages.</b> Ten different people writing outweighs one person writing ten times. Share your watchlist so others can weigh in too.</li>
+      <li><b>Make it personal.</b> A sentence about why it matters to you or your community carries more weight than form text.</li>
+      <li><b>If it runs out of time,</b> ask the sponsors to reintroduce it next session, and ask your legislator in the other house to sponsor it there if it has no sponsor in that house.</li>
+    </ul>
     <h2>About this data</h2>
     <div class="notes">
       <p id="fetched"></p>
@@ -2844,6 +2866,9 @@ function wire() {
   // In-page links to one bill are buttons, not #S1234 anchors: some viewers (Claude's artifact
   // viewer among them) reload the page on a hash link, which lost the bill and showed old filters.
   document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-intro-close]")) { try { localStorage.setItem(INTRO_STORE, "hidden"); } catch (err) {} $("howto").hidden = true; return; }
+    if (e.target.closest("[data-intro]")) { if ($("howto").hidden) { renderIntro(true); $("howto").scrollIntoView({ block: "start" }); } else $("howto").hidden = true; return; }
+    if (e.target.closest("[data-impact]")) { showView("how"); $("impact").scrollIntoView({ block: "start" }); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
     e.preventDefault();
@@ -2934,6 +2959,28 @@ function wire() {
     } else return;
     renderStats();
   });
+}
+
+// "How to use this site": shown until dismissed, and again from the link by the tabs.
+const INTRO_STORE = "abt:intro";
+function renderIntro(force) {
+  const box = $("howto");
+  let hidden = false;
+  try { hidden = localStorage.getItem(INTRO_STORE) === "hidden"; } catch (e) {}
+  if (!DATA.current || PRESET || SHARED || (hidden && !force)) { box.hidden = true; return; }
+  const share = !!ROOT;
+  const steps = [
+    ["Find bills", "Search by bill number, words or sponsor, or narrow the list with the filters: where a bill is now, its topic, or your county."],
+    ["Watch them", "Click ☆ next to a bill to add it to your Watchlist, and mark whether you support or oppose it."],
+    ["Weigh in", `Open a bill to see who decides its next step, what to ask, and how to reach them. Set where you live on the Weigh in tab so your own legislators show. <button type="button" class="linkish" data-impact>Tips for having an impact</button>`],
+    [share ? "Share your list" : "Write once for several bills", share
+      ? "Your Watchlist gives you a link to send to others: it shows them your bills and positions, so they can weigh in too. It can also copy one email covering several bills."
+      : "Your Watchlist can copy one email covering several bills for the same person."],
+    ["See how it works", "Statistics shows how often bills like yours have passed; How a bill becomes law explains the steps and the two-year calendar."],
+  ];
+  box.hidden = false;
+  box.innerHTML = `<div class="intro-h"><h2>How to use this site</h2><button type="button" class="act-btn" data-intro-close>Got it</button></div>
+    <ol>${steps.map(([h, t], i) => `<li><span class="n">${i + 1}</span><div><b>${h}</b><p>${t}</p></div></li>`).join("")}</ol>`;
 }
 
 // "How a bill becomes law": the two-year session as a timeline with key dates called out.
@@ -3114,6 +3161,7 @@ function hydrate(raw) {
   $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
   try { renderHowCal(); } catch (e) { console.error(e); }
+  try { renderIntro(); } catch (e) { console.error(e); }
   const notice = sessionNotice(raw);
   $("notice").textContent = notice;
   $("notice").hidden = !notice;
