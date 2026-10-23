@@ -557,6 +557,7 @@ table.st col.c-m { width: 80px; }
 .tl .lane b { position: absolute; top: 0; bottom: 0; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font: 600 12px/1.15 var(--body); overflow: hidden; }
 .tl .lane .leg { background: var(--navy); color: var(--sheet); }
 .tl .lane .gov { background: var(--law-bar); color: #fff; }
+.tl .lane .gov.light { background: var(--signed-soft); color: var(--signed); }
 .tl .lab { font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin-top: 10px; }
 .tl .pins { position: relative; height: 26px; margin-top: 6px; }
 .tl .pin { position: absolute; transform: translateX(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--gold); color: #fff; font: 700 12px/22px var(--body); text-align: center; }
@@ -2540,7 +2541,7 @@ function renderHowCal() {
     [`${Y}-01-07`, `<b>January ${Y}:</b> the Legislature convenes. Bills are introduced all year, but committees meet and floor votes happen only while it's in session.`],
     [`${Y}-04-01`, `<b>April 1:</b> the state budget is due.`],
     [s1[1], `<b>${MD(s1[1])}:</b> the first year's session ends. Bills that didn't pass carry over to the second year.`],
-    [`${Y}-09-15`, `<b>Summer through December:</b> the governor's office asks for passed bills in batches and signs or vetoes each one within 10 days. Most vetoes come in November and December.`],
+    [`${Y}-09-15`, `<b>All year:</b> the governor's office asks for passed bills in batches and signs or vetoes each one within 10 days. About a fifth of her decisions come during the session; most come from June through December, and most vetoes in November and December.`],
     [`${Y + 1}-01-07`, `<b>January ${Y + 1}:</b> bills that passed only one house go back to committee and have to pass again.`],
     [s2[1], `<b>${MD(s2[1])}:</b> the session ends. It's the last chance for floor votes, and the busiest weeks of the year.`],
     [`${Y + 1}-12-31`, `<b>December 31, ${Y + 1}:</b> bills that haven't passed both houses die. Next session they start over with new numbers. Bills sent to the governor in late December can be decided in January.`],
@@ -2553,7 +2554,7 @@ function renderHowCal() {
     <div class="lab">Legislature</div>
     <div class="lane">${bar("leg", ...s1, "In session")}${bar("leg", ...s2, "In session")}${now}</div>
     <div class="lab">Governor</div>
-    <div class="lane">${bar("gov", s1[1], `${Y}-12-31`, "Signs or vetoes")}${bar("gov", s2[1], `${Y + 1}-12-31`, "Signs or vetoes")}${now.replace(/<i>.*<\/i>/, "")}</div>
+    <div class="lane">${bar("gov light", `${Y}-01-01`, s1[1], "Signs or vetoes some bills")}${bar("gov", s1[1], `${Y}-12-31`, "Signs or vetoes most bills")}${bar("gov light", `${Y + 1}-01-01`, s2[1], "Signs or vetoes some bills")}${bar("gov", s2[1], `${Y + 1}-12-31`, "Signs or vetoes most bills")}${now.replace(/<i>.*<\/i>/, "")}</div>
     <div class="pins">${pins.map(([d], k) => `<span class="pin" style="left:${Math.min(98.5, Math.max(1.5, pos(d)))}%">${k + 1}</span>`).join("")}</div>
   </div>
   <ol class="tlkey">${pins.map(([, t], k) => `<li><span>${k + 1}</span><div>${t}</div></li>`).join("")}</ol>`;
