@@ -549,6 +549,17 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.howcal { overflow-x: auto; }
+.howcal svg { display: block; min-width: 680px; width: 100%; max-width: 980px; height: auto; font-family: var(--body); }
+.howcal .lbl { font-size: 11.5px; fill: var(--ink-2); }
+.howcal .yr { font: 700 14px var(--display); fill: var(--ink); }
+.howcal .mo { font: 10.5px var(--mono); fill: var(--ink-2); }
+.howcal .ann { font-size: 11px; fill: var(--ink); font-weight: 600; }
+.howcal .band { fill: var(--gold-soft); }
+.howcal .grid { stroke: var(--rule); stroke-width: 1; }
+.howcal .mark { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+.howcal .today { stroke: var(--gold); stroke-width: 2; }
+
 .steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 75ch; }
 .steps b { font-weight: 600; }
 .notes { display: grid; gap: 8px; max-width: 80ch; color: var(--ink-2); font-size: 14px; }
@@ -822,6 +833,8 @@ table.st col.c-m { width: 80px; }
       <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. For bills delivered at the very end of the year, after the Legislature adjourns, she has 30 days, and a bill she doesn't sign is vetoed (a “pocket veto”). In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
       <li><b>The two-year session.</b> Bills carry over from the first year to the second. In January of the second year, bills that passed only one house are sent back to committee in their original house and have to pass again. Any bill that hasn't passed both houses by December 31 of the second year dies and has to be reintroduced with a new number.</li>
     </ol>
+    <h2>The two-year calendar</h2>
+    <div id="howCal"></div>
     <h2>About this data</h2>
     <div class="notes">
       <p id="fetched"></p>
@@ -2503,6 +2516,65 @@ function wire() {
   });
 }
 
+// "How a bill becomes law": each day something happened, across the two years of the session.
+function renderHowCal() {
+  const Y = DATA.session, rows = [
+    ["Introduced", "var(--refer)", (b) => [b.dates.intro]],
+    ["Approved by a committee", "var(--navy)", (b) => [b.dates.floor]],
+    ["Passed the Senate", "var(--navy)", (b) => b.dates.passSAll],
+    ["Passed the Assembly", "var(--navy)", (b) => b.dates.passAAll],
+    ["Sent to the governor", "var(--gold)", (b) => [b.dates.deliv]],
+    ["Signed", "var(--law-bar)", (b) => [b.dates.signed]],
+    ["Vetoed", "var(--veto)", (b) => [b.dates.vetoed]],
+  ];
+  const counts = rows.map(() => new Map());
+  for (const b of BILLS) rows.forEach(([, , get], i) => { for (const d of get(b)) if (d) counts[i].set(d, (counts[i].get(d) || 0) + 1); });
+  const max = counts.map((m) => Math.max(1, ...m.values()));
+  const L = 168, W = 980, R = 12, rowH = 20, top = 40, plotW = W - L - R;
+  const dayOf = (d) => (Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - Date.UTC(+d.slice(0, 4), 0, 1)) / 864e5;
+  const x = (d) => L + (dayOf(d) / 366) * plotW;
+  const today = new Date().toISOString().slice(0, 10);
+  const MD = (d) => new Date(d + "T12:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const panelH = top + rows.length * rowH + 22;
+  const panel = (year, k) => {
+    const y0 = k * (panelH + 14), yr = String(year);
+    // In session: first to last floor vote of the year, in either house.
+    const floor = [...counts[2].keys(), ...counts[3].keys()].filter((d) => d.startsWith(yr)).sort();
+    let g = `<text class="yr" x="0" y="${y0 + 16}">${k ? "Second year" : "First year"} · ${year}</text>`;
+    if (floor.length) {
+      const a = x(floor[0]), z = x(floor[floor.length - 1]) + 2;
+      g += `<rect class="band" x="${a}" y="${y0 + top - 6}" width="${z - a}" height="${rows.length * rowH + 6}"/>`
+        + `<text class="ann" x="${a + 4}" y="${y0 + top - 10}">Floor votes: ${MD(floor[0])} – ${MD(floor[floor.length - 1])}</text>`;
+    }
+    for (let m = 0; m < 12; m++) {
+      const mx = L + (Date.UTC(year, m, 1) - Date.UTC(year, 0, 1)) / 864e5 / 366 * plotW;
+      g += `<line class="grid" x1="${mx}" x2="${mx}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/>`
+        + `<text class="mo" x="${mx + 3}" y="${y0 + top + rows.length * rowH + 14}">${"JFMAMJJASOND"[m]}</text>`;
+    }
+    const apr = x(`${yr}-04-01`);
+    g += `<line class="mark" x1="${apr}" x2="${apr}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/>`
+      + `<text class="ann" x="${apr + 4}" y="${y0 + 16}">Apr 1: budget due</text>`;
+    if (k) g += `<text class="ann" text-anchor="end" x="${W - R}" y="${y0 + 16}">Dec 31: bills not passed by both houses die</text>`;
+    rows.forEach(([label, color], i) => {
+      const ry = y0 + top + i * rowH;
+      g += `<text class="lbl" x="0" y="${ry + 13}">${label}</text>`;
+      for (const [d, n] of counts[i]) {
+        if (!d.startsWith(yr)) continue;
+        const h = Math.max(2, Math.sqrt(n / max[i]) * (rowH - 4));
+        g += `<rect x="${x(d).toFixed(1)}" y="${(ry + rowH - 2 - h).toFixed(1)}" width="2" height="${h.toFixed(1)}" fill="${color}"><title>${MD(d)}, ${year}: ${num(n)} ${label.toLowerCase()}</title></rect>`;
+      }
+    });
+    if (DATA.current && today.startsWith(yr)) {
+      const t = x(today);
+      g += `<line class="today" x1="${t}" x2="${t}" y1="${y0 + top - 6}" y2="${y0 + top + rows.length * rowH}"/><text class="ann" x="${t + 4}" y="${y0 + top + 8}">Today</text>`;
+    }
+    return g;
+  };
+  $("howCal").className = "howcal";
+  $("howCal").innerHTML = `<svg viewBox="0 0 ${W} ${2 * panelH + 14}" role="img" aria-label="Calendar of legislative activity in ${span(Y)}">${panel(Y, 0)}${panel(Y + 1, 1)}</svg>`
+    + `<p class="note">Each mark is a day something happened to at least one bill in ${span(Y)}; taller marks mean more bills. Shaded: the first to the last floor vote of each year, roughly when the Legislature is in session in Albany. In January of the second year, bills that passed only one house go back to committee. Bills can be introduced, and the governor can act, all year.</p>`;
+}
+
 // Unpack the compact embedded data (see build_data.py) into one object per bill.
 function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
@@ -2635,6 +2707,7 @@ function hydrate(raw) {
   document.title = raw.current ? "Albany Bill Tracker" : `Albany Bill Tracker ${span(raw.session)}`;
   $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
+  try { renderHowCal(); } catch (e) { console.error(e); }
   const notice = sessionNotice(raw);
   $("notice").textContent = notice;
   $("notice").hidden = !notice;
