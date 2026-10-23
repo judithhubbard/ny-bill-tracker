@@ -1480,8 +1480,10 @@ function netData(sel, t, lawOnly) {
     return [...out.values()];
   };
   const keep = new Set();
+  // Rank ties by how many bills two members share, not by share of a sponsor's bills: a member
+  // with few bills would otherwise be everyone's "strongest" tie.
   for (const [list, n] of [[pairs(w, "co", true), sel === "B" ? 3 : 4], [pairs(cross, "x", false), 3]])
-    for (const x of nodes) list.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.share - a.share).slice(0, n).forEach((p) => keep.add(p));
+    for (const x of nodes) list.filter((p) => p.source === x.id || p.target === x.id).sort((a, b) => b.count - a.count || b.share - a.share).slice(0, n).forEach((p) => keep.add(p));
   // Members with no strong ties are still drawn, as dots on their own.
   return { nodes, links: [...keep].map((p) => ({ ...p })) };
 }
@@ -1492,7 +1494,7 @@ let netBills = "all";
 function savedNet(v) {
   if (!v) return { nodes: [], links: [] };
   const nodes = v.nodes.map(([id, label, party, n]) => ({ id, n, party, L: { id, label, house: id[0], name: label.replace(/^(Sen|Asm)\. /, "") } }));
-  return { nodes, links: v.links.map(([source, target, share, kind]) => ({ source, target, share, kind })) };
+  return { nodes, links: v.links.map(([source, target, count, kind]) => ({ source, target, count, kind })) };
 }
 function renderNet() {
   const box = $("statNet");
@@ -1526,6 +1528,9 @@ function drawNet({ nodes, links }) {
   // Dot size relative to the busiest sponsor in view, so one session and many sessions read alike.
   const maxN = Math.max(1, ...nodes.map((x) => x.n));
   const r = (x) => 3 + 9 * Math.sqrt(x.n / maxN);
+  // A tie's weight: its bill count against the strongest tie in view.
+  const maxC = Math.max(1, ...links.map((l) => l.count));
+  for (const l of links) l.share = Math.sqrt(l.count / maxC);
   // Start each party on its own side so loosely tied members don't settle in a stray spot;
   // the forces still pull members with strong cross-party ties toward the other side.
   nodes.forEach((x, i) => { x.x = W / 2 + (x.party === "R" ? 1 : -1) * W * 0.2 + Math.cos(i * 2.4) * 40; x.y = H / 2 + Math.sin(i * 2.4) * 60 + (x.L.house === "S" && netHouse === "B" ? -20 : 0); });
@@ -1545,7 +1550,7 @@ function drawNet({ nodes, links }) {
   for (const l of links) { nb.get(l.source.id).add(l.target.id); nb.get(l.target.id).add(l.source.id); }
   const last = (x) => x.L.name.split(" ").pop();
   const shape = (x) => {
-    const cls = `${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}`, t = `<title>${esc(x.L.label)}: ${num(x.n)} bills</title>`;
+    const cls = `${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}`, t = `<title>${esc(x.L.label)}: ${num(x.n)} ${netBills === "law" ? "laws" : "bills"}</title>`;
     if (x.L.house === "S" && netHouse === "B") { const s = r(x) * 1.7; return `<rect data-id="${x.id}" class="${cls}" x="${(x.x - s / 2).toFixed(1)}" y="${(x.y - s / 2).toFixed(1)}" width="${s.toFixed(1)}" height="${s.toFixed(1)}">${t}</rect>`; }
     return `<circle data-id="${x.id}" class="${cls}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${r(x).toFixed(1)}">${t}</circle>`;
   };
@@ -1568,7 +1573,10 @@ function drawNet({ nodes, links }) {
     netPinned = id;
     focus(id);
     const x = nodes.find((n) => n.id === id), L = id && LEG_BY_ID[id];
-    $("netSel").innerHTML = x ? `<b>${esc(x.L.label)}</b> · ${num(x.n)} bills · ${L && ROOT && L.slug && DATA.current ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : L ? `<a href="#" data-netbills="${esc(id)}">Their bills</a>` : ""}` : "";
+    const unit = netBills === "law" ? "laws" : "bills";
+    const ties = x ? links.filter((l) => l.source.id === id || l.target.id === id).sort((a, b) => b.count - a.count)
+      .map((l) => { const o = l.source.id === id ? l.target : l.source; return `${esc(o.L.name)} ${num(l.count)}`; }) : [];
+    $("netSel").innerHTML = x ? `<b>${esc(x.L.label)}</b> · ${num(x.n)} ${unit} · ${L && ROOT && L.slug && DATA.current ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : L ? `<a href="#" data-netbills="${esc(id)}">Their ${unit === "laws" ? "bills" : unit}</a>` : ""}${ties.length ? `<br><span class="muted">Shared ${unit}: ${ties.join(" · ")}</span>` : ""}` : "";
     if (x) find.value = x.L.label;
   };
   svg.addEventListener("click", (e) => { const c = node(e); select(c ? c.dataset.id : null); if (!c) find.value = ""; });

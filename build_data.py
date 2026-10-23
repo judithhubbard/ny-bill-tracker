@@ -1061,21 +1061,24 @@ def net_views(spons, w, cross, info, minimum=3):
                     continue
                 share = c / spons[s] if directed else c / min(spons[a], spons[s])
                 k = tuple(sorted((a, s)))
-                p = res.setdefault(k, [k[0], k[1], 0.0, kind])
+                p = res.setdefault(k, [k[0], k[1], 0.0, kind, 0])
                 p[2] = max(p[2], share)
+                p[4] += c
             return list(res.values())
         keep = {}
         groups = [(pairs(w, "co", True), 3 if sel == "B" else 4)]
         if sel == "B":
             groups.append((pairs(cross, "x", False), 3))
+        # Rank ties by how many bills two members share, not by share of a sponsor's bills:
+        # a member with few bills would otherwise be everyone's "strongest" tie.
         for lst, n in groups:
             for x in ids:
-                mine = sorted((p for p in lst if x in p[:2]), key=lambda p: -p[2])[:n]
+                mine = sorted((p for p in lst if x in p[:2]), key=lambda p: (-p[4], -p[2]))[:n]
                 for p in mine:
                     keep[(p[0], p[1], p[3])] = p
         # Members with no strong ties are drawn too, as dots on their own.
         out[sel] = {"nodes": [[k, info[k][0], info[k][1], spons[k]] for k in ids],
-                    "links": [[a, b, round(s, 3), kind] for a, b, s, kind in keep.values()]}
+                    "links": [[a, b, c, kind] for a, b, s, kind, c in keep.values()]}
     return out
 
 
