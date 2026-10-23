@@ -2651,7 +2651,7 @@ async function publishAction(btn) {
     if (what === "update") {
       msg("Updating…");
       const l = await listsApi(`/lists/${encodeURIComponent(mine.slug)}`, { method: "PUT", headers: { "X-Edit-Key": mine.editKey }, body: JSON.stringify({ title: mine.title, session: DATA.session, bills: watchCodes(), ...pubText() }) });
-      return msg(`Updated: ${num(l.bills.length)} bills, as of now.`);
+      return msg(`Published: ${num(l.bills.length)} bills.`);
     }
   } catch (e) { msg(e.message); }
 }
@@ -2659,18 +2659,18 @@ async function publishAction(btn) {
 function publishBox() {
   if (!ROOT) return "";
   const mine = myPublished();
-  if (mine) return `<div class="pubbox"><p><b>Published as “${esc(mine.title)}”</b>${mine.group ? ` · ${esc(mine.group)}` : ""}. Anyone with this link sees it:</p>
+  if (mine) return `<div class="pubbox"><p>Your published list, <b>“${esc(mine.title)}”</b>${mine.group ? ` (${esc(mine.group)})` : ""}. Share this link:</p>
     <p class="sharerow"><input type="text" readonly value="${esc(listUrl(mine.slug))}" aria-label="Published list link"> <button class="act-btn" type="button" data-pub="copy">Copy link</button></p>
-    <label class="pubintro-edit">Introduction, shown at the top of your list <textarea id="pubIntro" rows="3" maxlength="3000" placeholder="Why these bills matter, and what you're asking people to do.">${esc(pubText().intro)}</textarea></label>
-    <p class="muted">Add a note to any bill with the “Note for your published list” box on its card below.</p>
-    <p><button class="act-btn" type="button" data-pub="update">Update the published list</button> <span class="muted" id="pubMsg">Changes to your watchlist show up for others after you click this.</span></p>
-    <details class="pubmore"><summary>Edit key, to update this list from another computer${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private: anyone with it can change the list.</p>
+    <label class="pubintro-edit">Introduction (optional) <textarea id="pubIntro" rows="3" maxlength="3000" placeholder="Why these bills matter and what you'd like people to do">${esc(pubText().intro)}</textarea></label>
+    <p class="muted">You can also add a note to each bill below.</p>
+    <p><button class="act-btn primary" type="button" data-pub="update">Update</button> <span class="muted" id="pubMsg">Others see your changes once you click Update.</span></p>
+    <details class="pubmore"><summary>Edit key (for updating from another computer)${TIPI("A private code that lets you update this list. Anyone who has it can change the list, so share it only with people who keep the list with you.")}</summary><p class="muted">Keep it private. Anyone with it can change your list.</p>
       <p class="sharerow"><input type="text" readonly value="${esc(`${mine.slug} ${mine.editKey}`)}" aria-label="Edit key"> <button class="act-btn" type="button" data-pub="copykey">Copy</button> <button class="act-btn" type="button" data-pub="forget">Disconnect</button></p></details></div>`;
-  return `<details class="pubbox"><summary>Publish this list for others to follow</summary>
-    <p class="muted">A published list has its own link and changes for everyone when you update it. Publishing needs an invite code.</p>
-    <p class="pubform"><label>List name <input type="text" id="pubTitle" maxlength="120" placeholder="e.g. Priority bills, office of …"></label>
+  return `<details class="pubbox"><summary>Publish a list others can follow</summary>
+    <p class="muted">Get a lasting link that updates when you do. Requires an invite code.</p>
+    <p class="pubform"><label>List name <input type="text" id="pubTitle" maxlength="120" placeholder="e.g. Our priority bills"></label>
       <label>Invite code <input type="text" id="pubCode" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="publish">Publish</button></p>
-    <p class="pubform"><label>Already published elsewhere? Paste its edit key <input type="text" id="pubKey" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="connect">Connect</button></p>
+    <p class="pubform"><label>Updating your list from another computer? Paste your edit key <input type="text" id="pubKey" autocomplete="off"></label> <button class="act-btn" type="button" data-pub="connect">Connect</button></p>
     <p class="muted" id="pubMsg"></p></details>`;
 }
 
@@ -2781,7 +2781,7 @@ function renderWatchView() {
     card.innerHTML = `<h2>My watchlist</h2>
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
-      <p class="muted sharenote">The link holds your list as it is now. If you change your list, send a new link.</p>` : ""}
+      <p class="muted sharenote">This link is a snapshot. To share later changes, send a new link.</p>` : ""}
       ${list.length ? publishBox() : ""}`;
   }
 
@@ -2820,7 +2820,7 @@ function renderWatchView() {
       ${x.key && oddsLine(b) ? `<p class="odds">${oddsLine(b)}</p>` : ""}
       ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
       ${!x.key ? reintroAsk(b, x.stance) : ""}
-      ${!SHARED && myPublished() ? `<details class="noteedit"${pubText().notes[baseNum(b.nums[0])] ? " open" : ""}><summary>Note for your published list</summary><textarea data-pubnote="${esc(baseNum(b.nums[0]))}" rows="2" maxlength="1000" placeholder="Why this bill matters, or what to say about it.">${esc(pubText().notes[baseNum(b.nums[0])] || "")}</textarea></details>` : ""}
+      ${!SHARED && myPublished() ? `<details class="noteedit"${pubText().notes[baseNum(b.nums[0])] ? " open" : ""}><summary>Add a note</summary><textarea data-pubnote="${esc(baseNum(b.nums[0]))}" rows="2" maxlength="1000" placeholder="Why this bill matters or what to say about it">${esc(pubText().notes[baseNum(b.nums[0])] || "")}</textarea></details>` : ""}
       ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
     </article>`;
@@ -3108,14 +3108,14 @@ function wire() {
       SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
     }
   });
-  // Typing an introduction or a note saves it in this browser; "Update the published list" sends it.
+  // Typing an introduction or a note saves it in this browser; Update sends it.
   $("view-watch").addEventListener("input", (e) => {
     const t = pubText();
     if (e.target.id === "pubIntro") t.intro = e.target.value;
     else if (e.target.dataset.pubnote) { const k = e.target.dataset.pubnote; if (e.target.value.trim()) t.notes[k] = e.target.value; else delete t.notes[k]; }
     else return;
     setPubText(t);
-    if ($("pubMsg")) $("pubMsg").textContent = "Not published yet: click “Update the published list”.";
+    if ($("pubMsg")) $("pubMsg").textContent = "Not published yet. Click Update.";
   });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
   $("openNow").addEventListener("click", (e) => {
