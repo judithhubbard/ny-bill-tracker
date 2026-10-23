@@ -249,6 +249,16 @@ def committee_fate(live):
     return "none"
 
 
+def main_topic(live, topics):
+    """The topic of the committee a bill was first sent to: how the Legislature itself files it. Its other
+    topics come from the laws it amends and can be incidental. Falls back to its first topic."""
+    for _h, name, _left in first_committees(live):
+        for t in topics:
+            if name in TOPICS[t][1]:
+                return t
+    return topics[0] if topics else ""
+
+
 def narrow_bill(r):
     """About one place, person or group, or a naming: the bills the "leave out narrow bills" switches drop."""
     return bool(r["narrow"] or r["places"])
@@ -535,6 +545,7 @@ def load_session(session):
             "places": place_counties(lead["title"] or "", lead["summary"] or "", lead["lawCode"] or ""),
             "narrow": narrow_kind(lead["title"] or ""),
             "commFate": committee_fate(live),
+            "mainTopic": main_topic(live, topics),
             "local": "local" in topics or bool(set(laws) & LOCAL_LAWS) or bool(LOCAL_WORDS.search(text)),
             "senDeleg": any(b["chamber"] == "SENATE" and b["district"] in deleg.get("SENATE", ()) for b in live),
             "asmDeleg": any(b["chamber"] == "ASSEMBLY" and b["district"] in deleg.get("ASSEMBLY", ()) for b in live),
@@ -1462,7 +1473,7 @@ def main():
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"]),
                          [[S(c), w] for c, w in agenda_of(r)],
-                         [(COUNTIES + ["?"]).index(c) for c in r["places"]]])
+                         [(COUNTIES + ["?"]).index(c) for c in r["places"]], r["mainTopic"]])
 
         data = {
             "session": session,
