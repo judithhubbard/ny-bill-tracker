@@ -1502,6 +1502,10 @@ def main():
             # On GitHub Pages the data is a separate file the page fetches, so the
             # per-legislator pages can share it.
             os.makedirs(os.path.join(GITHUB, "data"), exist_ok=True)
+            # Tab and home-screen icons, at the site's root.
+            for name in os.listdir(os.path.join(HERE, "static")):
+                with open(os.path.join(HERE, "static", name), "rb") as src, open(os.path.join(GITHUB, name), "wb") as dst:
+                    dst.write(src.read())
             with open(os.path.join(GITHUB, "data", f"{session}.json"), "w") as f:
                 f.write(payload)
         template = open(TEMPLATE).read()
