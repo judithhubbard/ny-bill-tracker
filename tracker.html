@@ -1301,7 +1301,10 @@ function plainAction(t) {
 
 function statusText(b) {
   const D = b.dates, live = DATA.current;
-  let t = TEXT.long[b.stage], small = `Last action ${fmtDate(b.last)}`;
+  // Say what the latest action was ("Amended by the sponsor"), not just when.
+  const latest = b.vers.flatMap((v) => v.actions).filter(([d]) => d === b.last).map(([, t]) => t).find((t) => !/^PRINT NUMBER/.test(t));
+  const what = latest ? plainAction(latest).replace(/; back to .*$/, "").replace(/ \(calendar \d+\)$/, "") : "Last action";
+  let t = TEXT.long[b.stage], small = `${what} · ${fmtDate(b.last)}`;
   if (b.stage === 0) {
     t = `${live ? "In" : "Died in"} ${b.comm ? `the ${commPlain(b.comm)} Committee` : "committee"}`;
     const passed = D.passS ? "Senate" : D.passA ? "Assembly" : null;
