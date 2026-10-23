@@ -1662,7 +1662,7 @@ function oddsLine(b) {
   const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
   // The same figure for each of the bill's topics, where past sessions had enough such bills.
   const rates = b.topics.map((t) => { const o = DATA.insights?.odds?.[`${t}|${kind}`]?.[point]; return o && o[0] >= 40 ? `${esc(TOPICS[t])} ${pctOf(o[1], o[0])}%` : ""; }).filter(Boolean);
-  const byTopic = rates.length ? ` By topic, of those that ${label}: ${rates.join(" · ")}.` : "";
+  const byTopic = rates.length ? `<br>By topic, of those that ${label}: ${rates.join(" · ")}.` : "";
   // Not yet requested: compare with bills still waiting on this same date in past sessions.
   const w = DATA.insights?.waiting;
   const [wn, wl] = w?.kinds?.[kind] || [w?.n, w?.law];
@@ -1670,7 +1670,7 @@ function oddsLine(b) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
     const wt = b.topics.map((t) => { const x = w.kinds?.[`${t}|${kind}`]; return x && x[0] >= 30 ? `${esc(TOPICS[t])} ${pctOf(x[1], x[0])}%` : ""; }).filter(Boolean);
-    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.${wt.length ? ` By topic: ${wt.join(" · ")}.` : ""}`;
+    return `Past sessions: ${pctOf(wl, wn)}% of ${like} still waiting for the governor's request on ${day} became law.${wt.length ? `<br>By topic: ${wt.join(" · ")}.` : ""}`;
   }
   return `Past sessions: ${pctOf(law, n)}% of ${like} that ${label} became law.${byTopic}`;
 }
