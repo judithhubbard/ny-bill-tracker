@@ -553,6 +553,14 @@ table.st col.c-m { width: 80px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.wcard details.morebill { border: 0; border-top: 1px solid var(--rule); background: none; box-shadow: none; margin: 4px 0 0; border-radius: 0; }
+.wcard details.morebill > summary { display: block; padding: 8px 0 0; background: none; border: 0; font-weight: 600; font-size: 13px; color: var(--navy); }
+.wcard details.morebill > summary::before { content: "▸ "; }
+.wcard details.morebill[open] > summary::before { content: "▾ "; }
+.wcard details.morebill > .detail { padding: 8px 0 0; }
+.do.reintro { border-left: 3px solid var(--navy); padding: 6px 0 6px 12px; display: grid; gap: 3px; }
+.do.reintro p { margin: 0; font-size: 14px; }
+.do.reintro .reach { font-size: 13px; color: var(--ink-2); }
 .next .mainask { background: var(--gold-soft); border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
 .next .mainask ul { margin: 0; }
 .next .mainask li.key { border-left: 0; padding-left: 0; }
@@ -1493,6 +1501,7 @@ function nextSteps(b) {
     what += `<p class="when">On the agenda: ${esc(meet.committee)} Committee, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>`;
   }
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
+  if (!plan.actionable) what += reintroAsk(b, panelStance(b));
   const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
   if (plan.actionable && who) what += `<p class="hint">Asks if you <span class="seg">${["support", "oppose"].map((s) => `<button type="button" data-panelstance="${s}" data-idx="${b.idx}" aria-pressed="${(plan.opp ? "oppose" : "support") === s}">${s}</button>`).join("")}</span> this bill</p>`;
   // The person who decides the next step comes first, set apart; everyone else folds away.
@@ -2419,6 +2428,21 @@ function keyAction(b, stance) {
 }
 
 const titleOf = (p) => (p.gov ? "Governor's office" : `${p.house === "S" ? "Sen." : "Asm."} ${p.name}`);
+// A bill that's out of time this session can come back next session only if its sponsors reintroduce it.
+function reintroAsk(b, stance) {
+  if (stance === "oppose" || !floorVotesOver() || b.stage >= 3) return "";
+  const people = DATA.contacts?.people || {};
+  const infoFor = (name) => people[name] || Object.entries(people).find(([n]) => lastName(n) === lastName(name))?.[1] || {};
+  const sponsors = b.vers.filter((v) => v.sponsor).map((v) => ({ name: v.sponsor, house: v.p[0], info: infoFor(v.sponsor) }));
+  if (!sponsors.length) return "";
+  // A bill with a version in only one house needs a sponsor in the other to pass; your legislator there could carry it.
+  const missing = ["S", "A"].find((h) => !b.vers.some((v) => v.p[0] === h));
+  const rep = missing && votePeople().find((L) => L.house === missing && !sponsors.some((p) => p.house === missing));
+  const carry = rep ? `<p class="who">It has no ${HOUSE[missing]} version. Ask ${esc(titleOf({ house: rep.house, name: rep.name }))} to sponsor one.</p>
+    <p class="reach">${reachOf({ house: rep.house, name: rep.name, info: infoFor(rep.apiName || rep.name) })}</p>` : "";
+  return `<div class="do reintro"><p class="who"><b>Next session</b> Ask the sponsor${sponsors.length > 1 ? "s" : ""} to reintroduce it in January ${DATA.session + 2}.</p>
+    ${sponsors.map((p) => `<p class="reach"><b>${esc(titleOf(p))}</b> ${reachOf(p)}</p>`).join("")}${carry}</div>`;
+}
 function reachOf(p) {
   if (p.gov) return `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`;
   const i = p.info || {};
@@ -2476,6 +2500,7 @@ function renderWatchView() {
       ${action}
       ${x.key && oddsLine(b) ? `<p class="odds">${oddsLine(b)}</p>` : ""}
       ${!x.key && x.plan?.reason ? `<p class="why">${esc(x.plan.reason)}</p>` : ""}
+      ${!x.key ? reintroAsk(b, x.stance) : ""}
       ${SHARED ? "" : logBlock(x)}
       <details class="bill morebill" data-idx="${b.idx}"><summary>More about this bill</summary><div class="detail"></div></details>
     </article>`;
@@ -3035,6 +3060,11 @@ function hydrate(raw) {
 }
 
 wire();
+// Embedded data on the Claude copies is gzipped and base64-encoded; the browser unpacks it.
+async function unpack(b64) {
+  const bytes = Uint8Array.from(atob(b64.trim()), (c) => c.charCodeAt(0));
+  return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+}
 // The data is either embedded in the page or, on GitHub Pages, in a shared file next to it.
 (async () => {
   try {
@@ -3043,7 +3073,9 @@ wire();
     ROOT = el.dataset.root || "";
     const meta = document.querySelector('meta[name="abt-preset"]');
     if (meta) PRESET = JSON.parse(meta.content);
-    const raw = el.dataset.src ? await (await fetch(el.dataset.src)).json() : JSON.parse(el.textContent);
+    const raw = el.dataset.src ? await (await fetch(el.dataset.src)).json()
+      : el.dataset.enc === "gzip64" ? JSON.parse(await unpack(el.textContent))
+      : JSON.parse(el.textContent);
     hydrate(decode(raw));
   } catch (err) {
     $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;

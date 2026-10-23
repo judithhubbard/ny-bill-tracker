@@ -14,7 +14,7 @@ Usage: python3 build_data.py            builds every session found in data/
                                         index.html for the current session, <year>.html
                                         for the others, linked to each other
 """
-import glob, gzip, json, os, re, sys
+import base64, glob, gzip, json, os, re, sys
 from fetch_contacts import committee_key, name_key, senate_url
 from collections import Counter, defaultdict
 
@@ -1469,7 +1469,10 @@ def main():
                                         f"<title>Albany Bill Tracker {session}–{str(session + 1)[2:]}</title>", 1)
         marker = '<script type="application/json" id="bill-data"></script>'
         assert marker in template, "template is missing the data marker"
-        html = template.replace(marker, f'<script type="application/json" id="bill-data">{payload}</script>')
+        # The Claude copies carry the data gzipped and base64-encoded (about a third the size), unpacked in the
+        # browser; GitHub Pages pages load the shared JSON file instead, which the server compresses anyway.
+        packed = base64.b64encode(gzip.compress(payload.encode("utf-8"), 9, mtime=0)).decode("ascii")
+        html = template.replace(marker, f'<script type="application/octet-stream" id="bill-data" data-enc="gzip64">{packed}</script>')
         if GITHUB:
             out = os.path.join(GITHUB, "index.html" if session == current else f"{session}.html")
             html = github_page(template.replace(marker, f'<script type="application/json" id="bill-data" data-src="data/{session}.json" data-root="{SITE_URL}"></script>'))
