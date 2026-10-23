@@ -780,8 +780,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
           <label for="homeCounty">Your county</label>
           <select id="homeCounty"></select>
           <span class="subsel" id="youReps"></span>
-          <label class="inline hidebox"><input type="checkbox" id="hideOther"> <span>Hide bills only about other counties <span class="hc" id="hideOtherN"></span></span></label>
-          <label class="inline hidebox"><input type="checkbox" id="hideNarrow"> <span>Hide bills for one person or group, and road namings <span class="hc" id="hideNarrowN"></span></span></label>
+          <label class="inline hidebox" title="Hides bills only about other counties, bills for one person or group, and road namings"><input type="checkbox" id="nearby"> <span>Only bills that could affect <span id="nearbyCounty">your county</span> <span class="hc" id="nearbyN"></span></span></label>
         </div>
         <div class="group">
           <div class="group-h">Where it is now</div>
@@ -1013,16 +1012,17 @@ const STAGE_TEXT = {
 };
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "hideOther", "hideNarrow", "voted", "changed"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", hideOther: false, hideNarrow: false, voted: "", changed: "", shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "nearby", "voted", "changed"];
+const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", nearby: false, voted: "", changed: "", shown: PAGE });
 
 // "Places": leave out bills only about other counties, or keep only bills about yours.
 // A bill's places are the counties it's only about ([] for bills not about specific places).
 let HOME = "Tompkins";
 try { HOME = localStorage.getItem("abt:county") || HOME; } catch (e) {}
 // The two "hide" checkboxes. A bill's places are the counties it's only about ([] if it isn't about specific places).
-const elsewhere = (b) => b.places.length > 0 && !b.places.includes(HOME);
-const narrowElsewhere = (b) => !!b.narrow && !b.places.includes(HOME);
+// "Only bills that could affect your county": statewide bills plus bills about your county; hides bills only
+// about other counties, bills for one person or group, and road namings.
+const farAway = (b) => (b.places.length > 0 || !!b.narrow) && !b.places.includes(HOME);
 
 // The day of this browser's previous visit, for "new activity since your last visit".
 let LAST_VISIT = "";
@@ -1181,8 +1181,7 @@ function matches(b, skip) {
   if (skip !== "hist" && state.hist && !HIST_FILTERS[state.hist].test(b)) return false;
   if (skip !== "intro" && state.intro && b.intro !== +state.intro) return false;
   if (skip !== "party" && state.party && b.parties !== state.party) return false;
-  if (skip !== "hideOther" && state.hideOther && elsewhere(b)) return false;
-  if (skip !== "hideNarrow" && state.hideNarrow && narrowElsewhere(b)) return false;
+  if (skip !== "nearby" && state.nearby && farAway(b)) return false;
   if (skip !== "voted" && state.voted && !votedTest(state.voted)(b)) return false;
   if (skip !== "changed" && state.changed && !CHANGED[state.changed].test(b)) return false;
   if (state.q) {
@@ -2475,8 +2474,7 @@ function activeFilters() {
   if (state.hist) out.push(["hist", null, "History", opt("hist", state.hist)]);
   if (state.intro) out.push(["intro", null, "Introduced", state.intro]);
   if (state.voted) out.push(["voted", null, "Vote", opt("voted", state.voted)]);
-  if (state.hideOther) out.push(["hideOther", null, "Hiding", `bills only about counties other than ${HOME}`]);
-  if (state.hideNarrow) out.push(["hideNarrow", null, "Hiding", "bills for one person or group, and road namings"]);
+  if (state.nearby) out.push(["nearby", null, "Only", `bills that could affect ${HOME} County`]);
   if (state.changed) out.push(["changed", null, "New activity", CHANGED[state.changed].label()]);
   return out;
 }
@@ -2815,10 +2813,8 @@ function fillSelects() {
   if ($("homeCounty").value !== HOME) $("homeCounty").value = HOME;
   for (const id of ["who", "law", "voted", "changed", ...MORE_KEYS]) $(id)?.classList.toggle("on", !!state[id]);
   // How many more bills each "hide" box takes out, given the other filters.
-  for (const [id, test] of [["hideOther", elsewhere], ["hideNarrow", narrowElsewhere]]) {
-    const n = BILLS.filter((b) => matches(b, id) && test(b) && (id !== "hideNarrow" || !state.hideOther || !elsewhere(b))).length;
-    $(`${id}N`).textContent = `(${num(n)})`;
-  }
+  $("nearbyCounty").textContent = `${HOME} County`;
+  $("nearbyN").textContent = `(hides ${num(BILLS.filter((b) => matches(b, "nearby") && farAway(b)).length)})`;
   const more = MORE_KEYS.filter((k) => state[k]).length;
   $("moreCount").textContent = more ? `${more} active` : "";
   if (more) $("moreFilters").open = true;
@@ -2890,7 +2886,7 @@ function showView(v, push = true) {
 function syncControls() {
   $("q").value = state.q;
   for (const id of ["law", "comm", "progress", "house", "hist", "intro", "sort", "party", "voted", "changed"]) $(id).value = state[id];
-  for (const id of ["whoCos", "hideOther", "hideNarrow"]) $(id).checked = !!state[id];
+  for (const id of ["whoCos", "nearby"]) $(id).checked = !!state[id];
   $("who").value = state.who && LEG_BY_ID[state.who] ? LEG_BY_ID[state.who].label : "";
 }
 
@@ -2918,7 +2914,7 @@ function wire() {
       if (next !== state.law) { state.law = next; state.shown = PAGE; render(); }
     }, 200);
   });
-  for (const id of ["whoCos", "hideOther", "hideNarrow"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
+  for (const id of ["whoCos", "nearby"]) $(id).addEventListener("change", (e) => { state[id] = e.target.checked; state.shown = PAGE; render(); });
   $("who").addEventListener("input", (e) => {
     const text = e.target.value.trim().toLowerCase();
     const hit = LEGS.find((L) => L.label.toLowerCase() === text);
@@ -3291,7 +3287,7 @@ function hydrate(raw) {
   if (m && +m[1] === raw.session) SHARED = new Map(m[2].split(".").filter(Boolean).map((n) => (n.startsWith("-") ? [n.slice(1), "oppose"] : [n, "support"])));
   const saved = recall("filters");
   if (saved) {
-    if (saved.area === "near" || saved.area === "broad") { saved.hideOther = true; saved.hideNarrow = saved.area === "broad"; }
+    if (saved.area === "near" || saved.area === "broad" || saved.hideOther || saved.hideNarrow) saved.nearby = true;
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
     if (state.hist && !(state.hist in HIST_FILTERS)) state.hist = "";
     if (state.progress && !(state.progress in PROGRESS)) state.progress = "";
