@@ -1988,20 +1988,22 @@ function whoData() {
   const legs = LEGS.filter((L) => houses.includes(L.house));
   const byName = new Map(legs.map((L) => [`${L.house}:${L.apiName}`, L]));
   const topics = Object.keys(DATA.topics).filter((t) => t !== "const");
-  const per = new Map(); // id -> { L, n, laws, w: {topic: weight} }
+  // Counts cover all their bills (matching their page); placement uses only subject bills, since
+  // bills about one place, person or group say little about a legislator's interests.
+  const per = new Map(); // id -> { L, n (all bills), laws (all), placed (subject bills), w: {topic: weight} }
   for (const b of BILLS) {
-    if (isNarrow(b)) continue;
-    const T = b.topics.filter((t) => topics.includes(t));
-    if (!T.length) continue;
+    const T = isNarrow(b) ? [] : b.topics.filter((t) => topics.includes(t));
     for (const v of b.vers) {
       const L = byName.get(`${v.p[0]}:${v.sponsor}`);
       if (!L) continue;
-      const x = per.get(L.id) || per.set(L.id, { L, n: 0, laws: 0, w: {} }).get(L.id);
+      const x = per.get(L.id) || per.set(L.id, { L, n: 0, laws: 0, placed: 0, w: {} }).get(L.id);
       x.n++; if (b.stage === 5) x.laws++;
+      if (!T.length) continue;
+      x.placed++;
       for (const t of T) x.w[t] = (x.w[t] || 0) + 1 / T.length;
     }
   }
-  const nodes = [...per.values()].filter((x) => x.n >= 5).map((x) => {
+  const nodes = [...per.values()].filter((x) => x.placed >= 5).map((x) => {
     const tot = Object.values(x.w).reduce((s, v) => s + v, 0);
     const share = Object.fromEntries(Object.entries(x.w).map(([t, v]) => [t, v / tot]));
     return { ...x, id: x.L.id, share, party: /Democrat/.test(x.L.party || "") ? "D" : /Republican/.test(x.L.party || "") ? "R" : "",
@@ -2085,10 +2087,11 @@ function whoPanel() {
   if (selLeg) {
     const L = selLeg.L, top = order.filter((t) => selLeg.share[t]).sort((a, b) => selLeg.share[b] - selLeg.share[a]).slice(0, 8);
     const scale = Math.max(...top.map((t) => Math.max(selLeg.share[t], avg[t]))) * 1.1;
+    const other = selLeg.n - selLeg.placed;
     return `<h3>${esc(L.label)}</h3><p>${num(selLeg.n)} bills this session · ${num(selLeg.laws)} became law · ${ROOT && L.slug ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : `<button type="button" class="linkish" data-whobills="${esc(L.id)}">Their bills</button>`}</p>
       ${selLeg.split ? `<p class="muted">Split between ${esc(DATA.topics[selLeg.split[0]])} and ${esc(DATA.topics[selLeg.split[1]])}, which sit far apart on the ring, so the dot lands near the middle.</p>` : ""}
       <div class="whobars">${top.map((t) => `<div class="wb"><span>${esc(DATA.topics[t])}</span><span class="bar"><i style="width:${((selLeg.share[t] / scale) * 100).toFixed(1)}%"></i><b style="left:${((avg[t] / scale) * 100).toFixed(1)}%" title="Typical legislator: ${pct(avg[t])}"></b></span><span class="v">${pct(selLeg.share[t])}</span></div>`).join("")}</div>
-      <p class="note">Share of their bills on each topic. The gold tick marks the typical legislator.</p>`;
+      <p class="note">Share of their bills on each topic${other ? `, counting ${num(selLeg.placed)} of their ${num(selLeg.n)} bills and leaving out ${num(other)} about one place, person or group` : ""}. The gold tick marks the typical legislator.</p>`;
   }
   if (selTopic) {
     const lead = nodes.filter((x) => x.w[selTopic]).sort((a, b) => b.w[selTopic] - a.w[selTopic]);
@@ -2112,7 +2115,7 @@ function renderWho() {
     <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span><span>■ Senate · ● Assembly</span><span>Bigger dots: more bills became law</span><span><i class="k-split"></i>Split between two distant topics</span></p>
     <div class="whowrap"><div class="who"><svg id="whoSvg" viewBox="0 0 ${WHO_W} ${WHO_H}" class="${whoSel ? "focus" : ""}" role="img" aria-label="Legislators placed by the topics of their bills">${whoSvg(anchor)}</svg></div>
       <div class="whosel">${whoPanel()}</div></div>
-    <p class="note">${span(DATA.session)} session${DATA.current ? " so far" : ""}, bills each legislator sponsors (not co-sponsors), leaving out bills about one place, person or group. Legislators with fewer than 5 such bills are left out. Topics are ordered so that neighbors often share bills; a dot's place depends on that order, which is why you can rearrange it.</p>`;
+    <p class="note">${span(DATA.session)} session${DATA.current ? " so far" : ""}, bills each legislator sponsors (not co-sponsors). Bills about one place, person or group count toward each legislator's totals and dot size but not where the dot sits. Legislators with fewer than 5 subject bills are left out. Topics are ordered so that neighbors often share bills; a dot's place depends on that order, which is why you can rearrange it.</p>`;
 }
 // Dragging a topic: it takes the slot nearest the pointer, and the dots glide to their new places.
 function whoDrag(svg, t, e) {
