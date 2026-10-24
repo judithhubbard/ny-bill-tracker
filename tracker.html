@@ -512,6 +512,7 @@ table.st col.c-m { width: 80px; }
 .wcard.open .wask { display: none; }
 .wcard .wask { margin: 0; font-size: 14px; background: var(--gold-soft); border-radius: 6px; padding: 6px 10px; justify-self: start; max-width: 100%; }
 .wcard .wwhen { margin: 0; font-size: 12.5px; color: var(--ink-2); }
+.wcard .wtwin { margin: 0; font-size: 13.5px; background: var(--chip); border-radius: 6px; padding: 6px 10px; justify-self: start; }
 .wcard .wlogged { margin: 0; font-size: 12.5px; color: var(--signed); font-weight: 600; }
 .wcard .wlogged::before { content: "✓ "; }
 .spill { font: 600 12.5px var(--body); border-radius: 999px; padding: 3px 10px; background: var(--pip-off); color: var(--ink); white-space: nowrap; }
@@ -2594,6 +2595,20 @@ function verBlock(v) {
   </div>`;
 }
 
+// The date line on a watchlist card, saying what the date is.
+function whenLine(b) {
+  const D = b.dates;
+  if (b.stage === 2 && b.passedIn) return esc(`Passed the ${b.passedIn} ${fmtDate(b.passedIn === "Senate" ? D.passS : D.passA)}`);
+  if (b.stage === 5 && D.signed) return esc(`Signed ${fmtDate(D.signed)}`);
+  if (b.stage === 6 && D.vetoed) return esc(`Vetoed ${fmtDate(D.vetoed)}`);
+  return statusText(b).match(/<small>(.*)<\/small>/)?.[1] || "";
+}
+// Near-duplicate bills, named on the watchlist card so both versions can be followed.
+function twinLine(b) {
+  const twins = b.similar.filter((x) => x.s >= 70).map(({ j }) => BILLS[j]);
+  if (!twins.length) return "";
+  return `<p class="wtwin">Nearly the same as ${twins.map((o) => `<button type="button" class="linkish" data-bill="${esc(baseNum(o.nums[0]))}">${esc(o.nums.join(" / "))}</button> (${esc(TEXT.pipe[o.stage].toLowerCase())})`).join(", ")}</p>`;
+}
 // Other bills this session on the same subject, closest first.
 function similarBlock(b) {
   if (!b.similar.length) return "";
@@ -3077,7 +3092,8 @@ function renderWatchView() {
         ${logged ? `<p class="wlogged">${num(logged)} action${logged === 1 ? "" : "s"} logged</p>` : ""}
       </div>
       <div class="wbody">
-      <p class="wwhen">${statusText(b).match(/<small>(.*)<\/small>/)?.[1] || ""}</p>
+      <p class="wwhen">${whenLine(b)}</p>
+      ${twinLine(b)}
       ${partyTag(b) ? `<div class="tags">${partyTag(b)}</div>` : ""}
       ${summary}
       ${action}
