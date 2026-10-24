@@ -36,7 +36,7 @@ ONLY = [int(a) for a in ARGS] or SESSIONS
 SITE_URL = os.environ.get("SITE_URL", "https://albanybilltracker.org/")
 # Visitor counts on the public site only (both are public values that appear in the page source).
 # Cloudflare Web Analytics: the token from its JS snippet. GoatCounter: the site code, as in <code>.goatcounter.com.
-CF_ANALYTICS_TOKEN = ""
+CF_ANALYTICS_TOKEN = "4124cfe282c84c29990753f76caa2319"
 GOATCOUNTER_CODE = "albanybilltracker"
 
 
