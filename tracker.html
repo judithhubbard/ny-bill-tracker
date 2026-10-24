@@ -320,6 +320,43 @@ table.oc th { vertical-align: bottom; }
 .vtrack .tick { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 1px var(--paper); }
 .vtrack .tick.a { background: var(--navy); }
 .net svg { display: block; max-width: 900px; }
+.whowrap { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .whowrap { grid-template-columns: minmax(0, 1fr); } }
+.who svg { display: block; width: 100%; height: auto; }
+.who .ring { fill: none; stroke: var(--rule); stroke-dasharray: 3 4; }
+.who circle[data-whol], .who rect[data-whol] { fill: var(--ink-2); stroke: var(--paper); stroke-width: 1; cursor: pointer; }
+.who .dem { fill: #3b6fd1; stroke: #3b6fd1; } .who .rep { fill: #c8423a; stroke: #c8423a; }
+.who circle[data-whol].dem, .who rect[data-whol].dem { fill: #3b6fd1; stroke: var(--paper); }
+.who circle[data-whol].rep, .who rect[data-whol].rep { fill: #c8423a; stroke: var(--paper); }
+.who line { stroke-opacity: .45; stroke-linecap: round; }
+.who svg.focus [data-whol]:not(.on) { opacity: .14; }
+.who .tlab { cursor: pointer; }
+.who .tlab circle { fill: var(--sheet); stroke: var(--navy); stroke-width: 2; }
+.who .tlab text { font: 600 15px var(--body); fill: var(--ink); }
+.who .tlab .abbr { display: none; }
+@media (max-width: 600px) { .who .tlab text { font-size: 21px; } .who .tlab .full { display: none; } .who .tlab .abbr { display: inline; } }
+.who .tlab:hover text, .who .tlab.on text, .who .tlab.hit text { fill: var(--navy); text-decoration: underline; }
+.who .tlab.on circle, .who .tlab.hit circle { fill: var(--gold); stroke: var(--gold); }
+.whosel { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; display: grid; gap: 8px; }
+.whosel h3 { margin: 0; font: 700 16px var(--body); }
+.whosel p { margin: 0; }
+.whobars { display: grid; gap: 6px; }
+.wb { display: grid; grid-template-columns: minmax(0, 1fr) 90px 34px; gap: 6px; align-items: center; font-size: 12.5px; }
+.wb .bar { position: relative; height: 8px; background: var(--pip-off); border-radius: 4px; }
+.wb .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--navy); border-radius: 4px; }
+.wb .bar b { position: absolute; top: -4px; bottom: -4px; width: 3px; background: var(--gold); margin-left: -1.5px; border-radius: 1px; }
+.wb .v { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.wholead { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.tcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.tcard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; font-size: 13.5px; }
+.tcard h3 { margin: 0; font: 700 15px var(--body); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.tcard .times { font: 700 18px var(--display); color: var(--gold); }
+.tcard p { margin: 0; }
+.tcard .muted { color: var(--ink-2); font-size: 12.5px; }
+.spark .ln { fill: none; stroke-width: 2; }
+.spark .area { stroke: none; opacity: .15; }
+.spark .ln.new { stroke: var(--gold); } .spark .area.new, .spark circle.new { fill: var(--gold); }
+.spark .ln.old { stroke: var(--ink-2); stroke-dasharray: 3 3; } .spark circle.old { fill: var(--ink-2); }
 .repfind { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin: 8px 0 2px; }
 .repfind label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--ink-2); }
 .repfind input { width: min(420px, 80vw); }
@@ -972,6 +1009,8 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
       <button type="button" data-sec="statPersist">Repeat tries</button>
       <button type="button" data-sec="statCosp">Co-sponsors and party</button>
       <button type="button" data-sec="statNet" id="statNetBtn" hidden>Who works with whom</button>
+      <button type="button" data-sec="statWho" id="statWhoBtn" hidden>Who works on what</button>
+      <button type="button" data-sec="statTrend">What's changing</button>
       <button type="button" data-sec="statSessions">By session</button>
     </nav>
     <div class="act-sec statsec" id="statOdds"></div>
@@ -980,6 +1019,8 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <div class="act-sec statsec" id="statPersist" hidden></div>
     <div class="act-sec statsec" id="statCosp" hidden></div>
     <div class="act-sec statsec" id="statNet" hidden></div>
+    <div class="act-sec statsec" id="statWho" hidden></div>
+    <div class="act-sec statsec" id="statTrend" hidden></div>
     <section class="act-sec statsec" id="statSessions" hidden aria-labelledby="ocHead">
       <h2 id="ocHead">Outcomes by session</h2>
       <div class="tablewrap"><table class="oc" id="ocTable"></table></div>
@@ -1928,6 +1969,171 @@ function showStatSec(id) {
   for (const b of document.querySelectorAll("#statTabs button")) b.setAttribute("aria-pressed", b.dataset.sec === id);
   try { localStorage.setItem("abt:statsec", id); } catch (e) {}
   if (id === "statNet") renderNet();
+  if (id === "statWho") renderWho();
+  if (id === "statTrend") renderTrends();
+}
+
+// ---- Who works on what: each legislator is a dot pulled toward the topics of the bills they
+// sponsor this session. Topics sit around a ring, neighbors being topics that often share bills.
+let whoHouse = "B", whoSel = null; // whoSel: { kind: "leg", id } or { kind: "topic", t }
+function whoData() {
+  const houses = whoHouse === "B" ? ["S", "A"] : [whoHouse];
+  const legs = LEGS.filter((L) => houses.includes(L.house));
+  const byName = new Map(legs.map((L) => [`${L.house}:${L.apiName}`, L]));
+  const topics = Object.keys(DATA.topics).filter((t) => t !== "const");
+  const per = new Map(); // id -> { L, n, laws, w: {topic: weight} }
+  const co = Object.fromEntries(topics.map((t) => [t, Object.fromEntries(topics.map((u) => [u, 0]))]));
+  for (const b of BILLS) {
+    if (isNarrow(b)) continue;
+    const T = b.topics.filter((t) => topics.includes(t));
+    if (!T.length) continue;
+    for (const t of T) for (const u of T) if (t !== u) co[t][u]++;
+    for (const v of b.vers) {
+      const L = byName.get(`${v.p[0]}:${v.sponsor}`);
+      if (!L) continue;
+      const x = per.get(L.id) || per.set(L.id, { L, n: 0, laws: 0, w: {} }).get(L.id);
+      x.n++; if (b.stage === 5) x.laws++;
+      for (const t of T) x.w[t] = (x.w[t] || 0) + 1 / T.length;
+    }
+  }
+  // Ring order: start with the biggest topic, then keep adding the topic that most often shares bills with the last one.
+  const size = (t) => [...per.values()].reduce((s, x) => s + (x.w[t] || 0), 0);
+  const order = [topics.slice().sort((a, b) => size(b) - size(a))[0]];
+  while (order.length < topics.length) {
+    const last = order[order.length - 1];
+    order.push(topics.filter((t) => !order.includes(t)).sort((a, b) => co[last][b] - co[last][a])[0]);
+  }
+  const nodes = [...per.values()].filter((x) => x.n >= 5).map((x) => {
+    const tot = Object.values(x.w).reduce((s, v) => s + v, 0);
+    const share = Object.fromEntries(Object.entries(x.w).map(([t, v]) => [t, v / tot]));
+    return { ...x, id: x.L.id, share, party: /Democrat/.test(x.L.party || "") ? "D" : /Republican/.test(x.L.party || "") ? "R" : "" };
+  });
+  // Typical share of each topic, for comparison in a legislator's breakdown.
+  const avg = Object.fromEntries(order.map((t) => [t, nodes.reduce((s, x) => s + (x.share[t] || 0), 0) / (nodes.length || 1)]));
+  return { order, nodes, avg };
+}
+function renderWho() {
+  const box = $("statWho");
+  if (!DATA.current || !LEGS.length) { box.innerHTML = ""; return; }
+  const { order, nodes, avg } = whoData();
+  const W = 860, H = 700, cx = W / 2, cy = H / 2, R = 250;
+  const anchor = Object.fromEntries(order.map((t, i) => {
+    const a = -Math.PI / 2 + (2 * Math.PI * i) / order.length;
+    return [t, { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a }];
+  }));
+  // Each dot's place: the average of its topics' positions, weighted by both how much of their bills a
+  // topic takes and how unusual that is for a legislator, so big topics that everyone works on don't
+  // pull everyone the same way, and the dot sits nearest its thickest line.
+  for (const x of nodes) {
+    // Weight: share × how unusual that share is (share ÷ typical share), sharpened.
+    const lift = Object.entries(x.share).map(([t, v]) => [t, ((v * v) / (avg[t] || 1)) ** 1.5]);
+    const tot = lift.reduce((s, [, v]) => s + v, 0) || 1;
+    x.tx = lift.reduce((s, [t, v]) => s + (v / tot) * (anchor[t].x - cx), 0);
+    x.ty = lift.reduce((s, [t, v]) => s + (v / tot) * (anchor[t].y - cy), 0);
+    x.r = Math.min(10, 3.2 + Math.sqrt(x.laws) * 1.1);
+  }
+  // Spread the crowd over the circle: the most focused legislator reaches near the ring.
+  const far = Math.max(...nodes.map((x) => Math.hypot(x.tx, x.ty)), 1);
+  for (const x of nodes) {
+    const d = Math.hypot(x.tx, x.ty), k = d ? (0.88 * R * (d / far) ** 0.7) / d : 0;
+    x.tx = cx + x.tx * k; x.ty = cy + x.ty * k; x.x = x.tx; x.y = x.ty;
+  }
+  // Nudge overlapping dots apart, keeping each close to its place.
+  for (let k = 0; k < 140; k++) {
+    for (const x of nodes) { x.x += (x.tx - x.x) * 0.08; x.y += (x.ty - x.y) * 0.08; }
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01, min = a.r + b.r + 1.2;
+      if (d < min) { const m = (min - d) / 2 / d; a.x -= dx * m; a.y -= dy * m; b.x += dx * m; b.y += dy * m; }
+    }
+  }
+  const sel = whoSel;
+  const selLeg = sel?.kind === "leg" ? nodes.find((x) => x.id === sel.id) : null;
+  const selTopic = sel?.kind === "topic" ? sel.t : null;
+  const lead = selTopic ? nodes.filter((x) => x.w[selTopic]).sort((a, b) => b.w[selTopic] - a.w[selTopic]) : [];
+  const on = (x) => (selLeg ? x === selLeg : selTopic ? (x.share[selTopic] || 0) >= 0.25 : true);
+  const lines = selLeg ? order.filter((t) => (selLeg.share[t] || 0) >= 0.04).map((t) =>
+    `<line class="${selLeg.party === "D" ? "dem" : selLeg.party === "R" ? "rep" : ""}" x1="${selLeg.x.toFixed(1)}" y1="${selLeg.y.toFixed(1)}" x2="${anchor[t].x.toFixed(1)}" y2="${anchor[t].y.toFixed(1)}" stroke-width="${(1 + selLeg.share[t] * 16).toFixed(1)}"/>`).join("") : "";
+  const label = (t) => {
+    const A = anchor[t], c = Math.cos(A.a), sn = Math.sin(A.a);
+    const x = cx + (R + 16) * c, y = cy + (R + 16) * sn;
+    const anchorAt = Math.abs(c) < 0.25 ? "middle" : c > 0 ? "start" : "end";
+    const short = { env: "Environment & energy", local: "Local government", tax: "Taxes", safety: "Public safety & courts", human: "Human services", health: "Health", edu: "Education", transp: "Transportation", labor: "Labor", housing: "Housing", ag: "Agriculture", gov: "Elections & government", biz: "Business & consumers" }[t] || DATA.topics[t];
+    const abbr = { env: "Environment", local: "Local gov't", safety: "Public safety", human: "Human services", transp: "Transport", gov: "Elections", biz: "Business" }[t] || short;
+    return `<g class="tlab${selTopic === t ? " on" : ""}${selLeg && (selLeg.share[t] || 0) >= 0.04 ? " hit" : ""}" data-whot="${t}"><circle cx="${A.x.toFixed(1)}" cy="${A.y.toFixed(1)}" r="7"/><text x="${x.toFixed(1)}" y="${(y + (sn > 0.6 ? 10 : sn < -0.6 ? -4 : 4)).toFixed(1)}" text-anchor="${anchorAt}"><tspan class="full">${esc(short)}</tspan><tspan class="abbr">${esc(abbr)}</tspan><title>${esc(DATA.topics[t])}</title></text></g>`;
+  };
+  const dots = nodes.map((x) => {
+    const cls = `${x.party === "D" ? "dem" : x.party === "R" ? "rep" : ""}${on(x) ? " on" : ""}`;
+    const t = `<title>${esc(x.L.label)}: ${num(x.n)} bills, ${num(x.laws)} became law</title>`;
+    return x.L.house === "S"
+      ? `<rect data-whol="${x.id}" class="${cls}" x="${(x.x - x.r).toFixed(1)}" y="${(x.y - x.r).toFixed(1)}" width="${(2 * x.r).toFixed(1)}" height="${(2 * x.r).toFixed(1)}">${t}</rect>`
+      : `<circle data-whol="${x.id}" class="${cls}" cx="${x.x.toFixed(1)}" cy="${x.y.toFixed(1)}" r="${x.r.toFixed(1)}">${t}</circle>`;
+  }).join("");
+  const pct = (v) => `${Math.round(v * 100)}%`;
+  let panel = `<p class="muted">Click a dot to see where that legislator's bills go, or a topic to see who leads on it.</p>`;
+  if (selLeg) {
+    const L = selLeg.L, top = order.filter((t) => selLeg.share[t]).sort((a, b) => selLeg.share[b] - selLeg.share[a]).slice(0, 8);
+    const scale = Math.max(...top.map((t) => Math.max(selLeg.share[t], avg[t]))) * 1.1;
+    panel = `<h3>${esc(L.label)}</h3><p>${num(selLeg.n)} bills this session · ${num(selLeg.laws)} became law · ${ROOT && L.slug ? `<a href="${esc(ROOT + L.slug)}/">Their page</a>` : `<button type="button" class="linkish" data-whobills="${esc(L.id)}">Their bills</button>`}</p>
+      <div class="whobars">${top.map((t) => `<div class="wb"><span>${esc(DATA.topics[t])}</span><span class="bar"><i style="width:${((selLeg.share[t] / scale) * 100).toFixed(1)}%"></i><b style="left:${((avg[t] / scale) * 100).toFixed(1)}%" title="Typical legislator: ${pct(avg[t])}"></b></span><span class="v">${pct(selLeg.share[t])}</span></div>`).join("")}</div>
+      <p class="note">Share of their bills on each topic. The gold tick marks the typical legislator.</p>`;
+  } else if (selTopic) {
+    panel = `<h3>${esc(DATA.topics[selTopic])}: who leads</h3><ol class="wholead">${lead.slice(0, 10).map((x) => `<li><button type="button" class="linkish" data-whol="${x.id}">${esc(x.L.label)}</button> <span class="muted">${num(Math.round(x.w[selTopic]))} bills · ${pct(x.share[selTopic])} of their work</span></li>`).join("")}</ol>
+      <p class="note">Bills split evenly among their topics. Highlighted dots spend at least a quarter of their bills on this topic.</p>`;
+  }
+  const names = nodes.map((x) => x.L.label).sort((a, b) => lastName(a).localeCompare(lastName(b)));
+  box.innerHTML = `<h2>Who works on what</h2>
+    <p>Each dot is a legislator, pulled toward the topics of the bills they sponsor this session. Legislators who focus on one subject sit out near it; those who spread their bills widely sit near the middle.</p>
+    <div class="commctl"><label class="commsort">Show <select data-whohouse><option value="B"${whoHouse === "B" ? " selected" : ""}>Both houses</option><option value="S"${whoHouse === "S" ? " selected" : ""}>Senate</option><option value="A"${whoHouse === "A" ? " selected" : ""}>Assembly</option></select></label>
+      <label class="commsort">Find <input type="search" id="whoFind" list="whoNames" placeholder="Type a name" autocomplete="off"></label>
+      <datalist id="whoNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist></div>
+    <p class="key"><span><i class="k-dem"></i>Democrat</span><span><i class="k-rep"></i>Republican</span><span>■ Senate · ● Assembly</span><span>Bigger dots: more bills became law</span></p>
+    <div class="whowrap"><div class="who"><svg viewBox="0 0 ${W} ${H}" class="${sel ? "focus" : ""}" role="img" aria-label="Legislators placed by the topics of their bills">
+      <circle class="ring" cx="${cx}" cy="${cy}" r="${R}"/>${lines}${order.map(label).join("")}${dots}</svg></div>
+      <div class="whosel">${panel}</div></div>
+    <p class="note">${span(DATA.session)} session${DATA.current ? " so far" : ""}, bills each legislator sponsors (not co-sponsors), leaving out bills about one place, person or group. Legislators with fewer than 5 such bills are left out.</p>`;
+}
+
+// ---- What's changing: subjects that rose or spiked across sessions, and wording that changed.
+function spark(series, cls, w = 170, h = 44, max = null) {
+  const m = max || Math.max(...series.flat(), 0.1);
+  const pts = (s) => s.map((v, i) => [(i * (w - 8)) / (s.length - 1) + 4, h - 4 - (v / m) * (h - 10)]);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${series.map((s, k) => {
+    const p = pts(s);
+    const line = p.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
+    return `${k === series.length - 1 ? `<path class="area ${cls[k]}" d="${line}L${p[p.length - 1][0].toFixed(1)},${h - 4}L4,${h - 4}Z"/>` : ""}<path class="ln ${cls[k]}" d="${line}"/><circle class="${cls[k]}" cx="${p[p.length - 1][0].toFixed(1)}" cy="${p[p.length - 1][1].toFixed(1)}" r="2.5"/>`;
+  }).join("")}</svg>`;
+}
+function renderTrends() {
+  const T = DATA.insights?.trends;
+  const box = $("statTrend");
+  if (!T) { box.innerHTML = ""; return; }
+  const S = T.sessions, first = span(S[0]), lastS = span(S[S.length - 1]);
+  const who = ([h, name]) => `${h === "S" ? "Sen." : "Asm."} ${legLink(h, name)}`;
+  const cards = T.subjects.map((x) => {
+    const p = x.per, hi = Math.max(...p), at = p.indexOf(hi);
+    const story = x.kind === "spike"
+      ? `Peaked at <b>${hi}</b> per 1,000 bills in ${span(S[at])}; <b>${p[p.length - 1]}</b> now.`
+      : `<b>${p[p.length - 1]}</b> per 1,000 bills in ${lastS}, up from ${p[0]} in ${first}.`;
+    const times = x.kind === "rise" && p[0] ? Math.round(p[p.length - 1] / p[0]) : 0;
+    return `<div class="tcard"><h3>${esc(x.label)}${times >= 2 ? ` <span class="times">${times}×</span>` : ""}</h3>${spark([p], ["new"])}
+      <p>${story}</p>
+
+      ${x.lead.length ? `<p class="muted">Most bills now: ${x.lead.map((l) => `${who(l)} (${num(l[2])})`).join(", ")}</p>` : ""}
+      <p class="muted">${num(x.laws)} of ${num(x.bills)} bills became law.</p></div>`;
+  }).join("");
+  const words = T.wording.map((x) => {
+    const max = Math.max(...x.old[1], ...(x.new ? x.new[1] : []));
+    return `<div class="tcard"><h3>${esc(x.old[0])}${x.new ? ` → ${esc(x.new[0])}` : ""}</h3>${spark(x.new ? [x.old[1], x.new[1]] : [x.old[1]], x.new ? ["old", "new"] : ["old"], 170, 44, max)}
+      <p>${esc(x.old[0])}: ${x.old[1][0]} → <b>${x.old[1][x.old[1].length - 1]}</b> per 1,000 bills${x.new ? `<br>${esc(x.new[0])}: ${x.new[1][0]} → <b>${x.new[1][x.new[1].length - 1]}</b>` : ""}</p>
+      ${x.note ? `<p class="muted">${esc(x.note)}</p>` : ""}</div>`;
+  }).join("");
+  box.innerHTML = `<h2>What's changing</h2>
+    <p>Subjects that took up a growing share of bills, ${first} to ${lastS}, counted in bill titles and summaries.</p>
+    <div class="tcards">${cards}</div>
+    <h3 class="sub">How the wording changed</h3>
+    <p class="muted">The same things, described in new words. Gray is the old wording, gold the new.</p>
+    <div class="tcards">${words}</div>
+    <p class="note">Bills per 1,000 introduced each session whose title or summary mentions the subject. Subjects were picked from an automatic scan for the phrases whose share changed most, then checked by hand. ${lastS} is still under way.</p>`;
 }
 
 // ---- Who works with whom: a co-sponsorship network for one house, this session ----
@@ -3474,6 +3680,23 @@ function wire() {
   $("statGeneral").addEventListener("change", (e) => { STAT_GENERAL = e.target.checked; renderStats(); });
   $("homeCounty").addEventListener("change", (e) => setCounty(e.target.value));
   for (const id of ["statTabs"]) $(id).addEventListener("click", (e) => { const b = e.target.closest("[data-sec]"); if (b) showStatSec(b.dataset.sec); });
+  $("statWho").addEventListener("click", (e) => {
+    const l = e.target.closest("[data-whol]"), t = e.target.closest("[data-whot]"), bills = e.target.closest("[data-whobills]");
+    if (bills) { Object.assign(state, blank()); state.who = bills.dataset.whobills; ONE = null; syncControls(); showView("bills"); render(); return; }
+    if (l) whoSel = whoSel?.kind === "leg" && whoSel.id === l.dataset.whol ? null : { kind: "leg", id: l.dataset.whol };
+    else if (t) whoSel = whoSel?.kind === "topic" && whoSel.t === t.dataset.whot ? null : { kind: "topic", t: t.dataset.whot };
+    else if (e.target.closest("svg")) whoSel = null;
+    else return;
+    renderWho();
+  });
+  $("statWho").addEventListener("change", (e) => {
+    if (e.target.matches("[data-whohouse]")) { whoHouse = e.target.value; whoSel = null; renderWho(); return; }
+    if (e.target.id === "whoFind") {
+      const q = e.target.value.trim().toLowerCase();
+      const L = LEGS.find((x) => x.label.toLowerCase() === q) || LEGS.filter((x) => x.label.toLowerCase().includes(q)).slice(0, 2).reduce((a, x, i, arr) => (arr.length === 1 ? x : a), null);
+      if (L) { whoSel = { kind: "leg", id: L.id }; renderWho(); }
+    }
+  });
   $("statComm").addEventListener("click", (e) => { if (e.target.closest("[data-commall]")) { commAll = !commAll; renderStats(); } });
   $("myReps").addEventListener("submit", (e) => { e.preventDefault(); const a = $("repAddr").value.trim(); if (a) lookUpReps(a); else $("repMsg").textContent = "Enter a street address, then Look up."; });
   $("myReps").addEventListener("change", (e) => {
@@ -3917,9 +4140,10 @@ function hydrate(raw) {
   renderOpenNow();
   // The current page draws its network live; past pages carry one worked out by the build.
   $("statNetBtn").hidden = !((DATA.current && LEGS.length) || DATA.network);
+  $("statWhoBtn").hidden = !(DATA.current && LEGS.length);
   // Claude artifact pages can't hand visitors a file; the download works on GitHub Pages.
   $("csv").hidden = !ROOT;
-  try { const s = localStorage.getItem("abt:statsec"); if (s && $(s) && !(s === "statNet" && $("statNetBtn").hidden)) statSec = s; } catch (e) {}
+  try { const s = localStorage.getItem("abt:statsec"); if (s && $(s) && !(s === "statNet" && $("statNetBtn").hidden) && !(s === "statWho" && $("statWhoBtn").hidden)) statSec = s; } catch (e) {}
   showStatSec(statSec);
   const one = openFromHash();
   if (one) showView("bills");

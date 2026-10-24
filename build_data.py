@@ -1455,6 +1455,62 @@ def similar_bills(recs, k=8, floor=0.35):
     return out
 
 
+# ---- What's changing: subjects that rose (or spiked) across sessions, and wording that changed.
+# Hand-picked from an automatic scan for phrases whose share of bills changed most, then checked,
+# since the raw scan mixes real subjects with drafting habits. Matched on title and summary.
+TRENDS = [
+    ("rise", "Artificial intelligence", r"artificial intelligence|\bAI\b|automated (?:employment )?decision|algorithmic", False),
+    ("rise", "Sports betting", r"sports wagering|mobile sports|sports betting", True),
+    ("rise", "E-bikes and scooters", r"electric assist|bicycles? with electric|e-bikes?\b|electric scooter", True),
+    ("rise", "Climate", r"climate|greenhouse gas|zero-emission", True),
+    ("rise", "Immigration", r"immigra|migrants?\b|asylum|noncitizen", True),
+    ("rise", "Batteries and energy storage", r"batter(?:y|ies)|energy storage", True),
+    ("rise", "Social media", r"social media|online platform|digital platform", True),
+    ("rise", "Cannabis", r"cannabis|marihuana|marijuana", True),
+    ("spike", "COVID-19", r"covid|coronavirus|pandemic", True),
+]
+# Old wording -> new wording, for the same thing.
+WORDING = [
+    (("“inmates”", r"\binmates?\b"), ("“incarcerated individuals”", r"incarcerated (?:individual|person|people)")),
+    (("“marihuana”", r"marihuana"), ("“cannabis”", r"cannabis")),
+    (("“alcoholism” and “drug abuse”", r"alcoholism|drug abuse"), ("“substance use”", r"substance use")),
+    (("“his or her”, “he or she”", r"\bhis or her\b|\bhe or she\b"), None, "Almost gone from bill summaries in 2025–26."),
+]
+
+
+def trends(loaded):
+    """Per subject: bills per 1,000 in each session, the first bill on it, who sponsors most now, laws."""
+    sessions = sorted(loaded)
+    def scan(pattern, nocase):
+        rx = re.compile(pattern, re.I if nocase else 0)
+        per, first, now, laws, total = [], None, Counter(), 0, 0
+        for sn in sessions:
+            recs = loaded[sn][0]
+            hits = [r for r in recs if rx.search(r["title"] + " . " + r["summary"][:600])]
+            per.append(round(1000 * len(hits) / max(1, len(recs)), 1))
+            total += len(hits)
+            laws += sum(r["stage"] == 5 for r in hits)
+            for r in hits:
+                for v in r["vers"]:
+                    if not v["sponsor"]:
+                        continue
+                    key = (sn, r["first"] or "", v["p"])
+                    if first is None or key < first[0]:
+                        first = (key, v["p"][0], v["sponsor"])
+                    if sn == sessions[-1]:
+                        now[(v["p"][0], v["sponsor"])] += 1
+        lead = [[h, name, c] for (h, name), c in now.most_common(3)]
+        return {"per": per, "bills": total, "laws": laws, "lead": lead,
+                "first": [first[1], first[2], first[0][0], first[0][2]] if first else None}
+    out = {"sessions": sessions, "subjects": [], "wording": []}
+    for kind, label, pattern, nocase in TRENDS:
+        out["subjects"].append({"kind": kind, "label": label, **scan(pattern, nocase)})
+    for old, new, *note in WORDING:
+        out["wording"].append({"old": [old[0], scan(old[1], True)["per"]], "new": [new[0], scan(new[1], True)["per"]] if new else None,
+                               "note": note[0] if note else ""})
+    return out
+
+
 def outcomes(recs):
     """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
     out = defaultdict(lambda: [0, 0, 0, 0, 0])
@@ -1515,6 +1571,7 @@ def main():
     summary = {s: outcomes(loaded[s][0]) for s in SESSIONS}
     current = max(SESSIONS)
     insight = insights(loaded, hist, current)
+    insight["trends"] = trends(loaded)
 
     # Current legislators for past sessions' pages (profile card and the sessions they served in).
     legs_now = legislators(current)
