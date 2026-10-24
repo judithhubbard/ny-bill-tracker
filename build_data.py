@@ -1381,6 +1381,80 @@ def network_since(loaded, legs):
     return {kind: net_views(*counts, info) for kind, counts in out.items()}
 
 
+# ---- Similar bills: same session, matched on the words of the title and summary and the law
+# sections amended. Bills about one place, person or group (and road namings) are left out,
+# since they'd only match each other.
+SIM_STOP = set("""the a an of to and or for in on by with relates relating certain provides provide requires require establishes
+establish authorizes authorize such any all from that this which shall may be are is as at its their other into under within
+than law laws section sections act state new york department commissioner program programs including include includes
+relation thereto amend amends amending enacts enact chapter""".split())
+_SECTIONS = re.compile(r"§+\s*([\d\w.\-]+(?:\s*(?:,|&|-)\s*[\d\w.\-]+)*)")
+
+
+def _law_terms(code):
+    """'Amd §§2803 & 4902, Pub Health L' -> ['§Pub Health L:2803', '§Pub Health L:4902']"""
+    out = []
+    for seg in (code or "").split(";"):
+        parts = seg.rsplit(",", 1)
+        if len(parts) < 2:
+            continue
+        law = parts[1].strip()
+        for m in _SECTIONS.finditer(parts[0]):
+            out += [f"§{law}:{n}" for n in re.split(r"\s*(?:,|&)\s*", m.group(1)) if re.match(r"^\d", n)]
+    return out
+
+
+def _sim_words(text):
+    out = []
+    for w in re.findall(r"[a-z][a-z'-]+", text.lower()):
+        w = w.strip("'-")
+        if len(w) < 3 or w in SIM_STOP:
+            continue
+        if w.endswith("s") and len(w) > 4 and not w.endswith("ss"):
+            w = w[:-1]
+        out.append(w)
+    return out
+
+
+def similar_bills(recs, k=8, floor=0.35):
+    """For each bill, up to k others with similarity >= floor, as [[index, percent], ...]."""
+    import math
+    n = len(recs)
+    docs = []
+    for r in recs:
+        tf = Counter(_sim_words(r["title"]) * 2 + _sim_words(r["summary"][:800]))
+        for t in _law_terms(r["lawCode"]):
+            tf[t] += 2
+        docs.append(tf)
+    df = Counter(t for d in docs for t in d)
+    vecs = []
+    for d in docs:
+        v = {t: (1 + math.log(c)) * math.log(n / df[t]) for t, c in d.items() if df[t] > 1}
+        top = dict(sorted(v.items(), key=lambda x: -x[1])[:30])
+        norm = math.sqrt(sum(x * x for x in top.values())) or 1
+        vecs.append({t: x / norm for t, x in top.items()})
+    skip = [narrow_bill(r) for r in recs]
+    index = defaultdict(list)
+    for i, v in enumerate(vecs):
+        if not skip[i]:
+            for t, x in v.items():
+                if df[t] <= 500:  # very common words don't say two bills are alike
+                    index[t].append((i, x))
+    out = []
+    for i, v in enumerate(vecs):
+        if skip[i]:
+            out.append([])
+            continue
+        score = defaultdict(float)
+        for t, x in v.items():
+            for j, y in index.get(t, ()):
+                if j != i:
+                    score[j] += x * y
+        best = sorted(((sc, j) for j, sc in score.items() if sc >= floor), reverse=True)[:k]
+        out.append([[j, round(sc * 100)] for sc, j in best])
+    return out
+
+
 def outcomes(recs):
     """Counts per topic: [bills, passed both houses or further, signed, vetoed, passed one house only]."""
     out = defaultdict(lambda: [0, 0, 0, 0, 0])
@@ -1493,6 +1567,7 @@ def main():
             return [[h, kind, S(comm), date.replace("-", ""), y, n, [[S(member_id(m)), code] for m, code in ny]]
                     for h, kind, comm, date, y, n, ny in votes]
         rows = []
+        sims = similar_bills(recs)
         for i, r in enumerate(recs):
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32) | (NARROW_KINDS.index(r["narrow"]) << 6)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
@@ -1506,7 +1581,7 @@ def main():
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"]),
                          [[S(c), w] for c, w in agenda_of(r)],
-                         [(COUNTIES + ["?"]).index(c) for c in r["places"]], r["mainTopic"]])
+                         [(COUNTIES + ["?"]).index(c) for c in r["places"]], r["mainTopic"], sims[i]])
 
         data = {
             "session": session,

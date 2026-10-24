@@ -210,6 +210,10 @@ table.oc th { vertical-align: bottom; }
 .lineage .yr { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
 .lineage .bn { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
 .lineage .oc5 { color: var(--signed); font-weight: 600; }
+.lineage.similar li { grid-template-columns: minmax(0, 130px) minmax(0, 1fr) minmax(0, 150px); }
+.lineage.similar .sim-t { min-width: 0; }
+.lineage .twin { display: inline-block; font: 600 11px var(--body); background: var(--gold-soft); border-radius: 3px; padding: 0 5px; }
+@media (max-width: 600px) { .lineage.similar li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
 .lineage .oc6 { color: var(--veto); font-weight: 600; }
 .lineage .oc3, .lineage .oc4 { color: var(--gold); font-weight: 600; }
 
@@ -2578,6 +2582,16 @@ function verBlock(v) {
   </div>`;
 }
 
+// Other bills this session on the same subject, closest first.
+function similarBlock(b) {
+  if (!b.similar.length) return "";
+  return `<div class="lineage similar"><h4>Similar bills this session</h4><ol>${b.similar.map(({ j, s }) => {
+    const o = BILLS[j];
+    return `<li class="s${o.stage}"><span class="bn"><button type="button" class="linkish" data-bill="${esc(baseNum(o.nums[0]))}">${esc(o.nums.join(" / "))}</button></span>
+      <span class="sim-t">${esc(o.title)}${s >= 70 ? ` <span class="twin">Nearly the same</span>` : ""}</span>
+      <span class="oc oc${o.stage}">${esc(TEXT.pipe[o.stage])}</span></li>`;
+  }).join("")}</ol></div>`;
+}
 function lineage(b) {
   if (!b.hist.length) return "";
   const self = [DATA.session, b.nums.join(" / "), b.stage, b.chapter || 0, b.veto || 0, true];
@@ -3181,6 +3195,7 @@ function fillDetail(el) {
     ${keyDates(b)}
     ${votesBlock(b)}
     ${lineage(b)}
+    ${similarBlock(b)}
     <div class="versions">${b.vers.map(verBlock).join("")}</div>`;
 }
 
@@ -3606,7 +3621,7 @@ function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
   raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places, mainTopic] = r;
+    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places, mainTopic, similar] = r;
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -3622,6 +3637,7 @@ function decode(raw) {
       agenda: (agenda || []).map(([c, when]) => ({ committee: str(c), when })),
       places: (places || []).map((i) => (raw.counties || [])[i] || "?"),
       mainTopic: mainTopic || (topics || [])[0] || "",
+      similar: (similar || []).map(([j, s]) => ({ j, s })),
       votes: (votes || []).map(([house, kind, cm, date, yes, no, ny]) => ({
         house, kind, committee: str(cm), date: day(date), yes, no, notYes: new Map(ny.map(([m, code]) => [T[m], code])),
       })),

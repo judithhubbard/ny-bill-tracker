@@ -70,6 +70,9 @@ Read README.md for what each script downloads. This file covers how to change th
   `data-how="<id>"`). The Committees tab is `renderHowComm()`: it pairs Senate and Assembly
   committees by name, or through `COMM_PAIRS` when the names differ, with notes in `COMM_NOTES`.
   "N bills" links set `state.comm` and open the Bills tab.
+- **Similar bills:** `similar_bills()` in build_data.py (TF-IDF on title, summary and the law
+  sections amended; it leaves out narrow bills) adds each bill's matches as the last row element.
+  `similarBlock()` shows them in the bill panel, and a score of 70 or more is marked "Nearly the same."
 - **Startup:** `hydrate(raw)` sets `DATA` and `BILLS`, then `wire()` attaches event handlers and
   `render()` draws everything.
 
