@@ -292,7 +292,9 @@ table.oc th { vertical-align: bottom; }
 .watchbtn { appearance: none; border: 0; background: none; padding: 2px 0 0; font-size: 18px; line-height: 1; color: var(--ink-2); cursor: pointer; justify-self: start; }
 .watchbtn[aria-pressed="true"] { color: var(--gold); }
 .watchbtn:hover { color: var(--gold); }
-.news { display: inline-block; font: 600 11px var(--body); background: var(--gold-soft); color: var(--ink); border-radius: 3px; padding: 1px 6px; vertical-align: 2px; }
+.news { display: inline-block; font: 600 11px var(--body); background: var(--gold-soft); color: var(--ink); border-radius: 3px; padding: 1px 6px; vertical-align: 2px; box-shadow: inset 0 0 0 1px var(--gold); }
+.news.soon { background: var(--chip); color: var(--navy); box-shadow: inset 0 0 0 1px var(--navy); }
+.tabnew { display: inline-block; margin-left: 4px; font: 700 11px var(--body); background: var(--gold); color: #fff; border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
 .stance { appearance: none; border: 1px solid var(--rule); background: var(--chip); color: var(--ink-2); border-radius: 999px; padding: 1px 7px; font: 600 10.5px var(--body); cursor: pointer; margin-top: 4px; justify-self: start; }
 .stance.support { color: var(--signed); border-color: var(--signed); }
 .stance.oppose { color: var(--veto); border-color: var(--veto); }
@@ -1374,6 +1376,8 @@ function plainAction(t) {
     [/^delivered to Governor$/, () => "Sent to the governor"],
     [/^died in (Senate|Assembly)$/, (m, h) => `Died in the ${h}`],
     [/^signed chapter (\d+)$/, (m, n) => `Signed into law (chapter ${n})`],
+    [/^vetoed memo (\d+)$/, (m, n) => `Vetoed (memo ${n})`],
+    [/^(?:recommit, )?enacting clause stricken$/, () => "Withdrawn by the sponsor"],
   ];
   for (const [re, fn] of PLAIN) if (re.test(s)) { s = s.replace(re, fn); break; }
   // Committee names after "referred to" and similar read as names.
@@ -1722,9 +1726,7 @@ function nextSteps(b) {
   const plan = planFor(b, panelStance(b));
   if (!plan) return "";
   let what = plan.what;
-  // The next committee meeting with this bill on the agenda.
-  const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16);
-  const meet = DATA.current && b.agenda.filter((a) => a.when >= now).sort((x, y) => (x.when < y.when ? -1 : 1))[0];
+  const meet = nextMeeting(b);
   if (meet) {
     const d = new Date(meet.when);
     what += `<p class="when">On the agenda: ${esc(meet.committee)} Committee, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>`;
@@ -2596,7 +2598,7 @@ function billRow(b) {
         <summary>
           <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}${watchButton(b)}</div>
           <div class="main">
-            <div class="title">${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</div>
+            <div class="title">${esc(b.title)}${newsTags(b)}</div>
             <div class="meta">${pageRole(b)}${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
             <div class="tags">${tags}</div>
           </div>
@@ -2670,7 +2672,42 @@ const watchEntry = (b) => { for (const k of keysOf(b)) if (WATCH.has(k)) return 
 const isWatched = (b) => !!watchEntry(b);
 const watchStance = (b) => watchEntry(b)?.stance || null;
 const WATCH_COUNT = () => BILLS.filter(isWatched).length;
-const hasNews = (b) => { const e = watchEntry(b); return !!e && (b.last || "") > (e.seen || ""); };
+// What's happened to a watched bill since its owner last opened it. Paperwork that comes with a
+// real step (a new print number, the "sent to the other house" after a pass) doesn't count.
+const ROUTINE = /^(PRINT NUMBER|INTRODUCED|DELIVERED TO (SENATE|ASSEMBLY)|RETURNED TO (SENATE|ASSEMBLY)|\d+(ST|ND) REPORT CAL|\d+RD READING CAL)/;
+// Most important first, so the tag names the step that matters.
+const WEIGHT = [/^SIGNED/, /^VETOED/, /^DELIVERED TO GOVERNOR/, /^(RE)?PASSED/, /^SUBSTITUTED/, /ENACTING CLAUSE STRICKEN/, /^DIED/,
+  /THIRD READING|^REPORTED|RULES REPORT|DISCHARGED/, /^AMEND/, /HELD/, /REFERRED|COMMITTED/];
+const weightOf = (t) => { const i = WEIGHT.findIndex((re) => re.test(t)); return i < 0 ? WEIGHT.length : i; };
+function newActions(b) {
+  const e = watchEntry(b);
+  if (!e) return [];
+  const seen = e.seen || "";
+  return b.vers.flatMap((v) => v.actions).filter(([d, t]) => d > seen && !ROUTINE.test(t))
+    .sort((x, y) => weightOf(x[1]) - weightOf(y[1]) || y[0].localeCompare(x[0]));
+}
+const hasNews = (b) => newActions(b).length > 0;
+// The next committee meeting with this bill on the agenda (current session).
+function nextMeeting(b) {
+  if (!DATA.current) return null;
+  const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16);
+  return b.agenda.filter((a) => a.when >= now).sort((x, y) => (x.when < y.when ? -1 : 1))[0] || null;
+}
+// Tags after a watched bill's title: what's new, and a committee meeting coming up.
+function newsTags(b) {
+  if (!isWatched(b)) return "";
+  const acts = newActions(b), meet = nextMeeting(b);
+  let out = "";
+  if (acts.length) {
+    const what = plainAction(acts[0][1]).replace(/; back to .*$/, "").replace(/ \((?:calendar|chapter|memo) \d+\)$/, "");
+    out += ` <span class="news" title="${esc(acts.map(([d, t]) => `${fmtDate(d)}: ${plainAction(t)}`).join("\n"))}">New: ${esc(what)}${acts.length > 1 ? ` (+${acts.length - 1} more)` : ""}</span>`;
+  }
+  if (meet) {
+    const d = new Date(meet.when);
+    out += ` <span class="news soon">Coming up: ${esc(meet.committee)}, ${d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>`;
+  }
+  return out;
+}
 function setWatch(b, entry) { keysOf(b).forEach((k) => WATCH.delete(k)); if (entry) WATCH.set(billKey(b), entry); saveWatch(); }
 // The order the person put their watchlist in (bill keys, first = top priority).
 const ORDER_STORE = "abt:worder";
@@ -2691,7 +2728,12 @@ function watchItems(list, stanceOf, rank) {
 // My watched bills in the order they show, for share links and published lists.
 function myOrdered() { const { active, idle } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle].map((x) => x.b); }
 function toggleWatch(b) { if (!isWatched(b)) countUse(`starred/${baseNum(b.nums[0])}`); setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
-function markSeen(b) { const e = watchEntry(b); if (e) setWatch(b, { ...e, seen: b.last || "" }); }
+function markSeen(b) { const e = watchEntry(b); if (e && e.seen !== (b.last || "")) { setWatch(b, { ...e, seen: b.last || "" }); updateWatchTab(); } }
+// The Watchlist tab: how many bills, and a badge for how many have news.
+function updateWatchTab() {
+  const n = WATCH_COUNT(), news = BILLS.filter((b) => isWatched(b) && hasNews(b)).length;
+  $("watchTabCount").innerHTML = (n ? ` (${num(n)})` : "") + (news ? ` <span class="tabnew" title="Bills with something new since you last opened them">${num(news)} new</span>` : "");
+}
 function watchButton(b, withStance = true) {
   const e = watchEntry(b);
   return `<button class="watchbtn" type="button" data-watch="${b.idx}" aria-pressed="${!!e}" title="${e ? "Remove from" : "Add to"} my watchlist">${e ? "★" : "☆"}</button>`
@@ -2919,8 +2961,7 @@ function reachOf(p) {
 
 const W_OPEN = new Set();
 function renderWatchView() {
-  const tabCount = WATCH_COUNT();
-  $("watchTabCount").textContent = tabCount ? ` (${tabCount})` : "";
+  updateWatchTab();
   if ($("view-watch").hidden) return;
   const list = SHARED ? BILLS.filter((b) => sharedStance(b)) : BILLS.filter(isWatched);
   const stanceOf = (b) => (SHARED ? sharedStance(b) : watchStance(b)) || "support";
@@ -2976,7 +3017,7 @@ function renderWatchView() {
         <div class="wtop"><div class="nums">${!SHARED && list.length > 1 ? `<button class="whandle" type="button" data-whandle aria-label="Move ${esc(b.nums[0])} up or down" title="Drag to change the order (or use the arrow keys)">⠿</button>` : ""}<span class="chev" aria-hidden="true"></span>${esc(b.nums.join(" / "))}${SHARED
           ? `${watchButton(b, false)}<span class="stance fixed ${x.stance}" title="The position of whoever shared this list">${x.stance === "oppose" ? "Oppose" : "Support"}</span>`
           : watchButton(b)}</div><span class="spill p${b.stage}">${esc(TEXT.pipe[b.stage])}${esc(due)}</span></div>
-        <h3>${esc(b.title)}${hasNews(b) ? ` <span class="news">New activity</span>` : ""}</h3>
+        <h3>${esc(b.title)}${SHARED ? "" : newsTags(b)}</h3>
         ${x.key ? `<div class="wask"><span><b>${esc(titleOf(x.key))}:</b> ${esc(x.key.ask)}</span><button class="act-btn small primary" type="button" data-email="${b.idx}">Copy email</button></div>` : ""}
         ${SHARED_META?.notes?.[baseNum(b.nums[0])] ? `<div class="pubnote"><b>Note from ${esc(SHARED_META.group)}:</b> ${esc(SHARED_META.notes[baseNum(b.nums[0])])}</div>` : ""}
         ${logged ? `<p class="wlogged">${num(logged)} action${logged === 1 ? "" : "s"} logged</p>` : ""}
@@ -3000,7 +3041,7 @@ function renderWatchView() {
     ${active.length ? `<section class="wsec needs"><h2>Needs action <span class="n">${num(active.length)}</span></h2>
       <p class="wsub">Something you can do now on each of these.</p><div class="wcards needs">${active.map(cardFor).join("")}</div></section>` : ""}
     ${idle.length ? `<section class="wsec idle"><h2>Can't move right now <span class="n">${num(idle.length)}</span></h2>
-      <p class="wsub">Nothing to ask for until they move again. They'll show “New activity” when something changes.</p><div class="wcards idle">${idle.map(cardFor).join("")}</div></section>` : ""}
+      <p class="wsub">Nothing to ask for until they move again. They'll be marked “New” when something changes.</p><div class="wcards idle">${idle.map(cardFor).join("")}</div></section>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
 }
 
@@ -3263,6 +3304,7 @@ function wire() {
     const card = head.closest(".wcard"), k = billKey(BILLS[+head.dataset.wtoggle]);
     const open = card.classList.toggle("open");
     open ? W_OPEN.add(k) : W_OPEN.delete(k);
+    if (open && !SHARED) markSeen(BILLS[+head.dataset.wtoggle]);
     head.setAttribute("aria-expanded", open);
   };
   const saveDomOrder = () => {
