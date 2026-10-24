@@ -761,6 +761,9 @@ ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 7
 .pg + .pg { margin-top: 10px; }
 .pg .pg-h { padding: 0 8px 2px; }
 .pg.leg { background: var(--chip); border-left-color: var(--navy); }
+.pg-h.pick { cursor: pointer; border-radius: 6px; }
+.pg-h.pick:hover { text-decoration: underline; }
+.pg-h.pick.on { color: var(--navy); text-decoration: underline; text-decoration-thickness: 2px; }
 .pg.live { background: var(--gold-soft); border-left-color: var(--gold); }
 .pg.live .srow:hover { background: color-mix(in srgb, var(--gold) 15%, transparent); }
 .pg.decided { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 0 0; border-left: 0; }
@@ -981,6 +984,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
         <input type="search" id="q" class="q" placeholder="Search bills: number, words, sponsor" autocomplete="off" aria-label="Search bills">
         <span id="count"></span>
         <button class="act-btn csv" type="button" id="csv" title="Download the bills shown, as a spreadsheet file">Download</button>
+        <span id="starAllBox"></span>
         <label class="sortby" for="sort">Sort
           <select id="sort">
             <option value="recent">Latest action</option>
@@ -1345,7 +1349,7 @@ function openNum(num_) {
 function matches(b, skip) {
   if (ONE != null) return b.idx === ONE;
   if (PAST_WHO && !pastWhoTest(b)) return false;
-  if (skip !== "stage" && state.stage != null && b.stage !== state.stage) return false;
+  if (skip !== "stage" && state.stage != null && !stageSet().includes(b.stage)) return false;
   if (skip !== "topic" && state.topics.size) {
     for (const t of state.topics) if (!b.topics.includes(t)) return false;
   }
@@ -1380,6 +1384,9 @@ function sortBills(arr) {
   return arr.sort(by);
 }
 
+// The stage filter is one stage (3) or a whole group of them ("3,4", from clicking a group's heading).
+const stageSet = () => (state.stage == null ? [] : String(state.stage).split(",").map(Number));
+const PIPE_GROUPS = {}; // "3,4" -> "Still in play"
 function renderPipeline() {
   const counts = Array(7).fill(0), oneHouse = { Senate: 0, Assembly: 0 };
   const today = isoToday();
@@ -1396,20 +1403,26 @@ function renderPipeline() {
     3: DATA.current ? "Not yet requested by the governor" : "Never requested by the governor",
     4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No decision in the records",
   };
-  const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${state.stage === k}">
+  const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${stageSet().includes(k)}">
        <span class="sl">${TEXT.pipe[k]}${TIPI((!DATA.current && PAST_STAGE_TIPS[k]) || STAGE_TIPS[k])}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
+  // A group's heading selects all of its stages at once.
+  const head = (label, ks, extra = "") => {
+    const key = ks.join(",");
+    PIPE_GROUPS[key] = label;
+    return `<div class="pg-h pick${String(state.stage) === key ? " on" : ""}" data-g="${key}" role="button" tabindex="0" title="Show all ${esc(label.toLowerCase())} bills">${label}${extra}</div>`;
+  };
   // After the second year's last floor votes, only bills that passed both houses can still move.
   $("pipeline").innerHTML = floorVotesOver() ? `
-    <div class="pg live"><div class="pg-h">Still in play</div>${[3, 4].map(row).join("")}</div>
-    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
-    <div class="pg stale"><div class="pg-h">Out of time ${TIP(OUT_OF_TIME)}<span>Die December 31 unless lawmakers return</span></div>${[0, 1, 2].map(row).join("")}</div>` : `
+    <div class="pg live">${head("Still in play", [3, 4])}${[3, 4].map(row).join("")}</div>
+    <div class="pg decided">${head("Decided", [5, 6])}${[5, 6].map(row).join("")}</div>
+    <div class="pg stale">${head("Out of time", [0, 1, 2], ` ${TIP(OUT_OF_TIME)}<span>Die December 31 unless lawmakers return</span>`)}${[0, 1, 2].map(row).join("")}</div>` : `
     ${!DATA.current ? `
-    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>
-    <div class="pg stale"><div class="pg-h">Died</div>${[0, 1, 2, 3].map(row).join("")}</div>
+    <div class="pg decided">${head("Decided", [5, 6])}${[5, 6].map(row).join("")}</div>
+    <div class="pg stale">${head("Died", [0, 1, 2, 3])}${[0, 1, 2, 3].map(row).join("")}</div>
     ${counts[4] ? `<div class="pg stale">${row(4)}</div>` : ""}` : `
-    <div class="pg leg"><div class="pg-h">In the Legislature</div>${[0, 1, 2, 3].map(row).join("")}</div>
+    <div class="pg leg">${head("In the Legislature", [0, 1, 2, 3])}${[0, 1, 2, 3].map(row).join("")}</div>
     <div class="pg live"><div class="pg-h">With the governor</div>${[4].map(row).join("")}</div>
-    <div class="pg decided"><div class="pg-h">Decided</div>${[5, 6].map(row).join("")}</div>`}`;
+    <div class="pg decided">${head("Decided", [5, 6])}${[5, 6].map(row).join("")}</div>`}`;
 }
 
 function renderTopics() {
@@ -2925,12 +2938,21 @@ function lineage(b) {
   }).join("")}</ol></div>`;
 }
 
+let STAR_UNDO = null; // bills just added by "Add all to watchlist", until the view changes
 function renderList() {
   const rows = sortBills(BILLS.filter((b) => matches(b)));
   // On a legislator's page, count against their own bills, not the whole Legislature's.
   const page = (PRESET?.who && LEG_BY_ID[PRESET.who]) || PAST_WHO;
   const total = PAST_WHO ? BILLS.filter(pastWhoTest).length : page ? BILLS.filter((b) => sponsoredBy(b, page, state.whoCos)).length : BILLS.length;
   $("count").innerHTML = page && rows.length === total ? `<b>${num(total)}</b> bills` : `<b>${num(rows.length)}</b> of ${page ? "their " : ""}${num(total)} bills`;
+  // Turn a filtered view into watchlist entries in one click (with undo).
+  const toAdd = rows.filter((b) => !isWatched(b));
+  const filtered = rows.length < total;
+  $("starAllBox").innerHTML = STAR_UNDO
+    ? `<span class="muted">Added ${num(STAR_UNDO.length)} to your watchlist.</span> <button type="button" class="linkish" data-starall="undo">Undo</button>`
+    : filtered && toAdd.length && toAdd.length <= 1000
+      ? `<button class="act-btn" type="button" data-starall="add" title="Star every bill shown">☆ Add ${toAdd.length === rows.length ? `all ${num(rows.length)}` : `${num(toAdd.length)} more`} to watchlist</button>`
+      : "";
   const slice = rows.slice(0, state.shown);
   if (!slice.length) {
     $("list").innerHTML = `<div class="empty">No bills match all of these filters. Remove one of the filters listed above, or clear them all.</div>`;
@@ -2980,7 +3002,7 @@ function activeFilters() {
   if (ONE != null) out.push(["one", null, "Showing one bill", BILLS[ONE].nums.join(" / ")]);
   const opt = (id, v) => { const o = [...$(id).options].find((x) => x.value === v); return o ? o.textContent.replace(/ \([\d,]+\)$/, "") : v; };
   if (state.q) out.push(["q", null, "Search", `“${state.q}”`]);
-  if (state.stage != null) out.push(["stage", null, "Now", TEXT.pipe[state.stage]]);
+  if (state.stage != null) out.push(["stage", null, "Now", PIPE_GROUPS[String(state.stage)] || TEXT.pipe[state.stage]]);
   for (const t of state.topics) out.push(["topics", t, "Topic", TOPICS[t]]);
   if (state.party) out.push(["party", null, "Party", PARTIES[state.party]]);
   if (state.progress) out.push(["progress", null, "Furthest", opt("progress", state.progress)]);
@@ -3488,6 +3510,7 @@ function fillSelects() {
 }
 
 function render() {
+  STAR_UNDO = null; // any change to the view ends the chance to undo "Add all"
   fillSelects();
   renderWatchView();
   renderPipeline();
@@ -3550,7 +3573,11 @@ function syncControls() {
 }
 
 function wire() {
+  $("pipeline").addEventListener("keydown", (e) => { const g = e.target.closest("[data-g]"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); g.click(); } });
   $("pipeline").addEventListener("click", (e) => {
+    if (e.target.closest(".tip")) return;
+    const g = e.target.closest("[data-g]");
+    if (g) { state.stage = String(state.stage) === g.dataset.g ? null : g.dataset.g; state.shown = PAGE; render(); return; }
     const btn = e.target.closest(".srow"); if (!btn) return;
     const k = +btn.dataset.k; state.stage = state.stage === k ? null : k; state.shown = PAGE; render();
   });
@@ -3562,6 +3589,21 @@ function wire() {
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
   for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party", "voted", "changed"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
   $("csv").addEventListener("click", downloadCsv);
+  $("starAllBox").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-starall]"); if (!btn) return;
+    if (btn.dataset.starall === "add") {
+      const n = BILLS.filter((b) => matches(b) && !isWatched(b)).length;
+      if (n > 100 && !confirm(`Add ${num(n)} bills to your watchlist? You can undo this right after.`)) return;
+      STAR_UNDO = sortBills(BILLS.filter((b) => matches(b))).filter((b) => !isWatched(b));
+      for (const b of STAR_UNDO) WATCH.set(billKey(b), { seen: b.last || "", stance: "support" });
+      saveWatch(); countUse("starred-all");
+    } else {
+      for (const b of STAR_UNDO || []) setWatch(b, null);
+      saveWatch(); STAR_UNDO = null;
+    }
+    const keep = STAR_UNDO; render(); STAR_UNDO = keep;
+    renderList();
+  });
   // The law box matches any law whose name contains the typed text (3+ characters),
   // so "cannabis" finds the Cannabis Law and "conservation" the Environmental Conservation Law.
   let lawTimer;
