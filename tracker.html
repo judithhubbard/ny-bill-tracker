@@ -2712,7 +2712,46 @@ const watchCodes = () => myOrdered().map((b) => (watchStance(b) === "oppose" ? "
 const listUrl = (slug) => `${ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "")}watchlist/#list=${slug}`;
 // Counts a use of a feature ("copied an email", "starred S1234") on the public site, when its
 // counter is loaded. Only totals are kept; nothing identifies who did it.
-function countUse(name) { try { window.goatcounter?.count?.({ path: name, title: name, event: true }); } catch (e) {} }
+// On the public site, a warning when the daily update has fallen behind.
+function staleNotice(raw) {
+  const day = /^\d{4}-\d\d-\d\d/.exec(raw.fetched || "")?.[0];
+  if (!ROOT || !raw.current || !day) return "";
+  const days = Math.floor((Date.parse(isoToday()) - Date.parse(day)) / 864e5);
+  return days >= 2 ? `Last updated ${fmtDate(day)}, ${days} days ago. The daily update is behind, so recent actions may be missing.` : "";
+}
+function countUse(name, tries = 0) {
+  if (window.goatcounter?.count) { try { window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} return; }
+  if (ROOT && tries < 6) setTimeout(() => countUse(name, tries + 1), 2000);
+}
+// Script errors, so a bug that breaks the site on some browser shows up in the counts. Only the
+// error message and the kind of browser are sent, at most three per visit.
+let ERRORS_SENT = 0;
+function browserKind() {
+  const u = navigator.userAgent;
+  const dev = /iPhone|iPad/.test(u) ? "iPhone/iPad" : /Android/.test(u) ? "Android" : /Mac/.test(u) ? "Mac" : /Windows/.test(u) ? "Windows" : "other";
+  const br = /Edg\//.test(u) ? "Edge" : /SamsungBrowser/.test(u) ? "Samsung" : /Firefox|FxiOS/.test(u) ? "Firefox" : /Chrome|CriOS/.test(u) ? "Chrome" : /Safari/.test(u) ? "Safari" : "other";
+  return `${dev} ${br}`;
+}
+function countError(msg) {
+  if (!ROOT || ERRORS_SENT >= 3) return;
+  ERRORS_SENT++;
+  countUse(`error/${String(msg || "unknown").replace(/https?:\/\/\S+/g, "").slice(0, 90)} (${browserKind()})`);
+}
+window.addEventListener("error", (e) => countError(e.message));
+window.addEventListener("unhandledrejection", (e) => countError(e.reason?.message || e.reason));
+// Once a day per browser: a first visit or a return, and how big the watchlist is. Only those
+// labels are sent; the browser keeps the date of its last visit to itself.
+function countVisit() {
+  if (!ROOT) return;
+  let last = null;
+  try { last = localStorage.getItem("abt:lastvisit"); } catch (e) { return; }
+  const today = isoToday();
+  if (last === today) return;
+  try { localStorage.setItem("abt:lastvisit", today); } catch (e) {}
+  countUse(last ? "visit/returning" : "visit/first");
+  const n = [...WATCH.keys()].filter((k) => k.startsWith(`${DATA.session}:`)).length;
+  countUse(`watchlist/${n === 0 ? "none" : n <= 5 ? "1-5 bills" : n <= 20 ? "6-20 bills" : "21+ bills"}`);
+}
 async function listsApi(path, opts = {}) {
   const r = await fetch(LISTS_API + path, { ...opts, headers: { "Content-Type": "application/json", ...(opts.headers || {}) } });
   const body = await r.json().catch(() => ({}));
@@ -3565,7 +3604,8 @@ function hydrate(raw) {
   $("fetched").textContent = `Data as of ${raw.fetched}`;
   try { renderHowCal(); } catch (e) { console.error(e); }
   try { renderIntro(); } catch (e) { console.error(e); }
-  const notice = sessionNotice(raw);
+  const stale = staleNotice(raw);
+  const notice = [stale, sessionNotice(raw)].filter(Boolean).join(" ");
   $("notice").textContent = notice;
   $("notice").hidden = !notice;
   if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option>`);
@@ -3589,6 +3629,7 @@ function hydrate(raw) {
   renderSessions(raw);
   loadWatch();
   loadLog();
+  countVisit();
   const m = location.hash.match(/^#w=(\d{4})\.([A-Z0-9.-]+)$/);
   const pub = location.hash.match(/^#list=([a-z0-9-]{1,61})$/);
   if (pub) { SHARED = new Map(); SHARED_META = { title: "Loading the list…", group: "", updated: new Date().toISOString() }; loadPublishedList(pub[1]); }

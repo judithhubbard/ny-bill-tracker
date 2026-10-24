@@ -22,6 +22,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.fresh.outcome == 'failure' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -63,7 +65,14 @@ jobs:
       - name: Download committee agendas
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
-        run: python3 fetch_agendas.py "$CURRENT_SESSION" || echo "Agendas failed; building without them"
+        run: |
+          if ! python3 fetch_agendas.py "$CURRENT_SESSION"; then
+            echo "Agendas failed; building without them"
+            # Agendas matter only while committees meet (January-June).
+            if [ "$(TZ=America/New_York date +%-m)" -le 6 ]; then
+              echo "Committee agendas didn't download." >> "$RUNNER_TEMP/problems.txt"
+            fi
+          fi
 
       # Assembly floor votes come from nyassembly.gov, one page per bill. Votes already
       # collected are kept in data/assembly_votes_<session>.json, so only new ones are fetched;
@@ -97,6 +106,13 @@ jobs:
         with:
           path: _site
 
+      # Anything behind (a download that keeps failing, Assembly votes not collected) is listed in
+      # the run summary. The site still deploys; the "alert" job below then fails so GitHub emails.
+      - name: Check the data is current
+        id: fresh
+        continue-on-error: true
+        run: python3 check_fresh.py "$CURRENT_SESSION" "$RUNNER_TEMP/problems.txt"
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -106,3 +122,12 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  alert:
+    needs: [build, deploy]
+    if: needs.build.outputs.stale == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Some of the site's data is behind. See the 'Check the data is current' step of the build job for details."
+          exit 1
