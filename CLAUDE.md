@@ -51,6 +51,10 @@ Read README.md for what each script downloads. This file covers how to change th
     into "Needs action" and "Can't move right now", then sorts them), `keyAction()` (the one ask on
     each card), `renderWatchView()` (the cards), `logBlock()` / `actionRecord()` (the action log) and
     `draftFor()` (email text).
+  - News: `newActions()` (actions since the bill was last opened, skipping `ROUTINE` paperwork,
+    most important first by `WEIGHT`), `newsTags()` (the "New: …" and "Coming up: …" tags),
+    `nextMeeting()` (from committee agendas) and `updateWatchTab()` (the "N new" badge on the tab).
+    `markSeen()` runs when a bill's details or its watchlist card are opened.
   - Sharing: share links are `#w=<session>.S1234.-A5678`, where "-" means oppose. Published lists use
     `publishBox()`, `publishAction()`, `listsApi()` and `loadPublishedList()`. A published list is
     viewed at `watchlist/#list=<slug>`.
