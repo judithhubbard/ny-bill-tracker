@@ -614,6 +614,18 @@ details.actrec[open] > summary { margin-bottom: 8px; }
 .outcomes h2, .howview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
+.howsec { display: grid; gap: 14px; }
+.ccards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
+.ccard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.ccard h3 { margin: 0; font: 700 16px var(--body); }
+.ccard .cnote { margin: 0; font-size: 13px; color: var(--ink-2); }
+.chalves { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ch { display: grid; gap: 2px; align-content: start; font-size: 13px; background: var(--paper); border-radius: 6px; padding: 8px 10px; }
+.ch .house { font: 700 11px var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); }
+.ch b { font-size: 14px; }
+.ch .muted, .ch p.muted { color: var(--ink-2); font-size: 12px; margin: 0; }
+.ch.none { opacity: .7; }
+@media (max-width: 520px) { .chalves { grid-template-columns: 1fr; } }
 .psessions { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
 .pubintro { white-space: pre-wrap; margin: 8px 0 4px; padding: 10px 12px; border-left: 3px solid var(--navy); background: var(--chip); border-radius: 6px; font-size: 14.5px; }
 .pubintro-edit { display: grid; gap: 4px; margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
@@ -1035,18 +1047,31 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
   <section class="statsview" id="view-person" hidden><div id="personStats"></div></section>
 
   <section class="howview" id="view-how" hidden>
+    <nav class="subtabs" id="howTabs" aria-label="Sections">
+      <button type="button" data-how="howSteps" aria-pressed="true">The steps</button>
+      <button type="button" data-how="howComm">Committees</button>
+      <button type="button" data-how="howCalSec">The calendar</button>
+      <button type="button" data-how="impact">Having an impact</button>
+      <button type="button" data-how="howData">About this data</button>
+    </nav>
+    <div class="howsec" id="howSteps">
     <h2>The steps</h2>
     <ol class="steps">
-      <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee on its subject. Many then have to clear a second committee: bills that cost money go to Senate Finance or Assembly Ways and Means, and bills that create crimes or penalties go to Codes. Near the end of the session, many bills in both houses also pass through the Rules Committee, which the leadership controls. Most bills never get out of their first committee.</li>
+      <li><b>Committee.</b> Each bill is introduced in the Senate or the Assembly and sent to a committee on its subject. Many then have to clear a second committee: bills that cost money go to Senate Finance or Assembly Ways and Means, and bills that create crimes or penalties go to Codes. Near the end of the session, many bills in both houses also pass through the Rules Committee, which the leadership controls. Most bills never get out of their first committee. <button type="button" class="linkish" data-how="howComm">Which committee does what</button></li>
       <li><b>Floor.</b> When a committee approves a bill (“reports” it), the bill goes on that house's calendar (“third reading”) to wait for a vote of the full house. Party leaders decide which bills come up for a vote, and floor calendars are published the day of the vote.</li>
       <li><b>The other house.</b> A bill that passes one house goes to the other. Most bills have a matching (“same as”) bill in the other house. When the passed bill arrives, the other house usually swaps it in for its own version and votes on it. Both houses have to pass identical text.</li>
       <li><b>Waiting to be sent.</b> A bill that has passed both houses stays with the Legislature until the governor's office asks for it. Her office requests bills in batches through the rest of the year, and nothing is required of her until then.</li>
       <li><b>On the governor's desk.</b> Once a bill is delivered, the governor has 10 days, not counting Sundays, to sign or veto it. For bills delivered at the very end of the year, after the Legislature adjourns, she has 30 days, and a bill she doesn't sign is vetoed (a “pocket veto”). In practice she always acts. Some bills are signed with an agreement to amend them the next year (a “chapter amendment”).</li>
       <li><b>The two-year session.</b> Bills carry over from the first year to the second. In January of the second year, bills that passed only one house are sent back to committee in their original house and have to pass again. Any bill that hasn't passed both houses by December 31 of the second year dies and has to be reintroduced with a new number.</li>
     </ol>
+    </div>
+    <div class="howsec" id="howComm" hidden></div>
+    <div class="howsec" id="howCalSec" hidden>
     <h2>The two-year calendar</h2>
     <div id="howCal"></div>
-    <h2 id="impact">How to have an impact</h2>
+    </div>
+    <div class="howsec" id="impact" hidden>
+    <h2>How to have an impact</h2>
     <ul class="impact">
       <li><b>Contact whoever decides the next step.</b> In committee, that's the committee chair. On the floor, it's the house's leaders, who choose which bills get a vote. Once a bill has passed both houses, it's the governor's office. Each bill on this site names that person and what to ask.</li>
       <li><b>Bring in your own legislators.</b> Your senator and Assembly member listen most to their own constituents. Ask them to co-sponsor a bill, to press the chair or leaders to move it, and to vote for it.</li>
@@ -1056,6 +1081,8 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
       <li><b>Make it personal.</b> A sentence about why it matters to you or your community carries more weight than form text.</li>
       <li><b>If it runs out of time,</b> ask the sponsors to reintroduce it next session, and ask your legislator in the other house to sponsor it there if it has no sponsor in that house.</li>
     </ul>
+    </div>
+    <div class="howsec" id="howData" hidden>
     <h2>About this data</h2>
     <div class="notes">
       <p id="fetched"></p>
@@ -1065,6 +1092,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
       <p>“Where it is now” shows each bill's current stage. “Furthest it has gotten” also counts bills that passed a house in the first year and were sent back to committee in January of the second year, when they had to pass again. Governor's deadlines are estimates: 10 days after delivery, not counting Sundays, or about 30 days for bills delivered in the last days of the year.</p>
       <p>Party filter: a bill counts as “both parties” if either version has at least one sponsor or co-sponsor from each party. Party is from Open States, including former members.</p>
+    </div>
     </div>
   </section>
 </div>
@@ -3262,7 +3290,11 @@ function wire() {
       if (r.top < 0 || r.bottom > innerHeight) $("howto").scrollIntoView({ block: "nearest" });
     } else $("howto").hidden = true;
     return; }
-    if (e.target.closest("[data-impact]")) { showView("how"); $("impact").scrollIntoView({ block: "start" }); return; }
+    if (e.target.closest("[data-impact]")) { showView("how"); showHowSec("impact"); $("view-how").scrollIntoView({ block: "start" }); return; }
+    const hs = e.target.closest("[data-how]");
+    if (hs) { showHowSec(hs.dataset.how); if (!hs.closest("#howTabs")) $("view-how").scrollIntoView({ block: "start" }); return; }
+    const cb = e.target.closest("[data-commbills]");
+    if (cb) { Object.assign(state, blank()); state.comm = cb.dataset.commbills; ONE = null; syncControls(); showView("bills"); render(); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
     e.preventDefault();
@@ -3442,6 +3474,97 @@ function renderIntro(force) {
 }
 
 // "How a bill becomes law": the two-year session as a timeline with key dates called out.
+// "How a bill becomes law": one section at a time, like Statistics.
+function showHowSec(id) {
+  for (const s of document.querySelectorAll(".howsec")) s.hidden = s.id !== id;
+  for (const b of document.querySelectorAll("#howTabs button")) b.setAttribute("aria-pressed", b.dataset.how === id);
+  try { localStorage.setItem("abt:howsec", id); } catch (e) {}
+}
+
+// The Committees section: what committees do, the few every bill may meet, and each subject's
+// Senate and Assembly committees side by side with their chairs and this session's numbers.
+// Committees that cover the same subject under different names (Senate name -> Assembly name, subject).
+const COMM_PAIRS = {
+  "Finance": ["Ways And Means", "Budget and taxes"],
+  "Alcoholism And Substance Use Disorders": ["Alcoholism And Drug Abuse", "Addiction"],
+  "Cities 1": ["Cities", "Cities"], "Cities 2": ["Cities", "Cities"],
+  "Civil Service And Pensions": ["Governmental Employees", "Public employees and pensions"],
+  "Commerce, Economic Development And Small Business": ["Economic Development", "Economic development"],
+  "Consumer Protection": ["Consumer Affairs And Protection", "Consumer protection"],
+  "Crime Victims, Crime And Correction": ["Correction", "Prisons and crime victims"],
+  "Cultural Affairs, Tourism, Parks And Recreation": ["Tourism, Parks, Arts And Sports Development", "Parks, tourism and the arts"],
+  "Disabilities": ["People With Disabilities", "Disabilities"],
+  "Elections": ["Election Law", "Elections"],
+  "Energy And Telecommunications": ["Energy", "Energy"],
+  "Ethics And Internal Governance": ["Ethics And Guidance", "Legislative ethics"],
+  "Housing, Construction And Community Development": ["Housing", "Housing"],
+  "Internet And Technology": ["Science And Technology", "Technology"],
+  "Investigations And Government Operations": ["Governmental Operations", "State government"],
+  "Libraries": ["Libraries And Education Technology", "Libraries"],
+  "Local Government": ["Local Governments", "Local government"],
+  "Racing, Gaming And Wagering": ["Racing And Wagering", "Racing and gambling"],
+  "Veterans, Homeland Security And Military Affairs": ["Veterans' Affairs", "Veterans"],
+};
+const COMM_NOTES = {
+  codes: "Criminal law and the courts. Any bill that creates a crime or changes a penalty goes here, often after its subject committee.",
+  rules: "Run by the leaders. From late May, most bills that reach the floor pass through Rules.",
+  "budget and taxes": "Any bill that costs the state money goes here after its subject committee.",
+  cities: "The Senate has two: Cities 1 for New York City and Cities 2 for other cities.",
+  "budget and revenue": "The Senate's tax committee. In the Assembly, tax bills go to Ways and Means.",
+};
+function renderHowComm() {
+  const I = DATA.insights || {};
+  const past = I.committees?.past?.all || {};
+  const counts = Object.fromEntries(DATA.commList || []);
+  const name = (k) => k.replace(/^[AS] · /, "");
+  // Committees with real business this session (a few odd referrals are left out).
+  const keys = Object.keys(counts).filter((k) => counts[k] >= 10);
+  const groups = new Map();
+  for (const k of keys) {
+    const house = k[0], n = name(k);
+    const pair = house === "S" ? COMM_PAIRS[n] : null;
+    // Group by the Assembly committee's name, so a Senate committee lands with its counterpart.
+    const asm = pair ? pair[0] : n;
+    const id = commKey(asm);
+    if (!groups.has(id)) groups.set(id, { label: "", S: [], A: [] });
+    const g = groups.get(id);
+    if (pair) g.label = pair[1];
+    g[house].push(k);
+  }
+  for (const g of groups.values()) {
+    if (!g.label) g.label = commPlain(name((g.S[0] || g.A[0])));
+    g.total = [...g.S, ...g.A].reduce((s, k) => s + counts[k], 0);
+  }
+  const half = (house, list) => {
+    if (!list.length) return `<div class="ch none"><span class="house">${HOUSE[house]}</span><p class="muted">No matching committee</p></div>`;
+    return list.map((k) => {
+      // Some committees go by a longer name in the contacts ("Economic Development, Job Creation, …").
+      const all = DATA.contacts?.committees || {}, ck = `${house}:${commKey(name(k))}`;
+      const c = all[ck] || Object.entries(all).find(([key]) => key.startsWith(ck))?.[1];
+      // Approval rates count bills that start in a committee; Rules only ever sees bills from other committees.
+      const p = past[k];
+      const usual = p && p[0] >= 20 && !/^Rules$/.test(name(k)) ? `Usually approves ${pctOf(p[1], p[0])}% of the bills that start here` : "";
+      return `<div class="ch"><span class="house">${HOUSE[house]}</span>
+        <b>${esc(commPlain(name(k)))}</b>
+        ${c?.chair ? `<span>Chair: ${esc(c.chair)}</span>` : ""}
+        <span><button type="button" class="linkish" data-commbills="${esc(k)}">${num(counts[k])} bills</button>${DATA.current ? " this session" : ""}</span>
+        ${usual ? `<span class="muted">${usual}</span>` : ""}</div>`;
+    }).join("");
+  };
+  const cards = [...groups.values()].sort((a, b) => b.total - a.total).map((g) => {
+    const note = COMM_NOTES[g.label.toLowerCase()];
+    return `<div class="ccard"><h3>${esc(g.label)}</h3>${note ? `<p class="cnote">${esc(note)}</p>` : ""}<div class="chalves">${half("S", g.S)}${half("A", g.A)}</div></div>`;
+  });
+  $("howComm").innerHTML = `<h2>Committees</h2>
+    <ul class="impact">
+      <li><b>Every bill starts in a committee on its subject.</b> Each house has its own committees, with their own members and chair.</li>
+      <li><b>The chair decides which bills come up.</b> A bill that never gets on the agenda dies there, which is what happens to most bills.</li>
+      <li><b>Some bills need a second committee.</b> Bills that cost money go to Senate Finance or Assembly Ways and Means. Bills that create crimes or change penalties go to Codes. Near the end of the session, many bills go through Rules, which the leaders run.</li>
+    </ul>
+    <p class="muted">Each subject's Senate and Assembly committees, busiest first. Click the number of bills to see them.</p>
+    <div class="ccards">${cards.join("")}</div>`;
+}
+
 function renderHowCal() {
   const Y = DATA.session, start = Date.UTC(Y, 0, 1), span_ = Date.UTC(Y + 2, 0, 1) - start;
   const pos = (d) => +(((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - start) / span_) * 100).toFixed(2);
@@ -3645,6 +3768,8 @@ function hydrate(raw) {
   $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
   try { renderHowCal(); } catch (e) { console.error(e); }
+  try { renderHowComm(); } catch (e) { console.error(e); }
+  try { const h = localStorage.getItem("abt:howsec"); if (h && $(h)?.classList.contains("howsec")) showHowSec(h); } catch (e) {}
   try { renderIntro(); } catch (e) { console.error(e); }
   const stale = staleNotice(raw);
   const notice = [stale, sessionNotice(raw)].filter(Boolean).join(" ");

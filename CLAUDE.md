@@ -66,6 +66,10 @@ Read README.md for what each script downloads. This file covers how to change th
     `share-link-copied`, `list-viewed`, `list-published`, `list-updated`, `list-link-copied`,
     `shared-list-added`, `action-logged`, `county/`, `error/`, `visit/first`, `visit/returning`,
     `watchlist/`.
+- **How a bill becomes law:** subtabs via `showHowSec()` (sections are `.howsec`; links use
+  `data-how="<id>"`). The Committees tab is `renderHowComm()`: it pairs Senate and Assembly
+  committees by name, or through `COMM_PAIRS` when the names differ, with notes in `COMM_NOTES`.
+  "N bills" links set `state.comm` and open the Bills tab.
 - **Startup:** `hydrate(raw)` sets `DATA` and `BILLS`, then `wire()` attaches event handlers and
   `render()` draws everything.
 

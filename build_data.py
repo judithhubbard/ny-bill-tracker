@@ -498,7 +498,8 @@ def load_session(session):
                     veto = int(m.group(1))
 
         laws = sorted({b["lawSection"] for b in live if b["lawSection"]})
-        comms = sorted({f"{b2['chamber'][0]} · {norm_comm(c['name'])}" for b2 in live for c in b2["pastCommittees"]})
+        # Each committee under its own house (a Senate bill sent to the Assembly meets Assembly committees).
+        comms = sorted({f"{(c.get('chamber') or b2['chamber'])[0]} · {norm_comm(c['name'])}" for b2 in live for c in b2["pastCommittees"]})
         comm_names = {norm_comm(c["name"]) for b in live for c in b["pastCommittees"]}
         text = " ".join(filter(None, [lead["title"], lead["summary"]]))
 
