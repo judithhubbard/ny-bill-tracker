@@ -37,7 +37,7 @@ SITE_URL = os.environ.get("SITE_URL", "https://albanybilltracker.org/")
 # Visitor counts on the public site only (both are public values that appear in the page source).
 # Cloudflare Web Analytics: the token from its JS snippet. GoatCounter: the site code, as in <code>.goatcounter.com.
 CF_ANALYTICS_TOKEN = ""
-GOATCOUNTER_CODE = ""
+GOATCOUNTER_CODE = "albanybilltracker"
 
 
 def read_session(session):
