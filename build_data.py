@@ -1478,6 +1478,43 @@ WORDING = [
 ]
 
 
+def topic_ring(loaded):
+    """The order of topics around the "Who works on what" ring: the arrangement where neighbors most often
+    share bills, all the way around (exact, by dynamic programming; 13 topics is small). Fixed across
+    sessions so the picture doesn't shift from day to day."""
+    topics = [t for t in TOPICS if t != "const"]
+    n, co = Counter(), Counter()
+    for sn in loaded:
+        for r in loaded[sn][0]:
+            if narrow_bill(r):
+                continue
+            ts = [t for t in r["topics"] if t in topics]
+            n.update(ts)
+            for i, a in enumerate(ts):
+                for b in ts[i + 1:]:
+                    co[frozenset((a, b))] += 1
+    # How strongly two topics go together, not just how big they are.
+    w = lambda a, b: co[frozenset((a, b))] / ((n[a] * n[b]) ** 0.5 or 1)
+    start = max(topics, key=lambda t: n[t])
+    rest = [t for t in topics if t != start]
+    k = len(rest)
+    best = {(1 << i, i): (w(start, rest[i]), [i]) for i in range(k)}
+    for mask in range(1, 1 << k):
+        for last in range(k):
+            if (mask, last) not in best:
+                continue
+            score, path = best[(mask, last)]
+            for nxt in range(k):
+                if mask & (1 << nxt):
+                    continue
+                key, cand = (mask | (1 << nxt), nxt), score + w(rest[last], rest[nxt])
+                if key not in best or cand > best[key][0]:
+                    best[key] = (cand, path + [nxt])
+    full = (1 << k) - 1
+    _, path = max((best[(full, last)][0] + w(rest[last], start), best[(full, last)][1]) for last in range(k))
+    return [start] + [rest[i] for i in path]
+
+
 def trends(loaded):
     """Per subject: bills per 1,000 in each session, the first bill on it, who sponsors most now, laws."""
     sessions = sorted(loaded)
@@ -1572,6 +1609,7 @@ def main():
     current = max(SESSIONS)
     insight = insights(loaded, hist, current)
     insight["trends"] = trends(loaded)
+    insight["topicRing"] = topic_ring(loaded)
 
     # Current legislators for past sessions' pages (profile card and the sessions they served in).
     legs_now = legislators(current)

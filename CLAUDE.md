@@ -46,9 +46,16 @@ Read README.md for what each script downloads. This file covers how to change th
 - **Statistics:** `renderStats()`, which builds every stats section, plus `sankey()` (odds),
   `monthChart()`, `oddsLine()` (the "In past sessions…" line in a bill panel) and the network
   (`renderNet()` / `drawNet()`, which loads d3 on demand).
-- **Who works on what:** `whoData()` / `renderWho()` (current session only). Each legislator is placed
-  among topic anchors around a ring, weighted by share²÷typical share. Clicking a dot draws lines to
-  its topics; clicking a topic lists the leaders.
+- **Who works on what:** `whoData()`, `whoLayout()`, `whoSvg()`, `whoPanel()`, `renderWho()` and
+  `whoDrag()` (current session only).
+  - Each legislator is placed among topic anchors around a ring, weighted by share²÷typical share.
+  - The ring order comes from `topic_ring()` in build_data.py: the exact best cycle, where neighbors
+    share the most bills.
+  - Visitors can drag topics to reorder the ring; the order is saved in `abt:whoorder`.
+  - Dots split between two distant topics get a gold outline.
+- **Near-identical bills:** `twinLine()` names them, and `likelierOf()` says which version is more
+  likely to move: matching bills in both houses first, then the one that got further, then the
+  sponsor's newer version.
 - **What's changing:** `renderTrends()` draws `DATA.insights.trends`, from `trends()` in build_data.py.
   Its subjects (`TRENDS`) and wording pairs (`WORDING`) were picked by hand from an automatic phrase
   scan; check new ones before adding.
