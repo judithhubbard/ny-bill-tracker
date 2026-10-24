@@ -304,7 +304,7 @@ table.oc th { vertical-align: bottom; }
 
 /* Statistics visuals */
 .vlist { display: grid; gap: 4px; }
-.vrow { display: grid; grid-template-columns: minmax(0, 230px) 200px minmax(0, 340px); gap: 12px; align-items: center; justify-content: start; }
+.vrow { display: grid; grid-template-columns: 260px 200px minmax(0, 340px); gap: 12px; align-items: center; justify-content: start; }
 .vrow .lab b { display: block; font-weight: 600; font-size: 13px; line-height: 1.2; }
 .vrow .lab small, .vrow .val small { display: block; color: var(--ink-2); font-size: 11.5px; line-height: 1.25; }
 .vtrack { position: relative; height: 7px; background: var(--pip-off); border-radius: 2px; }
@@ -667,7 +667,9 @@ ul.impact { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 7
 .sankey .sk-l { font: 12px var(--body); fill: var(--ink-2); }
 .sankey .sk-b { font-weight: 600; fill: var(--ink); }
 .sankey .sk-p { font: 700 11.5px var(--body); fill: var(--ink); }
-.vrow.sub .lab { padding-left: 16px; border-left: 2px solid var(--rule); }
+.vsub { display: grid; gap: 6px; margin: 4px 0 10px; padding: 8px 14px 10px 0; background: var(--chip); border-radius: 8px; width: fit-content; max-width: 100%; }
+.vsub p.vsub-h { margin: 0 0 0 14px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.vrow.sub .lab { padding-left: 14px; }
 .vrow.sub .lab b { font-weight: 500; font-size: 12.5px; }
 .wcard details.morebill { border: 0; border-top: 1px solid var(--rule); background: none; box-shadow: none; margin: 4px 0 0; border-radius: 0; }
 .wcard details.morebill > summary { display: block; padding: 8px 0 0; background: none; border: 0; font-weight: 600; font-size: 13px; color: var(--navy); }
@@ -2328,8 +2330,8 @@ function renderStats() {
       const row = vrow(l, `${num(n)} bills`, [[pctOf(back, n), "a"], [pctOf(law, n), "l"]], `${pctOf(back, n)}% came back · <b class="big">${pctOf(law, n)}%</b> law`);
       // Bills that died in committee, by what happened to them there.
       const cf = k === "committee" && I.commFate?.[t];
-      return row + (!cf ? "" : COMM_FATE.map(([ck, cl]) => { const [cn, cb, claw] = cf[ck] || [0, 0, 0];
-        return vrow(cl, `${num(cn)} bills`, [[pctOf(cb, cn), "a"], [pctOf(claw, cn), "l"]], `${pctOf(cb, cn)}% came back · <b class="big">${pctOf(claw, cn)}%</b> law`).replace('class="vrow"', 'class="vrow sub"'); }).join(""));
+      return row + (!cf ? "" : `<div class="vsub"><p class="vsub-h">What happened to them in committee</p>${COMM_FATE.map(([ck, cl]) => { const [cn, cb, claw] = cf[ck] || [0, 0, 0];
+        return vrow(cl, `${num(cn)} bills`, [[pctOf(cb, cn), "a"], [pctOf(claw, cn), "l"]], `${pctOf(cb, cn)}% came back · <b class="big">${pctOf(claw, cn)}%</b> law`).replace('class="vrow"', 'class="vrow sub"'); }).join("")}</div>`);
     }).join("")}</div>
     <p class="note">“Held without a vote”: put on a committee's agenda, then held for consideration (Assembly) or tabled (Senate). Committees rarely vote bills down; they hold them instead.</p>
     <p class="note">${topicName.charAt(0).toUpperCase() + topicName.slice(1)} that died in ${I.pastSessions[0]}–${String(I.pastSessions[I.pastSessions.length - 2] + 1).slice(2)}, followed through ${I.pastSessions[I.pastSessions.length - 1] + 1}.</p>
