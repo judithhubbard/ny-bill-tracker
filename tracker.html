@@ -288,6 +288,7 @@ table.oc th { vertical-align: bottom; }
 
 /* Active filters */
 .active { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.linkcounty { flex-basis: 100%; margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
 .chipx { appearance: none; border: 1px solid var(--navy); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 3px 6px 3px 10px; font: 600 12.5px var(--body); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .chipx b { font-weight: 400; color: var(--ink-2); }
 .chipx span[aria-hidden] { font-size: 14px; line-height: 1; color: var(--ink-2); }
@@ -984,6 +985,7 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
         <input type="search" id="q" class="q" placeholder="Search bills: number, words, sponsor" autocomplete="off" aria-label="Search bills">
         <span id="count"></span>
         <button class="act-btn csv" type="button" id="csv" title="Download the bills shown, as a spreadsheet file">Download</button>
+        <button class="act-btn" type="button" id="viewLinkBtn" hidden title="Copy a link that opens this list with these filters">Copy link</button>
         <span id="starAllBox"></span>
         <label class="sortby" for="sort">Sort
           <select id="sort">
@@ -1312,6 +1314,55 @@ function sponsoredBy(b, L, withCos) {
   return b.vers.some((v) => v.p[0] === L.house && (v.sponsor === L.apiName || (withCos && v.cosponsors.includes(L.apiName))));
 }
 
+// ---- A link to the current view: the filters ride in the address (#v&stage=3,4&topics=env…), so the
+// address can be bookmarked or sent, and it shows whatever matches when it's opened.
+let LINK_COUNTY = null; // { from, mine }: a view link chose a county other than the viewer's own
+function viewParams() {
+  const p = new URLSearchParams(), b = blank();
+  for (const k of [...FILTER_KEYS, "q"]) {
+    const v = state[k];
+    if (k === "who" && PRESET?.who) continue;
+    if (k === "topics") { if (v.size) p.set("topics", [...v].join(",")); continue; }
+    if (v == null || v === "" || v === false || v === b[k]) continue;
+    p.set(k, v === true ? "1" : String(v));
+  }
+  if (state.nearby) p.set("county", HOME);
+  return p.toString().replace(/%2C/g, ",");
+}
+function viewLink() {
+  const v = viewParams();
+  const base = ROOT ? location.origin + location.pathname : `${PUBLIC_SITE}${DATA.current ? "" : `${DATA.session}.html`}`;
+  return base + (v ? `#v&${v}` : "");
+}
+// Opening a view link: its filters replace the saved ones (without changing the viewer's saved county).
+function applyViewLink() {
+  if (!location.hash.startsWith("#v&")) return false;
+  const p = new URLSearchParams(location.hash.slice(3));
+  Object.assign(state, blank());
+  for (const [k, v] of p) {
+    if (k === "topics") state.topics = new Set(v.split(",").filter((t) => t in TOPICS));
+    else if (k === "stage") state.stage = v.includes(",") ? v : +v;
+    else if (k === "whoCos" || k === "nearby") state[k] = v === "1";
+    else if (FILTER_KEYS.includes(k) || k === "q") state[k] = v;
+  }
+  const county = p.get("county");
+  if (county && (DATA.counties || []).includes(county) && county !== HOME) {
+    let mine = null;
+    try { mine = localStorage.getItem("abt:county"); } catch (e) {}
+    // Offer the viewer's own county only if they've chosen one.
+    LINK_COUNTY = mine && mine !== county ? { from: county, mine } : null;
+    HOME = county;
+  }
+  return true;
+}
+// Keep the address in step with the filters on the public site, so it can be bookmarked or copied.
+function syncViewHash() {
+  if (!ROOT || ONE != null || $("view-bills").hidden) return;
+  const h = location.hash;
+  if (h && !h.startsWith("#v&")) return; // a bill (#S1234) or a tab (#watch) owns the address
+  const v = viewParams(), want = v ? `#v&${v}` : "";
+  if (h !== want) try { history.replaceState(null, "", location.pathname + location.search + want); } catch (e) {}
+}
 function clearHash() { try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
 
 // A link to one bill (#S4574) shows just that bill, whatever the other filters.
@@ -2945,6 +2996,8 @@ function renderList() {
   const page = (PRESET?.who && LEG_BY_ID[PRESET.who]) || PAST_WHO;
   const total = PAST_WHO ? BILLS.filter(pastWhoTest).length : page ? BILLS.filter((b) => sponsoredBy(b, page, state.whoCos)).length : BILLS.length;
   $("count").innerHTML = page && rows.length === total ? `<b>${num(total)}</b> bills` : `<b>${num(rows.length)}</b> of ${page ? "their " : ""}${num(total)} bills`;
+  $("viewLinkBtn").hidden = !viewParams();
+  $("viewLinkBtn").textContent = "Copy link";
   // Turn a filtered view into watchlist entries in one click (with undo).
   const toAdd = rows.filter((b) => !isWatched(b));
   const filtered = rows.length < total;
@@ -3027,7 +3080,9 @@ function renderActive() {
     ? `<span class="chipx fixed"><b>${esc(label)}:</b> ${esc(val)}</span>`
     : `<button class="chipx" type="button" data-k="${k}" data-v="${esc(v ?? "")}" title="Remove this filter"><b>${esc(label)}:</b> ${esc(val)} <span aria-hidden="true">×</span></button>`).join("")
     + (removable ? `<button class="clearall" type="button" data-clear="all">Clear all</button>` : "") : "";
-  $("active").innerHTML = html; $("active").hidden = !list.length;
+  const note = LINK_COUNTY && state.nearby && HOME === LINK_COUNTY.from && LINK_COUNTY.mine !== HOME
+    ? `<p class="linkcounty">This link shows bills that could affect ${esc(HOME)} County. <button type="button" class="linkish" data-mycounty>Show ${esc(LINK_COUNTY.mine)} County instead</button></p>` : "";
+  $("active").innerHTML = html + note; $("active").hidden = !list.length && !note;
   $("filterCount").textContent = list.length ? `${list.length} active` : "";
 }
 
@@ -3512,6 +3567,7 @@ function fillSelects() {
 function render() {
   STAR_UNDO = null; // any change to the view ends the chance to undo "Add all"
   fillSelects();
+  syncViewHash();
   renderWatchView();
   renderPipeline();
   renderTopics();
@@ -3589,6 +3645,12 @@ function wire() {
   $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
   for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party", "voted", "changed"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
   $("csv").addEventListener("click", downloadCsv);
+  $("viewLinkBtn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget, link = viewLink();
+    countUse("view-link-copied");
+    try { await navigator.clipboard.writeText(link); btn.textContent = "Copied"; }
+    catch (err) { prompt("Copy this link:", link); }
+  });
   $("starAllBox").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-starall]"); if (!btn) return;
     if (btn.dataset.starall === "add") {
@@ -3675,6 +3737,7 @@ function wire() {
     if (hs) { showHowSec(hs.dataset.how); if (!hs.closest("#howTabs")) $("view-how").scrollIntoView({ block: "start" }); return; }
     const cb = e.target.closest("[data-commbills]");
     if (cb) { Object.assign(state, blank()); state.comm = cb.dataset.commbills; ONE = null; syncControls(); showView("bills"); render(); return; }
+    if (e.target.closest("[data-mycounty]")) { const c = LINK_COUNTY.mine; LINK_COUNTY = null; setCounty(c); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
     e.preventDefault();
@@ -4245,6 +4308,7 @@ function hydrate(raw) {
     if (state.sort === "due" && !raw.current) state.sort = "recent";
     syncControls();
   }
+  if (applyViewLink()) syncControls();
   if (PRESET?.who) {
     // A legislator's page: start from their bills, keeping only filters saved on this page.
     if (!saved) Object.assign(state, blank());

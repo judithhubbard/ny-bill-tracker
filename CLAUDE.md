@@ -86,6 +86,11 @@ Read README.md for what each script downloads. This file covers how to change th
 - **Similar bills:** `similar_bills()` in build_data.py (TF-IDF on title, summary and the law
   sections amended; it leaves out narrow bills) adds each bill's matches as the last row element.
   `similarBlock()` shows them in the bill panel, and a score of 70 or more is marked "Nearly the same."
+- **View links:** `viewParams()`, `viewLink()`, `applyViewLink()` and `syncViewHash()`. Filters
+  ride in the address (`#v&stage=3,4&topics=env&nearby=1&county=Tompkins`). The public site keeps
+  the address current as you filter. A link's county is applied without changing the viewer's saved
+  county, and `LINK_COUNTY` offers to switch back. "Add all to watchlist" is the `#starAllBox` code
+  in `renderList()`.
 - **Startup:** `hydrate(raw)` sets `DATA` and `BILLS`, then `wire()` attaches event handlers and
   `render()` draws everything.
 
