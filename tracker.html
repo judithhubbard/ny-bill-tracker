@@ -619,6 +619,10 @@ details.actrec[open] > summary { margin-bottom: 8px; }
 .outcomes .field { max-width: 280px; }
 .howview { display: grid; gap: 14px; }
 .howsec { display: grid; gap: 14px; }
+table.commcounts { border-collapse: collapse; font-size: 14px; }
+table.commcounts th, table.commcounts td { padding: 5px 12px; border-bottom: 1px solid var(--rule); text-align: right; }
+table.commcounts th[scope="row"], table.commcounts thead th:first-child { text-align: left; font-weight: 500; }
+table.commcounts td { font-variant-numeric: tabular-nums; font-weight: 600; }
 .ccards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 12px; }
 .ccard { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
 .ccard h3 { margin: 0; font: 700 16px var(--body); }
@@ -1090,7 +1094,15 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
     <h2>About this data</h2>
     <div class="notes">
       <p id="fetched"></p>
-      <p>Data from the New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>, which covers both houses. Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
+      <p>Where the data comes from:</p>
+      <ul>
+        <li><b>New York State Senate <a href="https://legislation.nysenate.gov/" target="_blank" rel="noopener">Open Legislation API</a>:</b> every bill in both houses, its actions and history, Senate votes, and Senate committee agendas, members and chairs.</li>
+        <li><b>New York State Assembly website:</b> Assembly floor votes, and Assembly committee agendas, members and chairs.</li>
+        <li><b>Open States:</b> legislators' email addresses, phone numbers, photos and party, including former members.</li>
+        <li><b>U.S. Census Bureau:</b> which Senate and Assembly districts cover each county, and the address lookup for finding your legislators.</li>
+        <li><b>U.S. Geological Survey:</b> New York place names and their counties, used to tell which county a bill is about.</li>
+      </ul>
+      <p>Senate and Assembly versions of the same bill (“same as”) are shown together, and the stage is the furthest either version reached.</p>
       <p>Privacy: this site counts visits and which features get used, without cookies and without tracking anyone. Your watchlist stays in your browser unless you publish it.</p>
       <p>A bill reintroduced in a later session gets a new number. The API links each bill to its earlier versions, and the history under each bill follows those links. Outcomes are shown for sessions back to 2017–18; older versions are listed without an outcome.</p>
       <p>Topics are assigned from the committees a bill was referred to and the laws it amends, so a bill can have more than one. Bills withdrawn by their sponsors (“stricken”) and resolutions are left out.</p>
@@ -3527,6 +3539,36 @@ const COMM_NOTES = {
   cities: "The Senate has two: Cities 1 for New York City and Cities 2 for other cities.",
   "budget and revenue": "The Senate's tax committee. In the Assembly, tax bills go to Ways and Means.",
 };
+// How many committees each house has, and how many committees its bills go through.
+function commCounts(keys) {
+  const NOT_SUBJECT = / · (Rules|Calendar)$/;
+  const col = (h) => {
+    const mine = BILLS.filter((b) => b.vers.some((v) => v.p[0] === h));
+    const n = (b) => new Set(b.comms.filter((k) => k[0] === h && !NOT_SUBJECT.test(k))).size;
+    const sent = mine.filter((b) => n(b) > 0), passed = mine.filter((b) => (h === "S" ? b.passedS : b.passedA));
+    return {
+      // Current committees only, when the contacts list them (a few bills carry old committee names).
+      comms: keys.filter((k) => k[0] === h && !NOT_SUBJECT.test(k) && (!DATA.contacts?.committees || Object.keys(DATA.contacts.committees).some((c) => c.startsWith(`${h}:${commKey(k.slice(4))}`)))).length,
+      one: pctOf(sent.filter((b) => n(b) === 1).length, sent.length),
+      more: pctOf(sent.filter((b) => n(b) > 1).length, sent.length),
+      passed: passed.length,
+      passedMore: pctOf(passed.filter((b) => n(b) > 1).length, passed.length),
+      passedRules: pctOf(passed.filter((b) => b.comms.includes(`${h} · Rules`)).length, passed.length),
+    };
+  };
+  const S = col("S"), A = col("A");
+  const row = (label, f) => `<tr><th scope="row">${label}</th><td>${f(S)}</td><td>${f(A)}</td></tr>`;
+  return `<div class="tablewrap"><table class="commcounts">
+    <thead><tr><th></th><th>Senate</th><th>Assembly</th></tr></thead>
+    <tbody>
+      ${row("Committees that received bills", (x) => num(x.comms))}
+      ${row("Bills sent to just one committee", (x) => `${x.one}%`)}
+      ${row("Bills sent to two or more", (x) => `${x.more}%`)}
+      ${row("Bills that passed: went through two or more committees", (x) => `${x.passedMore}%`)}
+      ${row("Bills that passed: went through Rules", (x) => `${x.passedRules}%`)}
+    </tbody></table></div>
+    <p class="note">${span(DATA.session)} session${DATA.current ? " so far" : ""}. Committee counts leave out Rules. Most bills never leave their first committee, so few are sent to a second; among bills that passed, needing more than one is common.</p>`;
+}
 function renderHowComm() {
   const I = DATA.insights || {};
   const past = I.committees?.past?.all || {};
@@ -3576,6 +3618,7 @@ function renderHowComm() {
       <li><b>The chair decides which bills come up.</b> A bill that never gets on the agenda dies there, which is what happens to most bills.</li>
       <li><b>Some bills need a second committee.</b> Bills that cost money go to Senate Finance or Assembly Ways and Means. Bills that create crimes or change penalties go to Codes. Near the end of the session, many bills go through Rules, which the leaders run.</li>
     </ul>
+    ${commCounts(keys)}
     <p class="muted">Each subject's Senate and Assembly committees, busiest first. Click the number of bills to see them.</p>
     <div class="ccards">${cards.join("")}</div>`;
 }
