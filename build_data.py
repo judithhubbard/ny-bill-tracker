@@ -1472,9 +1472,11 @@ TRENDS = [
 # Old wording -> new wording, for the same thing.
 WORDING = [
     (("“inmates”", r"\binmates?\b"), ("“incarcerated individuals”", r"incarcerated (?:individual|person|people)")),
-    (("“marihuana”", r"marihuana"), ("“cannabis”", r"cannabis")),
+    (("“marihuana”", r"marihuana"), ("“cannabis”", r"cannabis"),
+     "“Marihuana,” with an h, is the spelling New York law used until the 2021 law legalizing adult use switched to “cannabis.”"),
     (("“alcoholism” and “drug abuse”", r"alcoholism|drug abuse"), ("“substance use”", r"substance use")),
-    (("“his or her”, “he or she”", r"\bhis or her\b|\bhe or she\b"), None, "Almost gone from bill summaries in 2025–26."),
+    (("“his or her”, “he or she”", r"\bhis or her\b|\bhe or she\b"), ("“their”, “they”", r"\btheir\b|\bthey\b"),
+     "In 2025–26 bill summaries switched to gender-neutral wording: “his or her” almost vanished as “their” and “they” rose."),
 ]
 
 

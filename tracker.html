@@ -1972,6 +1972,8 @@ function showStatSec(id) {
   for (const b of document.querySelectorAll("#statTabs button")) b.setAttribute("aria-pressed", b.dataset.sec === id);
   try { localStorage.setItem("abt:statsec", id); } catch (e) {}
   if (id === "statNet") renderNet();
+  // The topic choice and the "leave out" box don't apply to these two sections.
+  document.querySelector(".stattopic").hidden = ["statWho", "statTrend"].includes(id);
   if (id === "statWho") renderWho();
   if (id === "statTrend") renderTrends();
 }
