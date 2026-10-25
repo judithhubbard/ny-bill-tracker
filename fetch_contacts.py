@@ -104,6 +104,8 @@ def senate():
     q = urllib.parse.urlencode({"key": KEY, "full": "true", "limit": 100})
     d = get(f"https://legislation.nysenate.gov/api/3/committees/{SESSION}/senate?{q}", as_json=True)
     committees = {}
+    if not d["result"]["items"]:
+        raise RuntimeError("no committees listed for this session yet")
     for c in d["result"]["items"]:
         members = c.get("committeeMembers", {}).get("items", [])
         chair = next((m["fullName"] for m in members if m.get("title") == "CHAIR_PERSON"), None)
@@ -244,7 +246,10 @@ def main():
     SESSION = int(sys.argv[1]) if len(sys.argv) > 1 else 2025
     KEY = os.environ.get("NYSENATE_API_KEY") or open(os.path.expanduser("~/.nysenate_api_key")).read().strip()
     OUT = os.path.join(HERE, "data", f"contacts_{SESSION}.json")
-    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    # A new session starts from the last one's file: early in January the API has no committees
+    # for the new session yet, so the Senate committees are carried over until it does.
+    prev = os.path.join(HERE, "data", f"contacts_{SESSION - 2}.json")
+    old = json.load(open(OUT)) if os.path.exists(OUT) else json.load(open(prev)) if os.path.exists(prev) else {}
     out = {"session": SESSION, "fetched": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")}
     try:
         out["senateCommittees"] = senate()

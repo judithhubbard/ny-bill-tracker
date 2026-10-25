@@ -783,12 +783,16 @@ def contacts_for(session, recs, delegation_names):
     def ours_on(members, house):
         return sorted({n for n in ours[house] for m in members if name_key(m).endswith(" " + n.lower())})
 
+    def serving(name, house):
+        return bool(name) and (not seats or any(k[0] == house and v["key"].split()[-1] == name_key(name).split()[-1] for k, v in seats.items()))
+
     committees = {}
     for house, key in (("S", "senateCommittees"), ("A", "assemblyCommittees")):
         for k, c in raw.get(key, {}).items():
             committees[f"{house}:{k}"] = {
                 "name": c["name"],
-                "chair": person(c.get("chair"), house),
+                # A chair carried over from last session's committees counts only while still serving.
+                "chair": person(c.get("chair"), house) if serving(c.get("chair"), house) else None,
                 "meets": c.get("meets"),
                 "url": c.get("url"),
                 "ours": ours_on(c.get("members", []), house),

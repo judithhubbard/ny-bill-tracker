@@ -22,7 +22,14 @@ problems = []
 if len(sys.argv) > 2 and os.path.exists(sys.argv[2]):
     problems += [l.strip() for l in open(sys.argv[2]) if l.strip()]
 
-# Bills from Open Legislation: downloaded on every run.
+# Bills from Open Legislation: downloaded on every run. A new session has no file until its first
+# bills are filed (prefiled bills usually appear in December); until then the last one stays current.
+if not os.path.exists(data(f"bills_{SESSION}.json")):
+    if (now.month, now.day) > (1, 15):
+        problems.append(f"No bills have been downloaded for the {SESSION} session yet.")
+    report = ("## Data is behind\n\n" + "\n".join(f"- {p}" for p in problems)) if problems else f"## No {SESSION} bills yet"
+    print(report)
+    sys.exit(1 if problems else 0)
 bills = json.load(open(data(f"bills_{SESSION}.json")))
 fetched = datetime.strptime(bills["fetched"][:10], "%Y-%m-%d").date()
 if (now.date() - fetched).days >= 2:
