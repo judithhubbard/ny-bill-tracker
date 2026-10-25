@@ -75,6 +75,12 @@ Read README.md for what each script downloads. This file covers how to change th
   - `countUse(name)` sends an anonymous GoatCounter event, but only on the public site.
   - `countError()` and `countVisit()` are built on it. `staleNotice()` warns visitors when data is
     2 or more days old.
+  - Contact links: `emailHtml()`, `phonesHtml()` and `GOV_REACH` render mailto and tel links that
+    carry `data-contact="how|role"`, where the role comes from `roleKind()`. One page-wide click
+    listener counts `contact/<role>/<how>`.
+  - `step()` counts pairs of steps within one visit (`steps/opened a bill → starred`, and so on).
+    `countOnce()` counts tab moves (`move/`), sections (`stats/`, `how/`), tips (`tip/`) and
+    searches (`search/used`, `search/found nothing`; never the words typed).
   - Event names in use: `starred/`, `opened/`, `email-copied/`, `email-copied-several`,
     `share-link-copied`, `list-viewed`, `list-published`, `list-updated`, `list-link-copied`,
     `shared-list-added`, `action-logged`, `county/`, `error/`, `visit/first`, `visit/returning`,

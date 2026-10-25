@@ -600,6 +600,8 @@ details.actrec[open] > summary { margin-bottom: 8px; }
 .wcard .do .reach { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .wcard .do .also { font-size: 13px; color: var(--ink-2); }
 .wcard .phone { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+a.phone { color: inherit; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 2px; }
+a.phone:hover { text-decoration-color: currentColor; }
 .act-btn.small { padding: 3px 9px; font-size: 12px; }
 .wcard details.morefiltersbill { border: 0; }
 .wcard details.morefiltersbill > summary { display: block; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; font-size: 13px; color: var(--navy); font-weight: 600; }
@@ -1080,8 +1082,8 @@ details.morefilters #moreCount, details.morefilters #topicCount { margin-left: 6
 
     <div class="act-sec">
       <h2>Governor's office</h2>
-      <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message to the governor</a></p>
-      <p>Phone: <span class="phone">(518) 474-8390</span>, 9 a.m. to 5 p.m.</p>
+      <p>Online: <a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener" data-contact="online|governor">Send a message to the governor</a></p>
+      <p>Phone: <a class="phone" href="tel:+15184748390" data-contact="call|governor">(518) 474-8390</a>, 9 a.m. to 5 p.m.</p>
       <p>Mail: NYS State Capitol Building, Albany, NY 12224. Letters on passed bills: Counsel to the Governor, same address.</p>
     </div>
 
@@ -1234,8 +1236,15 @@ function deadline(iso) {
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 }
 // District office phones with their towns ("Ithaca 607-277-8030 · Cortland 607-208-2024").
-const phonesHtml = (p) => (p.phones && p.phones.length ? p.phones : p.phone ? [["", p.phone]] : [])
-  .map(([town, n]) => `${town ? `${esc(town)} ` : ""}<span class="phone">${esc(n)}</span>`).join(" · ");
+// Email addresses and phone numbers as links (tap to write or call); "role" says who it is, for the counts.
+const telOf = (n) => { const d = String(n).replace(/\D/g, ""); return d.length === 10 ? `+1${d}` : d; };
+const emailHtml = (e, role = "legislator") => e ? `<a class="phone" href="mailto:${esc(e)}" data-contact="email|${role}">${esc(e)}</a>` : "";
+const phonesHtml = (p, role = "legislator") => (p.phones && p.phones.length ? p.phones : p.phone ? [["", p.phone]] : [])
+  .map(([town, n]) => `${town ? `${esc(town)} ` : ""}<a class="phone" href="tel:${telOf(n)}" data-contact="call|${role}">${esc(n)}</a>`).join(" · ");
+// Who someone is to a bill, in a word, for the contact counts.
+const roleKind = (roles = []) => roles.some((r) => /^chair/.test(r)) ? "chair" : roles.some((r) => /floor/.test(r)) ? "leader"
+  : roles.some((r) => /^your /.test(r)) ? "your-legislator" : roles.some((r) => /^sponsor/.test(r)) ? "sponsor" : roles.some((r) => /^member/.test(r)) ? "committee-member" : "legislator";
+const GOV_REACH = `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener" data-contact="online|governor">Send a message online</a> · <a class="phone" href="tel:+15184748390" data-contact="call|governor">(518) 474-8390</a>`;
 const span = (s) => `${s}–${String(s + 1).slice(2)}`;
 
 const storeKey = (k) => `abt:${DATA.session}:${PRESET?.who ? "who:" + PRESET.who + ":" : ""}${k}`;
@@ -1253,7 +1262,7 @@ function asmUrl(p, session = DATA.session) {
 function textLinks(b) {
   // Each house's site has its own version's text and its sponsor's memo.
   const s = b.vers.find((v) => v.p[0] === "S"), a = b.vers.find((v) => v.p[0] === "A");
-  const link = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener">${text} ↗</a>`;
+  const link = (url, text) => `<a href="${esc(url)}" target="_blank" rel="noopener" data-out="bill-text">${text} ↗</a>`;
   return [s && link(billUrl(s.p), `${esc(s.p)} on the Senate's site: text and sponsor's memo`),
     a && link(asmUrl(a.p), `${esc(a.p)} on the Assembly's site: text and sponsor's memo`)].filter(Boolean).join("<br>");
 }
@@ -1571,6 +1580,7 @@ function statusText(b) {
 // A small "i" that explains a term on hover, focus or tap. The text shows in one box at the page level,
 // so panels that scroll can't cut it off.
 function showTip(btn) {
+  countOnce(`tip/${btn.dataset.tip.split(/[.:;]/)[0].slice(0, 60)}`);
   let box = document.getElementById("tipbox");
   if (!box) { box = document.createElement("div"); box.id = "tipbox"; box.setAttribute("role", "tooltip"); document.body.appendChild(box); }
   box.textContent = btn.dataset.tip;
@@ -1618,7 +1628,7 @@ const PAST_STAGE_TIPS = [
 ];
 const OUT_OF_TIME = "Floor votes for this session are over. A bill that hasn't passed both houses can move only if lawmakers return for a special session; otherwise it dies December 31 and has to be reintroduced.";
 const DECIDES = `<span class="decides">Decides</span>${TIP('The person whose decision moves the bill to its next step.')}`;
-const govItem = (ask) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach"><a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span></span></li>`;
+const govItem = (ask) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach">${GOV_REACH}</span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
@@ -1700,6 +1710,7 @@ function lookUpReps(address) {
     const pick = (re) => { const k = Object.keys(g).find((x) => re.test(x)); return k && g[k][0] ? +g[k][0].BASENAME : null; };
     const sd = pick(/Upper/), ad = pick(/Lower/);
     const county = (g.Counties?.[0]?.BASENAME || "").replace(/ County$/, "");
+    countUse(sd && ad ? "lookup/found" : "lookup/not-found");
     if (!sd || !ad) return done("That address wasn't found in New York. Try adding the town and ZIP code, or choose from the lists below.");
     done("");
     if (county && (DATA.counties || []).includes(county)) { HOME = county; try { localStorage.setItem("abt:county", HOME); } catch (e) {} }
@@ -1783,7 +1794,8 @@ function contactBook(b, canMove = true, oppose = false) {
         const ours = p.roles.some((r) => r.startsWith("your "));
         const status = signed ? ` <span class="ours">co-sponsor</span>` : ours && !isSponsor ? ` <span class="muted">not a sponsor or co-sponsor</span>` : "";
         const name = info.url ? `<a href="${esc(info.url)}" target="_blank" rel="noopener">${title} ${esc(p.name)}</a>` : `${title} ${esc(p.name)}`;
-        const reach = [info.email && `<span class="phone">${esc(info.email)}</span>`, phonesHtml(info)].filter(Boolean).join(" · ");
+        const kind = roleKind(p.roles);
+        const reach = [emailHtml(info.email, kind), phonesHtml(info, kind)].filter(Boolean).join(" · ");
         const roles = p.roles.join("; ");
         const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
         return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` ${DECIDES}` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
@@ -2031,6 +2043,7 @@ function govTiming(I) {
 
 let statSec = "statOdds";
 function showStatSec(id) {
+  if (!$("view-stats").hidden) countOnce(`stats/${id.replace(/^stat/, "")}`);
   statSec = id;
   for (const s of document.querySelectorAll(".statsec")) s.hidden = s.id !== id;
   for (const b of document.querySelectorAll("#statTabs button")) b.setAttribute("aria-pressed", b.dataset.sec === id);
@@ -3167,7 +3180,7 @@ function watchItems(list, stanceOf, rank) {
 }
 // My watched bills in the order they show, for share links and published lists.
 function myOrdered() { const { active, idle } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle].map((x) => x.b); }
-function toggleWatch(b) { if (!isWatched(b)) countUse(`starred/${baseNum(b.nums[0])}`); setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
+function toggleWatch(b) { if (!isWatched(b)) { countUse(`starred/${baseNum(b.nums[0])}`); step("starred"); } setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
 function markSeen(b) { const e = watchEntry(b); if (e && e.seen !== (b.last || "")) { setWatch(b, { ...e, seen: b.last || "" }); updateWatchTab(); } }
 // The Watchlist tab: how many bills, and a badge for how many have news.
 function updateWatchTab() {
@@ -3205,6 +3218,17 @@ function countUse(name, tries = 0) {
   if (window.goatcounter?.count) { try { window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} return; }
   if (ROOT && tries < 6) setTimeout(() => countUse(name, tries + 1), 2000);
 }
+// Steps within one visit, counted as pairs ("starred, then contacted") so the totals show where
+// people stop. Kept in memory only; nothing ties one visit's steps to a person.
+const STEPS = [];
+function step(name) {
+  if (STEPS.includes(name)) return;
+  for (const before of STEPS) countUse(`steps/${before} → ${name}`);
+  STEPS.push(name);
+}
+// Moves between tabs and sections, counted once each per visit.
+const MOVED = new Set();
+function countOnce(name) { if (MOVED.has(name) || MOVED.size > 40) return; MOVED.add(name); countUse(name); }
 // Script errors, so a bug that breaks the site on some browser shows up in the counts. Only the
 // error message and the kind of browser are sent, at most three per visit.
 let ERRORS_SENT = 0;
@@ -3365,13 +3389,13 @@ function keyAction(b, stance) {
   if (plan.gov) key = { gov: true, name: "Governor's office", ask: plan.gov };
   else {
     const p = plan.book.entries().find((e) => e.star && e.asks.length);
-    if (p) key = { gov: false, name: p.name, house: p.house, ask: p.asks.join("; "), info: infoFor(p.name) };
+    if (p) key = { gov: false, name: p.name, house: p.house, ask: p.asks.join("; "), info: infoFor(p.name), role: roleKind(p.roles) };
   }
   // Our own legislators, when they have something to do on this bill.
   const reps = plan.book.entries().filter((e) => e.asks.length && e.roles.some((r) => r.startsWith("your ")) && (!key || lastName(e.name) !== lastName(key.name || "")))
     .map((e) => {
       const L = LEGS.find((x) => x.house === e.house && lastName(x.name) === lastName(e.name));
-      return { name: L ? L.name : e.name, house: e.house, ask: e.asks.join("; "), info: infoFor(e.name) };
+      return { name: L ? L.name : e.name, house: e.house, ask: e.asks.join("; "), info: infoFor(e.name), role: "your-legislator" };
     });
   return { plan, key, reps };
 }
@@ -3382,20 +3406,20 @@ function reintroAsk(b, stance) {
   if (stance === "oppose" || !floorVotesOver() || b.stage >= 3) return "";
   const people = DATA.contacts?.people || {};
   const infoFor = (name) => people[name] || Object.entries(people).find(([n]) => lastName(n) === lastName(name))?.[1] || {};
-  const sponsors = b.vers.filter((v) => v.sponsor).map((v) => ({ name: v.sponsor, house: v.p[0], info: infoFor(v.sponsor) }));
+  const sponsors = b.vers.filter((v) => v.sponsor).map((v) => ({ name: v.sponsor, house: v.p[0], info: infoFor(v.sponsor), role: "sponsor" }));
   if (!sponsors.length) return "";
   // A bill with a version in only one house needs a sponsor in the other to pass; your legislator there could carry it.
   const missing = ["S", "A"].find((h) => !b.vers.some((v) => v.p[0] === h));
   const rep = missing && votePeople().find((L) => L.house === missing && !sponsors.some((p) => p.house === missing));
   const carry = rep ? `<p class="who">It has no ${HOUSE[missing]} version. Ask ${esc(titleOf({ house: rep.house, name: rep.name }))} to sponsor one.</p>
-    <p class="reach">${reachOf({ house: rep.house, name: rep.name, info: infoFor(rep.apiName || rep.name) })}</p>` : "";
+    <p class="reach">${reachOf({ house: rep.house, name: rep.name, info: infoFor(rep.apiName || rep.name), role: "your-legislator" })}</p>` : "";
   return `<div class="do reintro"><p class="who"><b>Next session</b> Ask the sponsor${sponsors.length > 1 ? "s" : ""} to reintroduce it in January ${DATA.session + 2}.</p>
     ${sponsors.map((p) => `<p class="reach"><b>${esc(titleOf(p))}</b> ${reachOf(p)}</p>`).join("")}${carry}</div>`;
 }
 function reachOf(p) {
-  if (p.gov) return `<a href="https://www.governor.ny.gov/content/governor-contact-form" target="_blank" rel="noopener">Send a message online</a> · <span class="phone">(518) 474-8390</span>`;
-  const i = p.info || {};
-  return [i.email && `<span class="phone">${esc(i.email)}</span>`, phonesHtml(i),
+  if (p.gov) return GOV_REACH;
+  const i = p.info || {}, role = p.role || "legislator";
+  return [emailHtml(i.email, role), phonesHtml(i, role),
     i.url && `<a href="${esc(i.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
 }
 
@@ -3448,7 +3472,7 @@ function renderWatchView() {
         <p class="who"><b>${esc(titleOf(x.key))}</b> ${DECIDES}</p>
         <p class="askbig">Ask: ${esc(x.key.ask)}</p>
         <p class="reach"><button class="act-btn primary" type="button" data-email="${b.idx}">Copy email</button> ${reachOf(x.key)}</p>
-        ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (<span class="phone">${esc(r.info.email)}</span>)` : ""}`).join("; ")}.</p>` : ""}
+        ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (${emailHtml(r.info.email, "your-legislator")})` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
     const open = W_OPEN.has(billKey(b)), logged = SHARED ? 0 : logOf(b).length;
     const due = DATA.current && b.stage === 4 && b.due ? ` · due ${fmtDate(b.due)}` : "";
@@ -3586,6 +3610,7 @@ function fillDetail(el) {
   const b = BILLS[+el.dataset.idx];
   markSeen(b);
   countUse(`opened/${baseNum(b.nums[0])}`);
+  step("opened a bill");
   // On a watchlist card the summary and the key action are already shown above.
   const inCard = el.classList.contains("morebill");
   d.innerHTML = `${b.summary && !inCard ? `<p>${esc(b.summary)}</p>` : ""}
@@ -3608,6 +3633,8 @@ function showView(v, push = true) {
   // A finished session has nothing to watch or weigh in on.
   if (!DATA.current && ["watch", "act"].includes(v)) v = "bills";
   // The tab goes in the address bar, so Back moves between tabs and links keep the tab.
+  const from = VIEWS.find((x) => !$("view-" + x).hidden);
+  if (from && from !== v) countOnce(`move/${from} → ${v}`);
   const here = location.hash.slice(1);
   if (push && here !== v && !(v === "bills" && !VIEWS.includes(here))) {
     try { history.pushState(null, "", v === "bills" ? location.pathname + location.search : `#${v}`); } catch (err) {}
@@ -3642,9 +3669,12 @@ function wire() {
     const t = btn.dataset.t; state.topics.has(t) ? state.topics.delete(t) : state.topics.add(t); state.shown = PAGE; render();
   });
   let timer;
-  $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => { state.q = e.target.value.trim(); state.shown = PAGE; render(); }, 180); });
+  $("q").addEventListener("input", (e) => { clearTimeout(timer); timer = setTimeout(() => {
+    state.q = e.target.value.trim(); state.shown = PAGE; render();
+    if (state.q.length >= 3) { countOnce("search/used"); if (!BILLS.some((b) => matches(b))) countOnce("search/found nothing"); }
+  }, 180); });
   for (const id of ["comm", "progress", "house", "hist", "intro", "sort", "party", "voted", "changed"]) $(id).addEventListener("change", (e) => { state[id] = e.target.value; state.shown = PAGE; render(); });
-  $("csv").addEventListener("click", downloadCsv);
+  $("csv").addEventListener("click", () => { countUse("download"); downloadCsv(); });
   $("viewLinkBtn").addEventListener("click", async (e) => {
     const btn = e.currentTarget, link = viewLink();
     countUse("view-link-copied");
@@ -3737,6 +3767,10 @@ function wire() {
     if (hs) { showHowSec(hs.dataset.how); if (!hs.closest("#howTabs")) $("view-how").scrollIntoView({ block: "start" }); return; }
     const cb = e.target.closest("[data-commbills]");
     if (cb) { Object.assign(state, blank()); state.comm = cb.dataset.commbills; ONE = null; syncControls(); showView("bills"); render(); return; }
+    const ct = e.target.closest("[data-contact]");
+    if (ct) { const [how, who] = ct.dataset.contact.split("|"); countUse(`contact/${who}/${how}`); step("contacted"); }
+    const out = e.target.closest("[data-out]");
+    if (out) countUse(`read/${out.dataset.out}`);
     if (e.target.closest("[data-mycounty]")) { const c = LINK_COUNTY.mine; LINK_COUNTY = null; setCounty(c); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
     const a = e.target.closest("[data-bill]"); if (!a) return;
@@ -3765,14 +3799,15 @@ function wire() {
     const f = e.target.closest("[data-logform]"); if (!f) return;
     e.preventDefault();
     const data = new FormData(f);
-    countUse("action-logged");
+    countUse(`action-logged/${(new FormData(f).get("how") || "other").toLowerCase()}`);
+    step("logged an action");
     addLog(BILLS[+f.dataset.logform], { d: data.get("d") || isoToday(), who: data.get("who"), how: data.get("how"), note: (data.get("note") || "").trim() });
     renderWatchView();
   });
   $("wlActions").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-multi]"); if (!btn) return;
     const xs = $("wlActions")._multi[btn.dataset.multi];
-    countUse("email-copied-several");
+    countUse("email-copied-several"); step("contacted");
     copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
   });
   const toggleCard = (head) => {
@@ -3833,7 +3868,7 @@ function wire() {
     if (del) { removeLog(+del.dataset.unlog); renderWatchView(); return; }
     const btn = e.target.closest("[data-email]"); if (!btn) return;
     const x = $("wlActions")._items.find((i) => i.b.idx === +btn.dataset.email);
-    if (x) { countUse(`email-copied/${baseNum(x.b.nums[0])}`); copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }])); }
+    if (x) { countUse(`email-copied/${baseNum(x.b.nums[0])}`); step("contacted"); copyText(btn, draftFor(x.key, [{ b: x.b, ask: x.key.ask }])); }
   });
   $("wl").addEventListener("click", async (e) => {
     const pb = e.target.closest("[data-pub]");
@@ -3942,6 +3977,7 @@ function renderIntro(force) {
 // "How a bill becomes law": the two-year session as a timeline with key dates called out.
 // "How a bill becomes law": one section at a time, like Statistics.
 function showHowSec(id) {
+  if (!$("view-how").hidden) countOnce(`how/${id}`);
   for (const s of document.querySelectorAll(".howsec")) s.hidden = s.id !== id;
   for (const b of document.querySelectorAll("#howTabs button")) b.setAttribute("aria-pressed", b.dataset.how === id);
   try { localStorage.setItem("abt:howsec", id); } catch (e) {}
@@ -4201,7 +4237,7 @@ function renderPerson(L, past) {
   const signed = mine.filter((b) => b.stage === 5).length;
   const chairs = (L.committees || []).filter((c) => c.chair).map((c) => c.name);
   const member = (L.committees || []).filter((c) => !c.chair).map((c) => c.name);
-  const reach = [L.email && `<span class="phone">${esc(L.email)}</span>`, phonesHtml(L),
+  const reach = [emailHtml(L.email, "legislator-page"), phonesHtml(L, "legislator-page"),
     L.url && `<a href="${esc(L.url)}" target="_blank" rel="noopener">Official page</a>`].filter(Boolean).join(" · ");
   $("person").innerHTML = `
     <div class="photo"><span>${esc(L.name.split(" ").filter((w) => /^[A-Z]/.test(w) && !/^(Jr|Sr|II|III)\.?$/.test(w)).map((w) => w[0]).filter((c, i, a) => i === 0 || i === a.length - 1).join(""))}</span>${L.image ? `<img src="${esc(L.image)}" alt="" onerror="this.remove()">` : ""}</div>
