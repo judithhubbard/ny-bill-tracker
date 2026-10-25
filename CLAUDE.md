@@ -106,6 +106,11 @@ Read README.md for what each script downloads. This file covers how to change th
   That happened with `track()`, and the progress bars vanished with no error. A duplicate `const`
   breaks the whole page. Before adding a top-level name, grep for it. `test/check.sh` catches
   duplicate functions.
+- **Nothing shows until the data is drawn.** CSS hides everything but the title (`html:not(.ready)`)
+  until the loader adds `ready` after `hydrate()`. This stops layout jumps, which Cloudflare scores
+  as CLS, and early taps that ran code before `DATA` existed. The build writes the header line
+  (`#sessionLabel`) into the page so it doesn't change length on load. Anything added later above
+  the tabs, like a banner that appears after loading, makes the page jump again.
 - **Public-only features check `ROOT`:** the publish box, analytics, the stale notice and the
   legislator page links. ROOT is empty on Claude copies.
 - **Every event handler is in `wire()`**, mostly delegated from `#list`, `#openNow`, `#wlList` and

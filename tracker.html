@@ -4,6 +4,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
 /* Layout: masthead, then three views (Bills, Statistics, How it works). Bills puts the
@@ -52,6 +53,10 @@ body {
   padding-block: 28px 64px;
 }
 .wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 22px; }
+/* Until the bill data has been drawn, show only the title. Everything else fills in at once,
+   so nothing visible jumps down the page, and no one can tap a control that isn't ready. */
+html:not(.ready) .wrap > :not(.mast), html:not(.ready) .mast > :not(.mast-top), html:not(.ready) #sessions { visibility: hidden; }
+html:not(.ready) .mast::after { content: "Loading bills…"; color: var(--ink-2); }
 a { color: var(--navy); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -3781,6 +3786,7 @@ function wire() {
   });
   // Back, Forward and typed addresses: a bill number opens that bill; a tab name opens the tab.
   const syncFromUrl = () => {
+    if (!DATA) return;
     const h = location.hash.slice(1);
     if (openFromHash()) { showView("bills", false); render(); openOne(); return; }
     if (VIEWS.includes(h) || !h) {
@@ -4409,5 +4415,6 @@ async function unpack(b64) {
   } catch (err) {
     $("list").innerHTML = `<div class="empty">The bill data couldn't be read (${esc(err.message)}).</div>`;
   }
+  document.documentElement.classList.add("ready");
 })();
 </script>

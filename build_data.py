@@ -1731,6 +1731,10 @@ def main():
         if session != current:
             template = template.replace("<title>Albany Bill Tracker</title>",
                                         f"<title>Albany Bill Tracker {session}–{str(session + 1)[2:]}</title>", 1)
+        # The header line is written in now, matching what the page sets, so it doesn't change length
+        # (and push the title down) when the data arrives.
+        label = f"New York State Legislature · {session}–{str(session + 1)[2:]} session" + (f" · updated {fetched}" if session == current else " (final)")
+        template = template.replace('id="sessionLabel">New York State Legislature<', f'id="sessionLabel">{html_escape(label)}<', 1)
         marker = '<script type="application/json" id="bill-data"></script>'
         assert marker in template, "template is missing the data marker"
         # The Claude copies carry the data gzipped and base64-encoded (about a third the size), unpacked in the
