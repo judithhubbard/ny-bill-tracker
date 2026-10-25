@@ -16,7 +16,15 @@ Read README.md for what each script downloads. This file covers how to change th
 - **.github/workflows/update.yml** downloads, builds and deploys every day at 10:00 UTC, four more
   times on weekdays January through June, and on every push to main. `check_fresh.py` runs after
   each build. If data is behind, the `alert` job fails, which makes GitHub email the owner; the
-  site still deploys.
+  site still deploys. It also catches: Assembly agendas that list meetings but yield no bills
+  (`fetch_agendas.py` writes to `PROBLEMS_FILE`), one house with upcoming agendas and the other none,
+  and contacts parts kept from an older copy (`kept` in `contacts_<session>.json`; a new session's
+  Senate committees carry over from the last one until the API names them, warned after Feb 15).
+- **Prefiled bills:** in November and December of even years the workflow also downloads the next
+  session. `build_data.py` decides the current session by the calendar (`CURRENT`); a later one is
+  "upcoming": its page is `<year>.html`, its data has `current` and `upcoming` true, its stages
+  read "Prefiled" (`STAGE_TEXT.prefiled`), and it has no Weigh in or Statistics tab. Statistics and
+  outcomes leave it out. Stars made there carry into January, since watchlists are keyed by session.
 - **lists_worker/** is the Cloudflare Worker for published watchlists (KV namespace LISTS):
   - It serves `GET /lists/:slug` publicly and counts views in `views:<slug>`, except views by the
     list's editors.
@@ -67,6 +75,12 @@ Read README.md for what each script downloads. This file covers how to change th
   - News: `newActions()` (actions since the bill was last opened, skipping `ROUTINE` paperwork,
     most important first by `WEIGHT`), `newsTags()` (the "New: …" and "Coming up: …" tags),
     `nextMeeting()` (from committee agendas) and `updateWatchTab()` (the "N new" badge on the tab).
+  - New session: `carryCandidates()` / `carryBox()` offer bills from last session's watchlist that
+    are back under new numbers (handled ones are kept in `abt:carried:<session>`).
+- **Committee agendas:** `state.agenda` ("On an upcoming committee agenda", a sub-row under In
+  committee, turned on by `setAgenda()`, which also sorts by `meeting`), the "On the agenda" tag on
+  bill rows, and `comingUp()` (Weigh in: the next two weeks' meetings, each folding open to its bills).
+  `CHANGED` also has "Introduced since your last visit" and "in the last 7 days" (`b.dates.intro`).
     `markSeen()` runs when a bill's details or its watchlist card are opened.
   - Sharing: share links are `#w=<session>.S1234.-A5678`, where "-" means oppose. Published lists use
     `publishBox()`, `publishAction()`, `listsApi()` and `loadPublishedList()`. A published list is
@@ -157,5 +171,7 @@ Read README.md for what each script downloads. This file covers how to change th
 - The workflow switches sessions on its own (see README). Check `LEADERS` and `DELEGATION` in
   build_data.py.
 - Check that the Assembly agenda parser in `fetch_agendas.py` matches the real pages. It was
-  written between sessions, without live agendas to test against.
+  written between sessions, without live agendas to test against. The freshness check now warns
+  when it reads no bills.
+- Check `DELEGATION_NAMES` (Webb, Kelles) against the November election.
 - Publish the new session's Claude copy (a new artifact) and add its URL to `artifact_urls.json`.

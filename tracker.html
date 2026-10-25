@@ -199,6 +199,15 @@ table.oc th { vertical-align: bottom; }
 
 /* Bill history across sessions */
 .tag.hist { background: var(--gold-soft); color: var(--ink); }
+.tag.agenda { background: var(--navy); color: var(--sheet); }
+.srow.sub { padding-left: 22px; font-size: 13px; }
+.meets { display: grid; gap: 6px; margin-bottom: 18px; }
+.meet { border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); }
+.meet > summary { padding: 8px 12px; cursor: pointer; }
+.meet > .list { padding: 0 10px 8px; }
+.carry { background: var(--gold-soft); border-radius: 8px; padding: 10px 14px; margin: 10px 0; }
+.carry p { margin: 4px 0; }
+.carry ul { margin: 6px 0; padding-left: 18px; font-size: 13.5px; }
 .tag.veto { background: var(--veto-soft); color: var(--veto); }
 .tag.law { background: var(--signed-soft); color: var(--signed); }
 .lineage { display: grid; gap: 4px; }
@@ -1187,10 +1196,12 @@ const STAGE_TEXT = {
     chart: ["Died in committee", "Died awaiting vote", "Passed one house", "Passed both, not requested", "Sent, no action", "Signed", "Vetoed"],
   },
 };
+// Bills filed before their session opens: committees get them on the first day.
+STAGE_TEXT.prefiled = Object.fromEntries(Object.entries(STAGE_TEXT.live).map(([k, v]) => [k, ["Prefiled", ...v.slice(1)]]));
 const KEY_DATES = ["intro", "floor", "passS", "passA", "died", "deliv", "signed", "vetoed"];
 const PAGE = 100;
-const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "nearby", "voted", "changed"];
-const blank = () => ({ stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", nearby: false, voted: "", changed: "", shown: PAGE });
+const FILTER_KEYS = ["stage", "topics", "law", "comm", "progress", "house", "hist", "intro", "sort", "who", "whoCos", "party", "nearby", "voted", "changed", "agenda"];
+const blank = () => ({ agenda: "", stage: null, topics: new Set(), q: "", law: "", comm: "", progress: "", house: "", hist: "", intro: "", sort: "recent", who: "", whoCos: false, party: "", nearby: false, voted: "", changed: "", shown: PAGE });
 
 // "Places": leave out bills only about other counties, or keep only bills about yours.
 // A bill's places are the counties it's only about ([] for bills not about specific places).
@@ -1212,6 +1223,8 @@ const CHANGED = {
   visit: { label: () => `Since your last visit${LAST_VISIT ? ` (${fmtDate(LAST_VISIT)})` : ""}`, test: (b) => !!LAST_VISIT && (b.last || "") > LAST_VISIT },
   week: { label: () => "In the last 7 days", test: (b) => (b.last || "") >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) },
   month: { label: () => "In the last 30 days", test: (b) => (b.last || "") >= new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10) },
+  introVisit: { label: () => `Introduced since your last visit${LAST_VISIT ? ` (${fmtDate(LAST_VISIT)})` : ""}`, test: (b) => !!LAST_VISIT && (b.dates.intro || "") > LAST_VISIT },
+  introWeek: { label: () => "Introduced in the last 7 days", test: (b) => (b.dates.intro || "") >= new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10) },
 };
 let LEGS = [], LEG_BY_ID = {}, PRESET = null, BASE = "", ROOT = "";
 const state = blank();
@@ -1291,7 +1304,7 @@ function outcomeLabel(stage, session, chapter, veto) {
   if (stage < 0) return "Outcome not available";
   if (stage === 5 && chapter) return `Signed, Chapter ${chapter}`;
   if (stage === 6 && veto) return `Vetoed, Memo ${veto}`;
-  return (session === LATEST ? STAGE_TEXT.live : STAGE_TEXT.final).long[stage];
+  return (session > LATEST ? STAGE_TEXT.prefiled : session === LATEST ? STAGE_TEXT.live : STAGE_TEXT.final).long[stage];
 }
 
 const rankOf = (s) => [0, 1, 2, 3, 4, 6, 5][s] ?? -1; // stage -> how far it got (vetoed below signed)
@@ -1345,7 +1358,7 @@ function viewParams() {
 }
 function viewLink() {
   const v = viewParams();
-  const base = ROOT ? location.origin + location.pathname : `${PUBLIC_SITE}${DATA.current ? "" : `${DATA.session}.html`}`;
+  const base = ROOT ? location.origin + location.pathname : `${PUBLIC_SITE}${DATA.session === LATEST ? "" : `${DATA.session}.html`}`;
   return base + (v ? `#v&${v}` : "");
 }
 // Opening a view link: its filters replace the saved ones (without changing the viewer's saved county).
@@ -1397,7 +1410,7 @@ function billLink(b) {
   const here = DATA.sessions.find((s) => s.session === DATA.session);
   if (here && /^https:\/\/claude\.ai/.test(here.url || "")) return `${here.url}#${num_}`;
   const root = ROOT || new URL(BASE || "./", location.href).href.replace(/[^/]*$/, "");
-  return `${root}${DATA.current ? "" : `${DATA.session}.html`}#${num_}`;
+  return `${root}${DATA.session === LATEST ? "" : `${DATA.session}.html`}#${num_}`;
 }
 function openFromHash() {
   const m = location.hash.match(/^#([SA]\d{1,5})$/i);
@@ -1429,6 +1442,7 @@ function matches(b, skip) {
   if (skip !== "nearby" && state.nearby && farAway(b)) return false;
   if (skip !== "voted" && state.voted && !votedTest(state.voted)(b)) return false;
   if (skip !== "changed" && state.changed && !CHANGED[state.changed].test(b)) return false;
+  if (skip !== "agenda" && state.agenda && !nextMeeting(b)) return false;
   if (state.q) {
     const words = state.q.toLowerCase().split(/\s+/).filter(Boolean);
     for (const w of words) if (!b._hay.includes(w)) return false;
@@ -1445,13 +1459,15 @@ function sortBills(arr) {
     num: (a, b) => a.sortKey - b.sortKey,
     cosp: (a, b) => b.cosp - a.cosp,
     due: (a, b) => (a.due || "9999").localeCompare(b.due || "9999") || recent(a, b),
-  }[state.sort];
+    meeting: (a, b) => (nextMeeting(a)?.when || "9999").localeCompare(nextMeeting(b)?.when || "9999") || recent(a, b),
+  }[state.sort] || ((a, b) => recent(a, b));
   return arr.sort(by);
 }
 
 // The stage filter is one stage (3) or a whole group of them ("3,4", from clicking a group's heading).
 const stageSet = () => (state.stage == null ? [] : String(state.stage).split(",").map(Number));
 const PIPE_GROUPS = {}; // "3,4" -> "Still in play"
+const AGENDA_TIP = "Bills listed for a committee meeting that hasn't happened yet. Committees post agendas about a week ahead; this is the time to write the chair and committee members. Includes bills that passed one house and are on the other house's committee agenda.";
 function renderPipeline() {
   const counts = Array(7).fill(0), oneHouse = { Senate: 0, Assembly: 0 };
   const today = isoToday();
@@ -1468,6 +1484,10 @@ function renderPipeline() {
     3: DATA.current ? "Not yet requested by the governor" : "Never requested by the governor",
     4: DATA.current ? (nextDue ? `Next decision due ${fmtDate(nextDue)}` : counts[4] ? "Deadlines have passed" : "Nothing waiting") : "No decision in the records",
   };
+  // Bills on a committee agenda that hasn't met yet: a line under "In committee".
+  const soon = DATA.current ? BILLS.filter((b) => nextMeeting(b) && matches(b, "agenda") && (state.stage == null || stageSet().includes(b.stage))).length : 0;
+  const agendaRow = soon || state.agenda ? `<button class="srow sub" type="button" data-agenda aria-pressed="${!!state.agenda}">
+       <span class="sl">On an upcoming committee agenda${TIPI(AGENDA_TIP)}</span><span class="sn">${num(soon)}</span></button>` : "";
   const row = (k) => `<button class="srow" type="button" data-k="${k}" aria-pressed="${stageSet().includes(k)}">
        <span class="sl">${TEXT.pipe[k]}${TIPI((!DATA.current && PAST_STAGE_TIPS[k]) || STAGE_TIPS[k])}</span><span class="sn">${num(counts[k])}</span>${subs[k] ? `<span class="ss">${subs[k]}</span>` : ""}</button>`;
   // A group's heading selects all of its stages at once.
@@ -1485,9 +1505,17 @@ function renderPipeline() {
     <div class="pg decided">${head("Decided", [5, 6])}${[5, 6].map(row).join("")}</div>
     <div class="pg stale">${head("Died", [0, 1, 2, 3])}${[0, 1, 2, 3].map(row).join("")}</div>
     ${counts[4] ? `<div class="pg stale">${row(4)}</div>` : ""}` : `
-    <div class="pg leg">${head("In the Legislature", [0, 1, 2, 3])}${[0, 1, 2, 3].map(row).join("")}</div>
+    <div class="pg leg">${head("In the Legislature", [0, 1, 2, 3])}${row(0)}${agendaRow}${[1, 2, 3].map(row).join("")}</div>
     <div class="pg live"><div class="pg-h">With the governor</div>${[4].map(row).join("")}</div>
     <div class="pg decided">${head("Decided", [5, 6])}${[5, 6].map(row).join("")}</div>`}`;
+}
+
+// Turning on "upcoming agenda" sorts by meeting date, unless another order was chosen.
+function setAgenda(on) {
+  state.agenda = on ? "soon" : "";
+  if (on && state.sort === "recent") state.sort = "meeting";
+  if (!on && state.sort === "meeting") state.sort = "recent";
+  state.shown = PAGE; syncControls(); render();
 }
 
 function renderTopics() {
@@ -1934,11 +1962,67 @@ function renderOpenNow() {
   const more = waiting.length - openShown;
   $("openNow").innerHTML = `<h2>${L ? `${esc(L.label)}'s bills open for comment` : "Open for comment"}</h2>
     ${L ? `<p class="muted">${num(nOwn)} they sponsor and ${num(all.length - nOwn)} they co-sponsor; their own bills are listed first.</p>` : ""}
+    ${comingUp(mine)}
     <h3>On the governor's desk (${num(desk.length)}), soonest deadline first</h3>
     <div class="list">${desk.map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
     <h3>Passed both houses, not yet requested by her (${num(waiting.length)})</h3>
     <div class="list">${waiting.slice(0, openShown).map(billRow).join("") || `<div class="empty">None right now.</div>`}</div>
     ${more > 0 ? `<button class="more" type="button" data-more>Show ${num(Math.min(25, more))} more</button>` : ""}`;
+}
+
+// Committee meetings in the next two weeks with their agendas, soonest first. Each folds open to its bills.
+function comingUp(mine) {
+  const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16), until = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 16);
+  const meets = new Map();
+  for (const b of BILLS) {
+    if (!b.agenda.length || !mine(b)) continue;
+    for (const a of b.agenda) {
+      if (a.when < now || a.when > until) continue;
+      const k = `${a.when}|${a.committee}`;
+      (meets.get(k) || meets.set(k, { ...a, bills: [] }).get(k)).bills.push(b);
+    }
+  }
+  const month = new Date().getMonth();
+  if (!meets.size) return month <= 5 ? `<h3>Coming up in committee</h3><p class="muted">No committee agendas are posted for the next two weeks.</p>` : "";
+  const list = [...meets.values()].sort((x, y) => (x.when < y.when ? -1 : x.when > y.when ? 1 : x.committee.localeCompare(y.committee)));
+  const nBills = new Set(list.flatMap((m) => m.bills.map((b) => b.idx))).size;
+  return `<h3>Coming up in committee (${num(list.length)} meeting${list.length === 1 ? "" : "s"}, ${num(nBills)} bill${nBills === 1 ? "" : "s"})</h3>
+    <p class="muted">Committees vote on these bills at these meetings, so write to the chair and members before then. <button type="button" class="linkish" data-showagenda>Show them all in the bill list</button></p>
+    <div class="meets">${list.map((m) => {
+      const w = m.bills.filter(isWatched).length;
+      m.bills.sort((x, y) => isWatched(y) - isWatched(x) || x.sortKey - y.sortKey);
+      return `<details class="meet"><summary><b>${fmtMeet(m.when, true)}</b> ${esc(m.committee)} <span class="muted">· ${num(m.bills.length)} bill${m.bills.length === 1 ? "" : "s"}${w ? ` · ${num(w)} on your watchlist` : ""}</span></summary>
+        <div class="list">${m.bills.map(billRow).join("")}</div></details>`;
+    }).join("")}</div>`;
+}
+
+// Bills from the last session's watchlist that are back this session under new numbers.
+const CARRY_STORE = () => `abt:carried:${DATA.session}`;
+function carryCandidates() {
+  if (!DATA.current || SHARED || PRESET) return [];
+  const prev = DATA.session - 2, handled = new Set(recallCarry());
+  const old = new Map([...WATCH.entries()].filter(([k]) => k.startsWith(`${prev}:`)).map(([k, v]) => [k.slice(5), v]));
+  if (!old.size) return [];
+  const out = [];
+  for (const b of BILLS) {
+    if (isWatched(b)) continue;
+    for (const e of b.earlier) {
+      if (e[0] !== prev) continue;
+      const hit = e[1].split(" / ").map(baseNum).find((n) => old.has(n) && !handled.has(n));
+      if (hit) { out.push({ b, was: hit, stance: old.get(hit).stance || "support" }); break; }
+    }
+  }
+  return out;
+}
+function recallCarry() { try { return JSON.parse(localStorage.getItem(CARRY_STORE()) || "[]"); } catch (e) { return []; } }
+function markCarried(nums) { try { localStorage.setItem(CARRY_STORE(), JSON.stringify([...new Set([...recallCarry(), ...nums])])); } catch (e) {} }
+function carryBox() {
+  const c = carryCandidates();
+  if (!c.length) return "";
+  const prev = span(DATA.session - 2);
+  return `<div class="carry"><p><b>${num(c.length)} bill${c.length === 1 ? "" : "s"} from your ${prev} watchlist ${c.length === 1 ? "is" : "are"} back this session</b> with new numbers.</p>
+    <details><summary>Which ones</summary><ul>${c.map((x) => `<li>${esc(x.b.nums.join(" / "))} (was ${esc(x.was)}): ${esc(x.b.title)}</li>`).join("")}</ul></details>
+    <p><button class="act-btn primary" type="button" data-wl="carry">Add ${c.length === 1 ? "it" : `all ${num(c.length)}`}</button> <button class="act-btn" type="button" data-wl="nocarry">No thanks</button></p></div>`;
 }
 
 // ---- Votes ----
@@ -3050,13 +3134,14 @@ function billRow(b) {
       const narrowTag = { person: "For one person", org: "For one group", naming: "Road or place naming" }[b.narrow];
       const tags = (narrowTag ? `<span class="tag narrow">${narrowTag}</span>` : "") + chap + noes.map((L) => `<span class="tag vno">${esc(L.name.split(" ").pop())} voted no</span>`).join("") + partyTag(b) + b.topics.map((t) => `<span class="tag${t === "env" ? " env" : ""}">${esc(TOPICS[t])}</span>`).join("") + historyTags(b);
       const intro = DATA.current && b.intro ? `<span>Introduced ${b.intro}</span>` : "";
+      const meet = isWatched(b) ? null : nextMeeting(b);
       return `<details class="bill" data-idx="${b.idx}">
         <summary>
           <div class="nums"><span>${esc(first)}</span>${second ? `<span class="other">${esc(second)}</span>` : ""}${watchButton(b)}</div>
           <div class="main">
             <div class="title">${esc(b.title)}${newsTags(b)}</div>
             <div class="meta">${pageRole(b)}${b.sponsors.map(esc).join(" / ")}${b.law ? `<span>${esc(b.law)}</span>` : ""}${intro}${b.budget ? "<span>Budget bill</span>" : ""}${b.program ? `<span>${esc(b.program)}</span>` : ""}</div>
-            <div class="tags">${tags}</div>
+            <div class="tags">${meet ? `<span class="tag agenda">On the agenda: ${esc(meet.committee)}, ${fmtMeet(meet.when)}</span>` : ""}${tags}</div>
           </div>
           <div class="status">${track(b)}${statusText(b)}</div>
         </summary>
@@ -3086,6 +3171,7 @@ function activeFilters() {
   if (state.voted) out.push(["voted", null, "Vote", opt("voted", state.voted)]);
   if (state.nearby) out.push(["nearby", null, "Only", `bills that could affect ${HOME} County`]);
   if (state.changed) out.push(["changed", null, "New activity", CHANGED[state.changed].label()]);
+  if (state.agenda) out.push(["agenda", null, "On", "an upcoming committee agenda"]);
   return out;
 }
 
@@ -3145,9 +3231,10 @@ function newActions(b) {
     .sort((x, y) => weightOf(x[1]) - weightOf(y[1]) || y[0].localeCompare(x[0]));
 }
 const hasNews = (b) => newActions(b).length > 0;
+const fmtMeet = (when, time) => { const d = new Date(when); return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + (time ? `, ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}` : ""); };
 // The next committee meeting with this bill on the agenda (current session).
 function nextMeeting(b) {
-  if (!DATA.current) return null;
+  if (!DATA.current || !b.agenda.length) return null;
   const now = new Date(Date.now() - 6 * 36e5).toISOString().slice(0, 16);
   return b.agenda.filter((a) => a.when >= now).sort((x, y) => (x.when < y.when ? -1 : 1))[0] || null;
 }
@@ -3448,7 +3535,7 @@ function renderWatchView() {
       <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
-    card.innerHTML = `<h2>My watchlist</h2>
+    card.innerHTML = `<h2>My watchlist</h2>${carryBox()}
       <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
       ${list.length && (!onClaude || ROOT) ? `<details class="sharebox"${myPublished() ? " open" : ""}><summary>Share this list</summary>` : ""}
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
@@ -3561,7 +3648,7 @@ function selectOptions() {
       for (const L of people) for (const how of ["No", "Yes", "miss"]) out.push([`${L.id}|${how}`, `${L.name.split(" ").pop()} ${VOTED[how]}`]);
       return out.map(([k, l]) => [k, l, votedTest(k)]);
     })() : []],
-    changed: ["Any time", Object.entries(CHANGED).filter(([k]) => k !== "visit" || LAST_VISIT).map(([k, c]) => [k, c.label(), c.test])],
+    changed: ["Any time", Object.entries(CHANGED).filter(([k]) => !/visit/i.test(k) || LAST_VISIT).map(([k, c]) => [k, c.label(), c.test])],
     hist: ["Any history", Object.entries(HIST_FILTERS).filter(([, f]) => !f.past || !DATA.current).map(([k, f]) => [k, f.label, f.test])],
     intro: ["Either year", years.map((y) => [String(y), `${y}${y === DATA.session ? " (first year)" : " (second year)"}`, (b) => b.intro === y])],
   };
@@ -3666,6 +3753,7 @@ function wire() {
     if (e.target.closest(".tip")) return;
     const g = e.target.closest("[data-g]");
     if (g) { state.stage = String(state.stage) === g.dataset.g ? null : g.dataset.g; state.shown = PAGE; render(); return; }
+    if (e.target.closest("[data-agenda]")) { setAgenda(!state.agenda); return; }
     const btn = e.target.closest(".srow"); if (!btn) return;
     const k = +btn.dataset.k; state.stage = state.stage === k ? null : k; state.shown = PAGE; render();
   });
@@ -3893,6 +3981,14 @@ function wire() {
       }
       saveOrder();
       saveWatch(); SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
+    } else if (btn.dataset.wl === "carry" || btn.dataset.wl === "nocarry") {
+      const c = carryCandidates();
+      if (btn.dataset.wl === "carry") {
+        countUse("carried-forward");
+        for (const x of c) { WATCH.set(billKey(x.b), { seen: x.b.last || "", stance: x.stance }); ORDER.push(billKey(x.b)); }
+        saveWatch(); saveOrder();
+      }
+      markCarried(c.map((x) => x.was)); render();
     } else if (btn.dataset.wl === "mine") {
       SHARED = null; SHARED_META = null; clearHash(location.pathname); render();
     }
@@ -3908,6 +4004,7 @@ function wire() {
   });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
   $("openNow").addEventListener("click", (e) => {
+    if (e.target.closest("[data-showagenda]")) { Object.assign(state, blank()); setAgenda(true); showView("bills"); return; }
     const btn = e.target.closest("[data-more]"); if (!btn) return;
     openShown += 25; renderOpenNow();
   });
@@ -4187,6 +4284,10 @@ function floorVotesOver() {
 }
 
 function sessionNotice(raw) {
+  if (raw.upcoming) {
+    const cur = raw.sessions.find((x) => x.session === LATEST);
+    return `These bills were filed early for the ${span(raw.session)} session, which opens in January ${raw.session}. They go to committees on its first day. Stars you add here carry over when the session starts. ${cur?.url ? `<a href="${esc(cur.url)}">Back to the ${span(LATEST)} session</a>` : ""}`;
+  }
   if (!raw.current) return "";
   const today = isoToday(), y1 = raw.session, y2 = raw.session + 1;
   const lv = raw.lastVote || "";
@@ -4268,7 +4369,7 @@ function renderSessions(raw) {
   const served = pageL ? new Set((raw.profiles?.[pageL.id]?.history || []).map((h) => h[0]).concat(raw.session))
     : PAST_WHO ? new Set(DATA.peopleNow?.[PAST_WHO.slug]?.served?.concat(LATEST) || PAST_WHO.served || []) : null;
   const html = raw.sessions.filter(({ session }) => !served || served.has(session)).map(({ session, url }) => {
-    const label = `${span(session)}${session === LATEST ? " (current)" : ""}`;
+    const label = `${span(session)}${session === LATEST ? " (current)" : session > LATEST ? " (prefiled)" : ""}`;
     if (session === raw.session) return `<span class="here" aria-current="page">${label}</span>`;
     if (!url) return `<span class="off">${label}</span>`;
     const external = /^https?:/.test(url) ? ` target="_blank" rel="noopener"` : "";
@@ -4286,8 +4387,9 @@ function renderSessions(raw) {
 
 function hydrate(raw) {
   DATA = raw; TOPICS = raw.topics;
-  LATEST = Math.max(...raw.sessions.map((s) => s.session));
-  TEXT = raw.current ? STAGE_TEXT.live : STAGE_TEXT.final;
+  // The session under way: an upcoming session's prefiled bills don't count.
+  LATEST = Math.max(...raw.sessions.filter((s) => !s.upcoming).map((s) => s.session));
+  TEXT = raw.upcoming ? STAGE_TEXT.prefiled : raw.current ? STAGE_TEXT.live : STAGE_TEXT.final;
   STAGES = TEXT.chart;
   BILLS = raw.bills.map((b, idx) => {
     b.idx = idx;
@@ -4305,7 +4407,7 @@ function hydrate(raw) {
   });
 
   document.title = raw.current ? "Albany Bill Tracker" : `Albany Bill Tracker ${span(raw.session)}`;
-  $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
+  $("sessionLabel").textContent = `New York State Legislature · ${span(raw.session)} session${raw.upcoming ? ` · prefiled bills · updated ${raw.fetched}` : raw.current ? ` · updated ${raw.fetched}` : " (final)"}`;
   $("fetched").textContent = `Data as of ${raw.fetched}`;
   try { renderHowCal(); } catch (e) { console.error(e); }
   try { renderHowComm(); } catch (e) { console.error(e); }
@@ -4313,9 +4415,9 @@ function hydrate(raw) {
   try { renderIntro(); } catch (e) { console.error(e); }
   const stale = staleNotice(raw);
   const notice = [stale, sessionNotice(raw)].filter(Boolean).join(" ");
-  $("notice").textContent = notice;
+  $("notice").innerHTML = notice;
   $("notice").hidden = !notice;
-  if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option>`);
+  if (raw.current) $("sort").insertAdjacentHTML("beforeend", `<option value="due">Governor's deadline, soonest first</option><option value="meeting">Next committee meeting, soonest first</option>`);
   // The title goes home: the current session's main page.
   const home = raw.sessions.find((x) => x.session === LATEST)?.url;
   $("homeLink").href = ROOT || (home && /^https?:/.test(home) ? home : BASE || "./");
@@ -4347,7 +4449,7 @@ function hydrate(raw) {
     for (const k of FILTER_KEYS) if (k in saved) state[k] = k === "topics" ? new Set((saved.topics || []).filter((t) => t in TOPICS)) : saved[k];
     if (state.hist && !(state.hist in HIST_FILTERS)) state.hist = "";
     if (state.progress && !(state.progress in PROGRESS)) state.progress = "";
-    if (state.sort === "due" && !raw.current) state.sort = "recent";
+    if ((state.sort === "due" || state.sort === "meeting") && !raw.current) state.sort = "recent";
     syncControls();
   }
   if (applyViewLink()) syncControls();
@@ -4375,6 +4477,8 @@ function hydrate(raw) {
   if (PRESET?.watch || SHARED) view = "watch";
   if (VIEWS.includes(location.hash.slice(1))) view = location.hash.slice(1);
   if (!DATA.current) for (const v of ["watch", "act"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true;
+  // Prefiled bills haven't been anywhere yet: no Weigh in or Statistics.
+  if (DATA.upcoming) { for (const v of ["act", "stats"]) document.querySelector(`.view-tab[data-view="${v}"]`).hidden = true; if (["act", "stats"].includes(view)) view = "bills"; }
   if (PRESET?.who ? ["watch", "stats", "how"].includes(view) : view === "person") view = "bills";
   // The /watchlist/ page is only the watchlist: no tabs, with a link back to all bills.
   if (PRESET?.watch) document.querySelector(".views").hidden = true;

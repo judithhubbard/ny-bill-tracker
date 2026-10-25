@@ -39,6 +39,15 @@ def page(url):
     return ""
 
 
+def problem(text):
+    """Notes a problem for the build's freshness check (the workflow sets PROBLEMS_FILE)."""
+    print(text, file=sys.stderr)
+    # Committees meet January to June; outside that, an empty agenda page is normal.
+    if os.environ.get("PROBLEMS_FILE") and datetime.date.today().month <= 6:
+        with open(os.environ["PROBLEMS_FILE"], "a") as f:
+            f.write(text + "\n")
+
+
 def assembly(out):
     """Upcoming Assembly committee meetings: the agenda list links to one page per meeting, whose
     header gives committee, time and room, followed by the bills it will take up."""
@@ -60,6 +69,9 @@ def assembly(out):
                 out[h + num].append(entry)
                 n += 1
     print(f"Assembly: {len(links)} meetings, {n} bill listings", file=sys.stderr)
+    # Meetings listed but no bills read from them: the page layout has probably changed.
+    if links and not n:
+        problem(f"The Assembly agenda page lists {len(set(links))} meetings, but no bills could be read from them. Its layout may have changed (fetch_agendas.py).")
 
 
 def main():
@@ -81,7 +93,7 @@ def main():
     try:
         assembly(out)
     except Exception as e:
-        print(f"Assembly agendas failed: {e}", file=sys.stderr)
+        problem(f"Assembly committee agendas didn't download: {e}")
     path = os.path.join(HERE, "data", f"agendas_{session}.json")
     with open(path, "w") as f:
         json.dump(out, f, sort_keys=True)

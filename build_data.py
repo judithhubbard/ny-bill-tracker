@@ -25,6 +25,16 @@ SITE = os.path.join(HERE, "site")
 URLS_FILE = os.path.join(HERE, "artifact_urls.json")
 # Session data may be plain JSON (fresh downloads) or gzipped (past sessions kept in git).
 SESSIONS = sorted({int(re.search(r"bills_(\d{4})", f).group(1)) for f in glob.glob(os.path.join(HERE, "data", "bills_*.json*"))})
+# The current session by the calendar (sessions start in odd years), as the workflow works it out,
+# or the newest one downloaded if that hasn't started yet. A later session in data/ is upcoming:
+# its prefiled bills get their own page before it opens.
+def _current():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    y = datetime.now(ZoneInfo("America/New_York")).year
+    by_date = y if y % 2 else y - 1
+    return max([s for s in SESSIONS if s <= by_date] or SESSIONS)
+CURRENT = _current() if SESSIONS else None
 ARGS = sys.argv[1:]
 GITHUB = None
 if "--github" in ARGS:
@@ -1571,7 +1581,7 @@ def outcomes(recs):
 def main():
     loaded = {s: load_session(s) for s in SESSIONS}
     urls = json.load(open(URLS_FILE)) if os.path.exists(URLS_FILE) else {}
-    current_session = max(SESSIONS)
+    current_session = CURRENT
     if GITHUB:
         urls = {str(s): ("./" if s == current_session else f"{s}.html") for s in SESSIONS}
 
@@ -1611,15 +1621,17 @@ def main():
                             flags |= c & 3
                         e[2] = 3 if rank(st) < rank(3) and flags == 3 else st
 
-    summary = {s: outcomes(loaded[s][0]) for s in SESSIONS}
-    current = max(SESSIONS)
-    insight = insights(loaded, hist, current)
-    insight["trends"] = trends(loaded)
-    insight["topicRing"] = topic_ring(loaded)
+    current = CURRENT
+    # Statistics, outcomes and histories leave out an upcoming session's prefiled bills.
+    done = {s: v for s, v in loaded.items() if s <= current}
+    summary = {s: outcomes(loaded[s][0]) for s in done}
+    insight = insights(done, hist, current)
+    insight["trends"] = trends(done)
+    insight["topicRing"] = topic_ring(done)
 
     # Current legislators for past sessions' pages (profile card and the sessions they served in).
     legs_now = legislators(current)
-    served_by = {seat: sorted({row[0] for row in rows}) for seat, rows in person_history(loaded, current, legs_now).items()}
+    served_by = {seat: sorted({row[0] for row in rows}) for seat, rows in person_history(done, current, legs_now).items()}
     keep = ("id", "slug", "name", "title", "party", "house", "district", "since", "image", "url", "email", "phone", "phones")
     _PEOPLE_NOW.update({L["slug"]: {**{k: L.get(k) for k in keep}, "served": served_by.get(L["id"], [])} for L in legs_now if L.get("slug")})
 
@@ -1673,7 +1685,7 @@ def main():
             flags = (r["local"] and 1) | (r["senDeleg"] and 2) | (r["budget"] and 4) | (r["asmDeleg"] and 8) | (r["passedS"] and 16) | (r["passedA"] and 32) | (NARROW_KINDS.index(r["narrow"]) << 6)
             vers = [[v["p"], S(v["sponsor"]), v["cosp"], S(v["statusDesc"]), S(v["committee"]),
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
-                     [S(n) for n in v["cosponsors"]] if session == current else [], v.get("district") or 0] for v in r["vers"]]
+                     [S(n) for n in v["cosponsors"]] if session >= current else [], v.get("district") or 0] for v in r["vers"]]
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
             rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
@@ -1686,17 +1698,19 @@ def main():
 
         data = {
             "session": session,
-            "current": session == current,
+            # An upcoming session's page works like the current one (watchlist, filters), marked as prefiled.
+            "current": session >= current,
+            "upcoming": session > current,
             "fetched": fetched,
             "topics": {k: v[0] for k, v in TOPICS.items()},
             "lawList": sorted(law_count.items()),
             "commList": sorted(comm_count.items()),
             "delegation": names,
-            "sessions": [{"session": s, "url": urls.get(str(s))} for s in SESSIONS],
-            "outcomes": {str(s): summary[s] for s in SESSIONS},
+            "sessions": [{"session": s, "url": urls.get(str(s)), **({"upcoming": True} if s > current else {})} for s in SESSIONS],
+            "outcomes": {str(s): summary[s] for s in summary},
             "insights": insight,
             # Past pages don't carry co-sponsor names, so their network is worked out here.
-            "network": session_network(session, recs) if session != current else None,
+            "network": session_network(session, recs) if session < current else None,
             # Date of the last floor vote in either house this session.
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
@@ -1705,19 +1719,19 @@ def main():
             # Current Senate and Assembly districts in each county, for "Where you live".
             "districtCounties": json.load(open(DISTRICTS_PATH)) if session == current and os.path.exists(DISTRICTS_PATH) else {},
         }
-        if session != current:
+        if session < current:
             # Current legislators, so a past session opened for one of them can show their profile card.
             data["peopleNow"] = people_now()
         if session == current:
             data["contacts"] = contacts_for(session, recs, names)
             data["legislators"] = legislators(session)
             data["profiles"], data["peers"] = profiles(session, recs, data["legislators"], party_of)
-            data["networkSince"] = network_since(loaded, data["legislators"])
+            data["networkSince"] = network_since(done, data["legislators"])
             # Without legislators the site would lose every legislator page and contact; stop
             # so yesterday's site stays up rather than publishing a broken one.
             if GITHUB and not data["legislators"]:
                 raise SystemExit("No legislators in the contacts file; not building")
-            for seat, rows in person_history(loaded, current, data["legislators"]).items():
+            for seat, rows in person_history(done, current, data["legislators"]).items():
                 if seat in data["profiles"]:
                     data["profiles"][seat]["history"] = rows
         payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
@@ -1737,7 +1751,8 @@ def main():
                                         f"<title>Albany Bill Tracker {session}–{str(session + 1)[2:]}</title>", 1)
         # The header line is written in now, matching what the page sets, so it doesn't change length
         # (and push the title down) when the data arrives.
-        label = f"New York State Legislature · {session}–{str(session + 1)[2:]} session" + (f" · updated {fetched}" if session == current else " (final)")
+        label = f"New York State Legislature · {session}–{str(session + 1)[2:]} session" + (
+            f" · updated {fetched}" if session == current else f" · prefiled bills · updated {fetched}" if session > current else " (final)")
         template = template.replace('id="sessionLabel">New York State Legislature<', f'id="sessionLabel">{html_escape(label)}<', 1)
         marker = '<script type="application/json" id="bill-data"></script>'
         assert marker in template, "template is missing the data marker"

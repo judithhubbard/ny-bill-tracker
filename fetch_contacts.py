@@ -250,17 +250,23 @@ def main():
     # for the new session yet, so the Senate committees are carried over until it does.
     prev = os.path.join(HERE, "data", f"contacts_{SESSION - 2}.json")
     old = json.load(open(OUT)) if os.path.exists(OUT) else json.load(open(prev)) if os.path.exists(prev) else {}
-    out = {"session": SESSION, "fetched": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")}
+    out = {"session": SESSION, "fetched": datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d"), "kept": {}}
+
+    def keep(part):
+        """A source failed: note how old the copy kept instead is (check_fresh.py reports it)."""
+        out["kept"][part] = old.get("kept", {}).get(part) or {"session": old.get("session"), "fetched": old.get("fetched")}
     try:
         out["senateCommittees"] = senate()
     except Exception as e:
         print(f"Senate committees: {e}; keeping previous", file=sys.stderr)
         out["senateCommittees"] = old.get("senateCommittees", {})
+        keep("Senate committees")
     try:
         out["people"] = people()
     except Exception as e:
         print(f"Open States: {e}; keeping previous", file=sys.stderr)
         out["people"] = old.get("people", {})
+        keep("Legislator contacts")
     try:
         out["since"] = service()
     except Exception as e:
@@ -272,6 +278,7 @@ def main():
         print(f"Assembly: {e}; keeping previous", file=sys.stderr)
         out["assemblyCommittees"] = old.get("assemblyCommittees", {})
         out["assemblyMembers"] = old.get("assemblyMembers", {})
+        keep("Assembly committees")
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(out, f, indent=1, sort_keys=True)

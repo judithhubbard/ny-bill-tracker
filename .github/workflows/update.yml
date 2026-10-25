@@ -61,11 +61,22 @@ jobs:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: python3 fetch_bills.py "$CURRENT_SESSION"
 
+      # Bills prefiled for the next session (from mid-December) get their own page, <next>.html,
+      # until it opens in January. They aren't committed; the file is downloaded fresh each run.
+      - name: Download next session's prefiled bills
+        env:
+          NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
+        run: |
+          if [ $(( $(TZ=America/New_York date +%Y) % 2 )) -eq 0 ] && [ "$(TZ=America/New_York date +%-m)" -ge 11 ]; then
+            python3 fetch_bills.py $(( CURRENT_SESSION + 2 )) || echo "Prefiled bills didn't download"
+          fi
+
       # Senate and Assembly committee agendas: which bills each committee takes up, and when.
       - name: Download committee agendas
         env:
           NYSENATE_API_KEY: ${{ secrets.NYSENATE_API_KEY }}
         run: |
+          export PROBLEMS_FILE="$RUNNER_TEMP/problems.txt"
           if ! python3 fetch_agendas.py "$CURRENT_SESSION"; then
             echo "Agendas failed; building without them"
             # Agendas matter only while committees meet (January-June).

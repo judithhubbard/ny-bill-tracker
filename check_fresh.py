@@ -50,9 +50,32 @@ if len(missing) > 10:
 # Committee assignments and contacts: refreshed daily, but they rarely change, so allow two weeks.
 cpath = data(f"contacts_{SESSION}.json")
 if os.path.exists(cpath):
-    c = json.load(open(cpath)).get("fetched", "")[:10]
+    contacts = json.load(open(cpath))
+    c = contacts.get("fetched", "")[:10]
     if c and (now.date() - datetime.strptime(c, "%Y-%m-%d").date()).days > 14:
         problems.append(f"Legislator contacts and committees were last refreshed {c}.")
+    # Parts kept from an older copy because their source failed. A new session's committees are
+    # carried over from the last one until they're named, which can take until February.
+    for part, k in (contacts.get("kept") or {}).items():
+        if k.get("session") and k["session"] != SESSION:
+            if (now.month, now.day) > (2, 15):
+                problems.append(f"{part} are still last session's ({k['session']}). The new ones haven't been read; check the source (fetch_contacts.py).")
+        elif k.get("fetched") and (now.date() - datetime.strptime(k["fetched"][:10], "%Y-%m-%d").date()).days > 7:
+            problems.append(f"{part} haven't refreshed since {k['fetched'][:10]} (fetch_contacts.py).")
+
+# Committee agendas, January to mid-June: when one house has meetings coming up in the next 10 days
+# and the other has none, the other's download is probably broken.
+apath = data(f"agendas_{SESSION}.json")
+if os.path.exists(apath) and now.month <= 6 and (now.month, now.day) >= (1, 20):
+    start, end = now.strftime("%Y-%m-%dT%H:%M"), (now + timedelta(days=10)).strftime("%Y-%m-%dT%H:%M")
+    soon = {"Senate": 0, "Assembly": 0}
+    for entries in json.load(open(apath)).values():
+        for committee, when in entries:
+            if when and start <= when <= end:
+                soon[committee.split()[0]] = soon.get(committee.split()[0], 0) + 1
+    for house, other in (("Senate", "Assembly"), ("Assembly", "Senate")):
+        if soon[other] >= 10 and not soon[house]:
+            problems.append(f"No {house} committee agendas for the next 10 days, though the {other} has {soon[other]} bills on upcoming agendas (fetch_agendas.py).")
 
 report = ("## Data is behind\n\n" + "\n".join(f"- {p}" for p in problems)) if problems else "## Data is current"
 print(report)
