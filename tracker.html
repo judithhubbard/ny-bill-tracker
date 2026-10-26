@@ -2107,10 +2107,34 @@ function oddsLine(b) {
   if (waiting) {
     const [mm, dd] = w.date.split("-").map(Number);
     const day = new Date(2000, mm - 1, dd).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-    return `In past sessions, ${pctOf(law, n)}% of ${what} still waiting on the governor on ${day} were signed into law.`;
+    return `In past sessions, ${pctOf(law, n)}% of ${what} still waiting on the governor on ${day} were signed into law. ${requestLine()}`.trim();
   }
   const label = { intro: "were introduced", floor: "were approved by a committee", passS: "passed the Senate", passA: "passed the Assembly", both: "passed both houses" }[point];
   return `In past sessions, ${pctOf(law, n)}% of ${what} that ${label} became law.`;
+}
+
+// How the governor's office has asked for bills in this month of past years, worked out in build_data.
+const WORDS = ["no", "one", "two", "three", "four", "five", "six"];
+const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function requestLine() {
+  const r = DATA.insights?.requests;
+  if (!r) return "";
+  const [lo, hi] = r.batches.map((n) => WORDS[n] || String(n));
+  const batches = r.batches[1] === 0 ? "" : r.batches[0] === r.batches[1]
+    ? (r.batches[0] === 1 ? "one large batch" : `${lo} large batches`)
+    : `${lo} ${r.batches[1] - r.batches[0] === 1 ? "or" : "to"} ${hi} large batches`;
+  const d = r.days;
+  const when = d === 0 ? "the same day" : d === 1 ? "the next day" : d <= 4 ? "within a few days"
+    : d <= 9 ? "about a week later" : d <= 12 ? "about a week and a half later" : `about ${Math.round(d / 7)} weeks later`;
+  const month = FULL_MONTHS[r.month - 1];
+  let out = batches ? `In past ${month}s, the governor usually asked for bills in ${batches} and decided ${when}.`
+    : `In past ${month}s, bills the governor asked for were usually decided ${when}.`;
+  // Where the rest went: the fewest later months that cover most of them.
+  const later = (r.later || []).filter(([m]) => m > r.month).sort((a, b) => b[1] - a[1]);
+  let sum = 0; const top = [];
+  for (const [m, p] of later) { if (sum > 50) break; top.push(m); sum += p; }
+  if (sum > 50 && top.length <= 2) out += ` Most of the rest were requested in ${top.sort((a, b) => a - b).map((m) => FULL_MONTHS[m - 1]).join(" and ")}.`;
+  return out;
 }
 
 // One bar: full length is the share approved by committee; the darker part, the share that became law.

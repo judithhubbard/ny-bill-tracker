@@ -175,4 +175,6 @@ Read README.md for what each script downloads. This file covers how to change th
   written between sessions, without live agendas to test against. The freshness check now warns
   when it reads no bills.
 - Check `DELEGATION_NAMES` (Webb, Kelles) against the November election.
+- If a new governor takes office, set `GOV_SINCE` in build_data.py (the "In past Octobers, the governor
+  usually asked for bills…" line on waiting bills uses only the current governor's record).
 - Publish the new session's Claude copy (a new artifact) and add its URL to `artifact_urls.json`.

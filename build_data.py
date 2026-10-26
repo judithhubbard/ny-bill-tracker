@@ -229,6 +229,9 @@ _ORG_TAX = re.compile(r"real property tax(?:es)? exempt|exempt(?:ion)? from (?:r
 _NAMING = re.compile(r"^(?:Dedicates|Designates|Names|Renames|Redesignates)\b.*\b(?:portion|bridge|segment|section|route|interchange|"
                      r"highway|overpass|memorial|building|facility|courthouse|post office|park|trail|exit)\b|\bMemorial (?:Highway|Bridge|Way|Parkway)\b", re.I)
 NARROW_KINDS = ["", "person", "org", "naming"]
+# When the current governor took office. Patterns in how bills are requested start here; change it
+# if a new governor takes office.
+GOV_SINCE = "2021-08-24"
 
 
 def narrow_kind(title):
@@ -1100,7 +1103,7 @@ def insights(loaded, hist, current):
     # Bills that passed both houses but that the governor's office still hadn't requested on
     # today's date in the same year of past sessions: how many became law. Bills still waiting
     # late in the year are more often vetoed than bills overall.
-    from datetime import datetime
+    from datetime import date, datetime
     from zoneinfo import ZoneInfo
     today = datetime.now(ZoneInfo("America/New_York")).date()
     year = today.year - current
@@ -1127,8 +1130,41 @@ def insights(loaded, hist, current):
                     kk[1] += r["stage"] == 5
         waiting = {"date": md, "year": year, "n": n, "law": law, "kinds": kinds}
 
+    # How the governor's office has asked for bills in this month of past years: how many large
+    # batches (days with 10 or more bills requested), days from request to decision, and when the
+    # bills still waiting on today's date were requested later that year. Only the current governor.
+    requests = None
+    mm = today.strftime("%m")
+    asked = defaultdict(int)   # request day -> bills
+    lags, later = [], defaultdict(int)
+    for s in sorted(loaded):
+        for r in loaded[s][0]:
+            k = r["keyDates"]
+            d = k[4].split(";")[-1]
+            if not d or d < GOV_SINCE:
+                continue
+            decided = min(filter(None, [k[5], k[6]]), default="")
+            # Earlier requests this year count toward the time to a decision; the rest uses whole years.
+            if d[5:7] == mm and decided:
+                lags.append((date.fromisoformat(decided) - date.fromisoformat(d)).days)
+            if d[:4] >= str(today.year):
+                continue
+            asked[d] += 1
+            ps, pa = k[1].split(";")[0], k[2].split(";")[0]
+            if ps and pa and max(ps, pa) <= f"{d[:4]}-{today:%m-%d}" < d:
+                later[d[5:7]] += 1
+    years = sorted({d[:4] for d in asked if d[:7] >= GOV_SINCE[:7] and d[5:7] == mm} |
+                   {str(y) for y in range(int(GOV_SINCE[:4]) + (GOV_SINCE[5:7] > mm), today.year)})
+    if len(years) >= 3 and len(lags) >= 30:
+        batches = sorted(sum(1 for d, n in asked.items() if d[:7] == f"{y}-{mm}" and n >= 10) for y in years)
+        total = sum(later.values())
+        requests = {"month": int(mm), "batches": [batches[len(batches) // 4], batches[3 * len(batches) // 4]],
+                    "days": sorted(lags)[len(lags) // 2],
+                    "later": sorted([int(m), round(100 * n / total)] for m, n in later.items()) if total >= 30 else []}
+
     return {
         "waiting": waiting,
+        "requests": requests,
         "months": month_counts(past),
         "monthsNow": month_counts([current]),
         "cosponsors": cosp,
