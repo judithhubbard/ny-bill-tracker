@@ -1687,7 +1687,11 @@ def main():
                      [[a[0].replace("-", ""), S(a[1])] for a in v["actions"]],
                      [S(n) for n in v["cosponsors"]] if session >= current else [], v.get("district") or 0] for v in r["vers"]]
             h = sorted(hist[session][i].values(), key=lambda e: (e[0], e[1]))
-            rows.append([r["title"], r["summary"][:2500], [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
+            summ = r["summary"][:2500]
+            # A summary that repeats the title is stored as the rest of it, marked with \x01.
+            if summ.startswith(r["title"]) and summ != r["title"] and r["title"]:
+                summ = "\x01" + summ[len(r["title"]):]
+            rows.append([r["title"], summ, [S(x) for x in r["laws"]], [S(x) for x in r["comms"]],
                          r["topics"], flags, r["stage"], r["passedIn"] or "", r["chapter"] or 0, r["veto"] or 0,
                          S(r["comm"]), r["last"].replace("-", ""), r["cosp"], "", r["lawCode"],
                          S(r["program"]), S(r["law"]), vers, max(session, int((r["first"] or str(session))[:4])), h,
@@ -1714,7 +1718,9 @@ def main():
             # Date of the last floor vote in either house this session.
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
-            "rows": rows,
+            # Stored column by column (all titles, then all summaries, ...), which compresses
+            # about a fifth smaller than bill by bill; the page turns it back into rows.
+            "cols": [list(c) for c in zip(*rows)] if rows else [],
             "counties": COUNTIES,
             # Current Senate and Assembly districts in each county, for "Where you live".
             "districtCounties": json.load(open(DISTRICTS_PATH)) if session == current and os.path.exists(DISTRICTS_PATH) else {},
@@ -1734,7 +1740,7 @@ def main():
             for seat, rows in person_history(done, current, data["legislators"]).items():
                 if seat in data["profiles"]:
                     data["profiles"][seat]["history"] = rows
-        payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
+        payload = json.dumps(data, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
         if GITHUB:
             # On GitHub Pages the data is a separate file the page fetches, so the
             # per-legislator pages can share it.
@@ -1743,7 +1749,7 @@ def main():
             for name in os.listdir(os.path.join(HERE, "static")):
                 with open(os.path.join(HERE, "static", name), "rb") as src, open(os.path.join(GITHUB, name), "wb") as dst:
                     dst.write(src.read())
-            with open(os.path.join(GITHUB, "data", f"{session}.json"), "w") as f:
+            with open(os.path.join(GITHUB, "data", f"{session}.json"), "w", encoding="utf-8") as f:
                 f.write(payload)
         template = open(TEMPLATE).read()
         if session != current:

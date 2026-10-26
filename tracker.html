@@ -4241,8 +4241,11 @@ function renderHowCal() {
 function decode(raw) {
   const T = raw.strings, str = (i) => (i < 0 ? null : T[i]);
   const day = (d) => `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
-  raw.bills = raw.rows.map((r) => {
-    const [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places, mainTopic, similar] = r;
+  // The bills arrive column by column; put each bill's fields back together.
+  const cols = raw.cols || [], rows = raw.rows || (cols[0] || []).map((_, i) => cols.map((c) => c[i]));
+  raw.bills = rows.map((r) => {
+    let [title, summary, laws, comms, topics, flags, stage, passedIn, chapter, veto, comm, last, cosp, act, lawCode, program, law, vers, intro, hist, kd, parties, votes, agenda, places, mainTopic, similar] = r;
+    if (summary && summary[0] === "\x01") summary = title + summary.slice(1);
     const dates = Object.fromEntries(KEY_DATES.map((k, i) => [k, kd[i] ? day(kd[i].split(";").pop()) : null]));
     // Every date each house passed it (a bill sent back in year two may pass twice).
     dates.passSAll = kd[2] ? kd[2].split(";").map(day) : [];
@@ -4270,7 +4273,7 @@ function decode(raw) {
       nums: v.map((x) => x.p), sponsors: v.map((x) => x.sponsor).filter(Boolean), vers: v,
     };
   });
-  delete raw.rows; delete raw.strings;
+  delete raw.rows; delete raw.cols; delete raw.strings;
   return raw;
 }
 
