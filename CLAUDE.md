@@ -13,8 +13,9 @@ Read README.md for what each script downloads. This file covers how to change th
   - with `--github DIR`: the public site. `index.html` is the current session and `<year>.html` the
     past ones; data goes in `data/<session>.json`; legislator pages go at `/<slug>/` and the watchlist
     at `/watchlist/`. `github_page()` adds the document head, icons and the analytics tags.
-- **.github/workflows/update.yml** downloads, builds and deploys every day at 10:00 UTC, four more
-  times on weekdays January through June, and on every push to main. `check_fresh.py` runs after
+- **.github/workflows/update.yml** downloads, builds and deploys every morning, hourly on weekdays
+  January through June (agendas, floor votes), every two hours on weekdays July through December
+  (the governor's requests and actions), and on every push to main. Contacts refresh once a day. `check_fresh.py` runs after
   each build. If data is behind, the `alert` job fails, which makes GitHub email the owner; the
   site still deploys. It also catches: Assembly agendas that list meetings but yield no bills
   (`fetch_agendas.py` writes to `PROBLEMS_FILE`), one house with upcoming agendas and the other none,
