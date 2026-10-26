@@ -28,7 +28,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      stale: ${{ steps.fresh.outcome == 'failure' }}
+      # An email goes out at most once a day for the same problem (see "Already alerted today").
+      stale: ${{ steps.fresh.outcome == 'failure' && steps.seen.outputs.cache-hit != 'true' }}
+      changed: ${{ steps.compare.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -122,8 +124,24 @@ jobs:
 
       - name: Build pages
         run: python3 build_data.py --github _site
+
+      # Publish only when something changed, apart from the "updated" time. Each publish makes returning
+      # visitors download the bill data again. Pushes (code changes) always publish.
+      - name: Compare with the live site
+        id: compare
+        run: |
+          python3 fingerprint.py _site > _site/fingerprint.txt
+          LIVE=$(curl -fsS --max-time 30 https://albanybilltracker.org/fingerprint.txt || true)
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$LIVE" = "$(cat _site/fingerprint.txt)" ]; then
+            echo "Nothing changed since the last publish; not publishing."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/configure-pages@v5
+        if: steps.compare.outputs.changed == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.compare.outputs.changed == 'true'
         with:
           path: _site
 
@@ -132,10 +150,36 @@ jobs:
       - name: Check the data is current
         id: fresh
         continue-on-error: true
-        run: python3 check_fresh.py "$CURRENT_SESSION" "$RUNNER_TEMP/problems.txt"
+        run: |
+          set -o pipefail
+          python3 check_fresh.py "$CURRENT_SESSION" "$RUNNER_TEMP/problems.txt" | tee "$RUNNER_TEMP/fresh.txt"
+
+      # The same problems (ignoring numbers, which change run to run) email once a day, not every run.
+      - name: Name today's problems
+        id: alertkey
+        if: steps.fresh.outcome == 'failure'
+        run: |
+          mkdir -p "$RUNNER_TEMP/alerted" && date > "$RUNNER_TEMP/alerted/when"
+          SIG=$(grep '^- ' "$RUNNER_TEMP/fresh.txt" | sed -E 's/[0-9]+/#/g' | sort | sha1sum | cut -c1-12)
+          echo "key=alerted-$(TZ=America/New_York date +%F)-$SIG" >> "$GITHUB_OUTPUT"
+      - name: Already alerted today
+        id: seen
+        if: steps.fresh.outcome == 'failure'
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/alerted
+          key: ${{ steps.alertkey.outputs.key }}
+          lookup-only: true
+      - name: Remember this alert
+        if: steps.fresh.outcome == 'failure' && steps.seen.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/alerted
+          key: ${{ steps.alertkey.outputs.key }}
 
   deploy:
     needs: build
+    if: needs.build.outputs.changed == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -146,7 +190,8 @@ jobs:
 
   alert:
     needs: [build, deploy]
-    if: needs.build.outputs.stale == 'true'
+    # Runs even when the deploy was skipped because nothing changed.
+    if: ${{ !cancelled() && needs.build.outputs.stale == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - run: |

@@ -1641,12 +1641,12 @@ def main():
                 elif ps in loaded:
                     # Version exists but was withdrawn (stricken), so it isn't in that session's list.
                     e = hist[s][i].setdefault((ps, "withdrawn"), [ps, "", -2, 0, 0])
-                    e[1] = " / ".join(filter(None, e[1].split(" / ") + [pp]))
+                    e[1] = " / ".join(sorted(filter(None, e[1].split(" / ") + [pp]), key=lambda n: (n[0] != "S", n)))
                 else:
                     # Session not downloaded: list its bill numbers together, with the outcome
                     # from the short list of older sessions when there is one.
                     e = hist[s][i].setdefault((ps, None), [ps, "", -1, 0, 0])
-                    e[1] = " / ".join(sorted(filter(None, e[1].split(" / ") + [pp]), key=lambda n: n[0] != "S"))
+                    e[1] = " / ".join(sorted(filter(None, e[1].split(" / ") + [pp]), key=lambda n: (n[0] != "S", n)))
                     codes = [old.get(str(ps), {}).get(n[:1] + re.sub(r"[A-Z]+$", "", n[1:]))
                              for n in e[1].split(" / ")]
                     codes = [c for c in codes if c is not None]

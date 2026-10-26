@@ -15,7 +15,10 @@ Read README.md for what each script downloads. This file covers how to change th
     at `/watchlist/`. `github_page()` adds the document head, icons and the analytics tags.
 - **.github/workflows/update.yml** downloads, builds and deploys every morning, hourly on weekdays
   January through June (agendas, floor votes), every two hours on weekdays July through December
-  (the governor's requests and actions), and on every push to main. Contacts refresh once a day. `check_fresh.py` runs after
+  (the governor's requests and actions), and on every push to main. Contacts refresh once a day.
+  A scheduled run publishes only if `fingerprint.py` (the built site minus the time of day in the
+  "updated" stamp) differs from the live `/fingerprint.txt`, so at least once a day. The `alert`
+  email goes out once a day per set of problems (an Actions cache key per day and problem list). `check_fresh.py` runs after
   each build. If data is behind, the `alert` job fails, which makes GitHub email the owner; the
   site still deploys. It also catches: Assembly agendas that list meetings but yield no bills
   (`fetch_agendas.py` writes to `PROBLEMS_FILE`), one house with upcoming agendas and the other none,
