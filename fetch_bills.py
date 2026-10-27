@@ -53,6 +53,8 @@ def slim(b):
         "programInfo": b.get("programInfo"),
         "signed": b.get("signed"),
         "vetoed": b.get("vetoed"),
+        # The governor's note when signing, often listing changes agreed for a later bill (a chapter amendment).
+        "approvalMemo": (b.get("approvalMessage") or {}).get("text"),
         "adopted": b.get("adopted"),
         "status": {k: st.get(k) for k in ("statusType", "statusDesc", "actionDate", "committeeName", "billCalNo")},
         "milestones": [{"type": m["statusType"], "date": m["actionDate"]} for m in items(b.get("milestones"))],

@@ -71,6 +71,10 @@ Read README.md for what each script downloads. This file covers how to change th
     share the most bills.
   - Visitors can drag topics to reorder the ring; the order is saved in `abt:whoorder`.
   - Dots split between two distant topics get a gold outline.
+- **Signing memos and chapter amendments:** `amendedBills()` reads a follow-up bill's "as proposed in
+  S.x & A.y" line; `chapterAmendment()` shows it. A bill signed with a memo (`b.memo`, from the API's
+  `approvalMessage`, cleaned by `memo_text()` in build_data.py) gets `signingMemo()`: the memo text and
+  its follow-up bills (`followUps()`) with their status.
 - **Near-identical bills:** `twinLine()` names them, and `likelierOf()` says which version is more
   likely to move: matching bills in both houses first, then the one that got further, then the
   sponsor's newer version.

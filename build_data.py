@@ -345,6 +345,21 @@ STAGE_LABEL = ["In committee", "On the floor", "Passed one house", "Passed both 
                "Delivered to governor", "Signed into law", "Vetoed"]
 
 
+def memo_text(raw):
+    """The governor's signing memo, as plain paragraphs: no heading, signature or line-end hyphens."""
+    if not raw:
+        return ""
+    body = re.split(r"\n\s*APPROVED\s*\n", raw, maxsplit=1)[-1]
+    body = re.sub(r"(^|\n)\s*This bill is approved\.\s*$", "", body.split("(signed)")[0].rstrip())
+    paras = []
+    for para in re.split(r"\n\s*\n", body):
+        para = re.sub(r"(\w)-\n\s*(?=[a-z])", r"\1", para.strip())
+        para = re.sub(r"\s+", " ", para).strip()
+        if para:
+            paras.append(para)
+    return "\n".join(paras)
+
+
 def norm_comm(name):
     return "Rules" if name.startswith("Rules") else name
 
@@ -576,6 +591,7 @@ def load_session(session):
             "passedIn": passed_in,
             "chapter": chapter,
             "veto": veto,
+            "memo": next((memo_text(b.get("approvalMemo")) for b in members if b.get("approvalMemo")), ""),
             "comm": lead["status"]["committeeName"] if stage == 0 else None,
             "first": first,
             "last": last,
@@ -1734,7 +1750,7 @@ def main():
                          [d.replace("-", "") for d in [r["first"] or ""] + r["keyDates"]],
                          bill_parties(r, party_of), enc_votes(r["votes"]),
                          [[S(c), w] for c, w in agenda_of(r)],
-                         [(COUNTIES + ["?"]).index(c) for c in r["places"]], r["mainTopic"], sims[i]])
+                         [(COUNTIES + ["?"]).index(c) for c in r["places"]], r["mainTopic"], sims[i], r["memo"]])
 
         data = {
             "session": session,
