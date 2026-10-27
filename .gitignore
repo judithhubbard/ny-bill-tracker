@@ -12,4 +12,5 @@ __pycache__/
 !data/district_counties.json
 !data/session_calendar.json
 lists_worker/.wrangler/
+cron_worker/.wrangler/
 lists_worker/node_modules/
