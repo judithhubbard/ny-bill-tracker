@@ -606,8 +606,11 @@ table.st col.c-m { width: 80px; }
 details.actrec { margin-top: 18px; }
 details.actrec > summary { cursor: pointer; font: 700 20px var(--display); font-stretch: 85%; color: var(--ink); }
 details.actrec[open] > summary { margin-bottom: 8px; }
-.sharebox > summary { cursor: pointer; font-weight: 600; color: var(--navy); font-size: 14px; }
-.sharebox[open] > summary { margin-bottom: 8px; }
+.wlhead { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; }
+.wlhead h2 { margin: 0; }
+.wlhead .muted { font-size: 13.5px; }
+.wlhead [data-wl="share"] { margin-left: auto; align-self: center; }
+.sharebox { margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 8px; }
 .sharebox .pubbox { margin-top: 8px; }
 .wcard .sum { margin: 0; color: var(--ink-2); font-size: 13.5px; max-width: 85ch; }
 .wcard .do { border-left: 3px solid var(--gold); padding: 4px 0 4px 12px; display: grid; gap: 3px; }
@@ -640,6 +643,18 @@ a.phone:hover { text-decoration-color: currentColor; }
 .logtable td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .logtable td:first-child { white-space: nowrap; font-family: var(--mono); font-size: 12.5px; }
 .logtable .bn { font: 700 12px var(--mono); }
+.wnews { border: 1px solid var(--navy); border-radius: 12px; padding: 12px 16px 10px; margin-top: 14px; background: var(--sheet); }
+.wnews-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.wnews h2 { margin: 0; font-size: 18px; }
+.wnews ul { list-style: none; margin: 8px 0 0; padding: 0; }
+.wnews li + li { border-top: 1px solid var(--rule); }
+.wnewsrow { appearance: none; background: none; border: 0; font: inherit; color: var(--ink); text-align: left; width: 100%; padding: 8px 0; cursor: pointer; line-height: 1.5; }
+.wnewsrow:hover .bn, .wnewsrow:focus-visible .bn { text-decoration: underline; }
+.wnewsrow.read { opacity: .55; }
+.wnewsrow .bn { font-family: var(--mono); font-weight: 600; }
+.wnewsrow .nk { font: 700 12.5px var(--body); background: var(--gold-soft); border-radius: 4px; padding: 2px 7px; }
+.wnewsrow .nk.ok { background: var(--signed-soft); color: var(--signed); }
+.wnewsrow .nk.no { background: var(--veto-soft); color: var(--veto); }
 .wgroup { margin-top: 12px; }
 .wgroup > summary { cursor: pointer; list-style: none; display: grid; gap: 1px; padding: 6px 0 8px; }
 .wgroup > summary::-webkit-details-marker { display: none; }
@@ -3341,7 +3356,8 @@ function watchItems(list, stanceOf, rank) {
   const byRank = (f) => (x, y) => rank(x.b) - rank(y.b) || f(x, y);
   return {
     active: items.filter((x) => x.key).sort(byRank((x, y) => (x.plan.due || "9999").localeCompare(y.plan.due || "9999") || rankOf(y.b.stage) - rankOf(x.b.stage))),
-    idle: items.filter((x) => !x.key).sort(byRank(() => 0)),
+    idle: items.filter((x) => !x.key && x.b.stage < 5).sort(byRank(() => 0)),
+    decided: items.filter((x) => !x.key && x.b.stage >= 5).sort(byRank((x, y) => (y.b.dates.signed || y.b.dates.vetoed || "").localeCompare(x.b.dates.signed || x.b.dates.vetoed || ""))),
   };
 }
 // "Needs action" is grouped by the deadline each bill faces, soonest first.
@@ -3384,14 +3400,28 @@ const W_GROUPS = {
   later: ["No deadline yet", () => "Nothing is due soon on these."],
 };
 const W_GROUP_OPEN = new Map();
+// The main thing that happened to a watched bill since it was last opened ("Signed into law").
+const newsWhat = (t) => plainAction(t).replace(/; back to .*$/, "").replace(/ \((?:calendar|chapter|memo) \d+\)$/, "");
+// Top of the watchlist: every bill with news, the biggest news first.
+function newsBox(list) {
+  const items = list.map((b) => ({ b, acts: newActions(b) })).filter((x) => x.acts.length)
+    .sort((x, y) => weightOf(x.acts[0][1]) - weightOf(y.acts[0][1]) || y.acts[0][0].localeCompare(x.acts[0][0]));
+  if (!items.length) return "";
+  return `<section class="wnews"><div class="wnews-h"><h2>New since you last looked</h2><button type="button" class="linkish" data-wseenall>Mark all as seen</button></div>
+    <ul>${items.map(({ b, acts }) => {
+      const [d, t] = acts[0], kind = /^SIGNED/.test(t) ? "ok" : /^VETOED/.test(t) ? "no" : "";
+      return `<li><button type="button" class="wnewsrow" data-wnews="${b.idx}"><span class="nk ${kind}">${esc(newsWhat(t))}</span> <span class="bn">${esc(b.nums.join(" / "))}</span> ${esc(b.title)} <span class="muted">· ${fmtDate(d)}${acts.length > 1 && !kind ? ` · ${acts.length - 1} more change${acts.length > 2 ? "s" : ""}` : ""}</span></button></li>`;
+    }).join("")}</ul></section>`;
+}
 // My watched bills in the order they show, for share links and published lists.
-function myOrdered() { const { active, idle } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle].map((x) => x.b); }
+function myOrdered() { const { active, idle, decided } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle, ...decided].map((x) => x.b); }
 function toggleWatch(b) { if (!isWatched(b)) { countUse(`starred/${baseNum(b.nums[0])}`); step("starred"); } setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
 function markSeen(b) { const e = watchEntry(b); if (e && e.seen !== (b.last || "")) { setWatch(b, { ...e, seen: b.last || "" }); updateWatchTab(); } }
 // The Watchlist tab: how many bills, and a badge for how many have news.
 function updateWatchTab() {
-  const n = WATCH_COUNT(), news = BILLS.filter((b) => isWatched(b) && hasNews(b)).length;
-  $("watchTabCount").innerHTML = (n ? ` (${num(n)})` : "") + (news ? ` <span class="tabnew" title="Bills with something new since you last opened them">${num(news)} new</span>` : "");
+  const n = WATCH_COUNT(), newsBills = BILLS.filter((b) => isWatched(b) && hasNews(b)), news = newsBills.length;
+  const what = newsBills.map((b) => `${b.nums[0]}: ${newsWhat(newActions(b)[0][1])}`).join("\n");
+  $("watchTabCount").innerHTML = (n ? ` (${num(n)})` : "") + (news ? ` <span class="tabnew" title="New since you last looked:\n${esc(what)}">${num(news)} new</span>` : "");
 }
 function watchButton(b, withStance = true) {
   const e = watchEntry(b);
@@ -3630,6 +3660,7 @@ function reachOf(p) {
 }
 
 const W_OPEN = new Set();
+let W_SHARE_OPEN = null;
 function renderWatchView() {
   updateWatchTab();
   if ($("view-watch").hidden) return;
@@ -3649,17 +3680,22 @@ function renderWatchView() {
       <p><button class="act-btn" type="button" data-wl="import">Add all to my watchlist</button> <button class="act-btn" type="button" data-wl="mine">Show my own watchlist</button></p>`;
   } else {
     const onClaude = /^https:\/\/claude\.ai/.test(DATA.sessions.find((s) => s.session === DATA.session)?.url || "");
-    card.innerHTML = `<h2>My watchlist</h2>${carryBox()}
-      <p>${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}.` : "No bills yet. Click ☆ next to any bill to add it."}${(() => { const n = list.reduce((s, b) => s + logOf(b).length, 0); return n ? ` You've logged ${num(n)} action${n === 1 ? "" : "s"}.` : ""; })()} Saved in this browser only.${back}</p>
-      ${list.length && (!onClaude || ROOT) ? `<details class="sharebox"${myPublished() ? " open" : ""}><summary>Share this list</summary>` : ""}
+    // One line: the count, and Share on the right; the share options open below it.
+    const canShare = list.length && (!onClaude || ROOT), logged = list.reduce((s, b) => s + logOf(b).length, 0);
+    W_SHARE_OPEN ??= !!myPublished();
+    card.innerHTML = `<div class="wlhead"><h2>My watchlist</h2>
+      <span class="muted">${list.length ? `${num(list.length)} bill${list.length === 1 ? "" : "s"}` : "No bills yet"}${logged ? ` · ${num(logged)} action${logged === 1 ? "" : "s"} logged` : ""} · saved in this browser only${back}</span>
+      ${canShare ? `<button class="act-btn${W_SHARE_OPEN ? "" : " primary"}" type="button" data-wl="share" aria-expanded="${W_SHARE_OPEN}">${W_SHARE_OPEN ? "Hide sharing" : "Share this list"}</button>` : ""}</div>
+      ${list.length ? "" : `<p>Click ☆ next to any bill to add it.</p>`}${carryBox()}
+      ${canShare ? `<div class="sharebox"${W_SHARE_OPEN ? "" : " hidden"}>` : ""}
       ${list.length && !onClaude ? `<p class="sharerow"><input type="text" id="shareLink" readonly value="${esc(shareLink())}" aria-label="Share link"> <button class="act-btn" type="button" data-wl="copy">Copy share link</button></p>
       <p class="muted sharenote">This link is a snapshot. To share later changes, send a new link.</p>` : ""}
       ${list.length ? publishBox() : ""}
-      ${list.length && (!onClaude || ROOT) ? `</details>` : ""}`;
+      ${canShare ? `</div>` : ""}`;
   }
 
   if (!SHARED) showPubViews();
-  const { active, idle } = watchItems(list, stanceOf, SHARED ? sharedRank : myRank);
+  const { active, idle, decided } = watchItems(list, stanceOf, SHARED ? sharedRank : myRank);
   $("wlActions")._items = active;
 
   // Grouped by deadline; each group offers one email per person covering several of its bills.
@@ -3673,7 +3709,7 @@ function renderWatchView() {
       return `<p class="multi">${num(ys.length)} of these need ${ys[0].key.gov ? "the governor's office" : esc(titleOf(ys[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(ys.length)}</button></p>`;
     }).join("");
   };
-  $("wlActions").innerHTML = "";
+  $("wlActions").innerHTML = ""; $("wlActions").hidden = true;
 
   const cardFor = (x) => {
     const { b } = x;
@@ -3714,6 +3750,7 @@ function renderWatchView() {
     </article>`;
   };
   $("wlList").innerHTML = !list.length ? "" : `
+    ${SHARED ? "" : newsBox(list)}
     ${list.length > 1 ? `<p class="wfold">${SHARED ? "" : `<span class="muted">Drag ⠿ to put your bills in priority order.</span>`}<span><button type="button" class="linkish" data-wfold="open">Open all</button> · <button type="button" class="linkish" data-wfold="close">Close all</button></span></p>` : ""}
     ${active.length ? `<section class="wsec needs"><h2>Needs action <span class="n">${num(active.length)}</span></h2>
       <p class="wsub">Something you can do now on each of these, soonest deadline first.</p>
@@ -3722,6 +3759,8 @@ function renderWatchView() {
         ${multiFor(g, xs)}<div class="wcards needs">${xs.map(cardFor).join("")}</div></details>`).join("")}</section>` : ""}
     ${idle.length ? `<section class="wsec idle"><h2>Can't move right now <span class="n">${num(idle.length)}</span></h2>
       <p class="wsub">Nothing to ask for until they move again. They'll be marked “New” when something changes.</p><div class="wcards idle">${idle.map(cardFor).join("")}</div></section>` : ""}
+    ${decided.length ? `<section class="wsec idle decided"><h2>Decided <span class="n">${num(decided.length)}</span></h2>
+      <p class="wsub">Signed into law or vetoed, most recent first.</p><div class="wcards idle">${decided.map(cardFor).join("")}</div></section>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
   $("wlList")._multi = multiAll;
 }
@@ -4086,6 +4125,18 @@ function wire() {
     if (head && e.target === head && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleCard(head); }
   });
   $("wlList").addEventListener("click", (e) => {
+    if (e.target.closest("[data-wseenall]")) { for (const b of BILLS) if (isWatched(b) && hasNews(b)) markSeen(b); renderWatchView(); return; }
+    const nw = e.target.closest("[data-wnews]");
+    if (nw) {
+      const card = $("wlList").querySelector(`.wcard[data-idx="${nw.dataset.wnews}"]`);
+      if (!card) return;
+      const grp = card.closest(".wgroup"); if (grp) grp.open = true;
+      const head = card.querySelector("[data-wtoggle]");
+      if (!card.classList.contains("open")) toggleCard(head); else markSeen(BILLS[+nw.dataset.wnews]);
+      nw.classList.add("read");
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const fold = e.target.closest("[data-wfold]");
     if (fold) {
       for (const g of $("wlList").querySelectorAll(".wgroup")) { g.open = fold.dataset.wfold === "open"; W_GROUP_OPEN.set(g.dataset.wgroup, g.open); }
@@ -4110,6 +4161,7 @@ function wire() {
     const pb = e.target.closest("[data-pub]");
     if (pb) { publishAction(pb); return; }
     const btn = e.target.closest("[data-wl]"); if (!btn) return;
+    if (btn.dataset.wl === "share") { W_SHARE_OPEN = !W_SHARE_OPEN; renderWatchView(); return; }
     if (btn.dataset.wl === "copy") {
       countUse("share-link-copied");
       const input = $("shareLink");

@@ -89,7 +89,10 @@ Read README.md for what each script downloads. This file covers how to change th
     ends, By December 31 and No deadline yet; `sessionEnd()` reads `data/session_calendar.json`, else
     when past sessions ended), `renderWatchView()` (the cards), `logBlock()` / `actionRecord()` (the action log) and
     `draftFor()` (email text).
-  - News: `newActions()` (actions since the bill was last opened, skipping `ROUTINE` paperwork,
+  - Decided bills (signed or vetoed) get their own section below "Can't move right now". The header is
+    one line with a "Share this list" button (`W_SHARE_OPEN`) that opens the share options.
+  - News: `newsBox()` ("New since you last looked", at the top; rows open the card, "Mark all as seen"),
+    `newActions()` (actions since the bill was last opened, skipping `ROUTINE` paperwork,
     most important first by `WEIGHT`), `newsTags()` (the "New: …" and "Coming up: …" tags),
     `nextMeeting()` (from committee agendas) and `updateWatchTab()` (the "N new" badge on the tab).
   - New session: `carryCandidates()` / `carryBox()` offer bills from last session's watchlist that
