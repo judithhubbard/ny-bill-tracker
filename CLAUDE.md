@@ -85,7 +85,9 @@ Read README.md for what each script downloads. This file covers how to change th
 - **Watchlist:**
   - Storage and actions: `WATCH` (localStorage), `ORDER` (drag order), `watchItems()` (splits bills
     into "Needs action" and "Can't move right now", then sorts them), `keyAction()` (the one ask on
-    each card), `renderWatchView()` (the cards), `logBlock()` / `actionRecord()` (the action log) and
+    each card), `deadlineOf()` / `W_GROUPS` (splits "Needs action" into Due soon, Before the session
+    ends, By December 31 and No deadline yet; `sessionEnd()` reads `data/session_calendar.json`, else
+    when past sessions ended), `renderWatchView()` (the cards), `logBlock()` / `actionRecord()` (the action log) and
     `draftFor()` (email text).
   - News: `newActions()` (actions since the bill was last opened, skipping `ROUTINE` paperwork,
     most important first by `WEIGHT`), `newsTags()` (the "New: …" and "Coming up: …" tags),
@@ -189,6 +191,8 @@ Read README.md for what each script downloads. This file covers how to change th
   written between sessions, without live agendas to test against. The freshness check now warns
   when it reads no bills.
 - Check `DELEGATION_NAMES` (Webb, Kelles) against the November election.
+- Add the year's scheduled last session day to `data/session_calendar.json` (from the Legislature's
+  session calendar), each January, not just in odd years. `check_fresh.py` warns from February if it's missing.
 - If a new governor takes office, set `GOV_SINCE` in build_data.py (the "In past Octobers, the governor
   usually asked for bills…" line on waiting bills uses only the current governor's record).
 - Publish the new session's Claude copy (a new artifact) and add its URL to `artifact_urls.json`.

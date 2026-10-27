@@ -232,6 +232,8 @@ NARROW_KINDS = ["", "person", "org", "naming"]
 # When the current governor took office. Patterns in how bills are requested start here; change it
 # if a new governor takes office.
 GOV_SINCE = "2021-08-24"
+# Scheduled last day of each year's session (calendar year -> date), entered each January.
+SESSION_END = json.load(open(os.path.join(HERE, "data", "session_calendar.json")))["end"]
 
 
 def narrow_kind(title):
@@ -1768,6 +1770,7 @@ def main():
             # Past pages don't carry co-sponsor names, so their network is worked out here.
             "network": session_network(session, recs) if session < current else None,
             # Date of the last floor vote in either house this session.
+            "sessionEnd": {y: d for y, d in SESSION_END.items() if int(y) in (session, session + 1)},
             "lastVote": max((d for r in recs for i in (1, 2) for d in r["keyDates"][i].split(";")), default=""),
             "strings": strings,
             # Stored column by column (all titles, then all summaries, ...), which compresses

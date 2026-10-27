@@ -10,5 +10,6 @@ __pycache__/
 !data/seat_parties.json
 !data/ny_places.json
 !data/district_counties.json
+!data/session_calendar.json
 lists_worker/.wrangler/
 lists_worker/node_modules/

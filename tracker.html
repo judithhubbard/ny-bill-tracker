@@ -640,6 +640,15 @@ a.phone:hover { text-decoration-color: currentColor; }
 .logtable td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 .logtable td:first-child { white-space: nowrap; font-family: var(--mono); font-size: 12.5px; }
 .logtable .bn { font: 700 12px var(--mono); }
+.wgroup { margin-top: 12px; }
+.wgroup > summary { cursor: pointer; list-style: none; display: grid; gap: 1px; padding: 6px 0 8px; }
+.wgroup > summary::-webkit-details-marker { display: none; }
+.wgroup .wgtitle { font: 700 16px var(--body); display: flex; align-items: center; gap: 8px; }
+.wgroup .wgtitle::before { content: "▸"; color: var(--ink-2); font-size: 13px; width: 10px; }
+.wgroup[open] .wgtitle::before { content: "▾"; }
+.wgroup .wgtitle .n { font: 700 12px var(--body); border-radius: 999px; padding: 1px 8px; background: var(--gold); color: var(--sheet); }
+.wgroup .wgsub { font-size: 13px; color: var(--ink-2); padding-left: 18px; }
+.wgroup .multi { margin: 0 0 10px; }
 .multi { margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
 .watchview h2 { margin: 0; font: 700 22px var(--display); font-stretch: 85%; }
 .watchview .list { border-top: 1px solid var(--rule); }
@@ -3335,6 +3344,46 @@ function watchItems(list, stanceOf, rank) {
     idle: items.filter((x) => !x.key).sort(byRank(() => 0)),
   };
 }
+// "Needs action" is grouped by the deadline each bill faces, soonest first.
+const monthDay = (d) => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+const daysUntil = (d) => (new Date(d.slice(0, 10)) - new Date(isoToday())) / 864e5;
+// This year's scheduled last session day (data/session_calendar.json), or when past sessions ended.
+function sessionEnd() {
+  const y = isoToday().slice(0, 4), date = DATA.sessionEnd?.[y];
+  if (date) return { date };
+  const past = (DATA.insights?.timing || []).map((t) => t.lastVote.slice(5)).sort();
+  return past.length ? { from: `${y}-${past[0]}`, to: `${y}-${past[past.length - 1]}` } : {};
+}
+const SOON_DAYS = 14;
+function deadlineOf(b) {
+  const soon = (d) => daysUntil(d) <= SOON_DAYS;
+  if (b.stage === 4 && b.due) return { g: "soon", d: b.due };
+  const meet = nextMeeting(b);
+  if (meet && soon(meet.when)) return { g: "soon", d: meet.when.slice(0, 10) };
+  if (b.stage === 3) {
+    // Bills passed in the first year can still be sent to the governor the next year.
+    const end = `${DATA.session + 1}-12-31`;
+    return isoToday().startsWith(String(DATA.session + 1)) ? { g: soon(end) ? "soon" : "year", d: end } : { g: "later" };
+  }
+  if (b.stage <= 2 && !floorVotesOver()) {
+    const e = sessionEnd();
+    return { g: e.date && daysUntil(e.date) >= 0 && soon(e.date) ? "soon" : "session", d: e.date };
+  }
+  return { g: "later" };
+}
+const W_GROUPS = {
+  soon: ["Due soon", () => "A decision or committee meeting is coming up. Act before the date shown."],
+  session: ["Before the session ends", () => {
+    const e = sessionEnd(), then = isoToday().startsWith(String(DATA.session + 1))
+      ? "Bills that haven't passed both houses by then die." : "After that, nothing moves until January.";
+    if (e.date && daysUntil(e.date) >= 0) return `The session is scheduled to end ${monthDay(e.date)}. ${then}`;
+    if (e.date) return `The session was scheduled to end ${monthDay(e.date)}; it could end any day. ${then}`;
+    return e.from ? `The session usually ends between ${monthDay(e.from)} and ${monthDay(e.to)}. ${then}` : then;
+  }],
+  year: ["By December 31", () => "The governor's office has to request these and decide on them by the end of the year, or they die."],
+  later: ["No deadline yet", () => "Nothing is due soon on these."],
+};
+const W_GROUP_OPEN = new Map();
 // My watched bills in the order they show, for share links and published lists.
 function myOrdered() { const { active, idle } = watchItems(BILLS.filter(isWatched), (b) => watchStance(b) || "support", myRank); return [...active, ...idle].map((x) => x.b); }
 function toggleWatch(b) { if (!isWatched(b)) { countUse(`starred/${baseNum(b.nums[0])}`); step("starred"); } setWatch(b, isWatched(b) ? null : { seen: b.last || "", stance: "support" }); }
@@ -3613,13 +3662,18 @@ function renderWatchView() {
   const { active, idle } = watchItems(list, stanceOf, SHARED ? sharedRank : myRank);
   $("wlActions")._items = active;
 
-  // One email to the governor (or anyone) covering several bills.
-  const byPerson = new Map();
-  for (const x of active) { const k = x.key.gov ? "gov" : `${x.key.house}:${lastName(x.key.name)}`; (byPerson.get(k) || byPerson.set(k, []).get(k)).push(x); }
-  const multi = [...byPerson.entries()].filter(([, xs]) => xs.length > 1);
-  $("wlActions").innerHTML = multi.map(([k, xs]) =>
-    `<p class="multi">${num(xs.length)} of ${SHARED ? "these" : "your"} bills need ${xs[0].key.gov ? "the governor's office" : esc(titleOf(xs[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(xs.length)}</button></p>`).join("");
-  $("wlActions")._multi = Object.fromEntries(multi);
+  // Grouped by deadline; each group offers one email per person covering several of its bills.
+  const groups = Object.keys(W_GROUPS).map((g) => [g, active.filter((x) => deadlineOf(x.b).g === g)]).filter(([, xs]) => xs.length);
+  const multiAll = {};
+  const multiFor = (g, xs) => {
+    const byPerson = new Map();
+    for (const x of xs) { const k = `${g}|${x.key.gov ? "gov" : `${x.key.house}:${lastName(x.key.name)}`}`; (byPerson.get(k) || byPerson.set(k, []).get(k)).push(x); }
+    return [...byPerson.entries()].filter(([, ys]) => ys.length > 1).map(([k, ys]) => {
+      multiAll[k] = ys;
+      return `<p class="multi">${num(ys.length)} of these need ${ys[0].key.gov ? "the governor's office" : esc(titleOf(ys[0].key))}. <button class="act-btn" type="button" data-multi="${esc(k)}">Copy one email about all ${num(ys.length)}</button></p>`;
+    }).join("");
+  };
+  $("wlActions").innerHTML = "";
 
   const cardFor = (x) => {
     const { b } = x;
@@ -3632,7 +3686,8 @@ function renderWatchView() {
         ${x.reps.length ? `<p class="also">Also: ${x.reps.map((r) => `${esc(titleOf(r))}, ${esc(r.ask)}${r.info?.email ? ` (${emailHtml(r.info.email, "your-legislator")})` : ""}`).join("; ")}.</p>` : ""}
       </div>` : "";
     const open = W_OPEN.has(billKey(b)), logged = SHARED ? 0 : logOf(b).length;
-    const due = DATA.current && b.stage === 4 && b.due ? ` · due ${fmtDate(b.due)}` : "";
+    const dl = x.key ? deadlineOf(b) : {};
+    const due = !DATA.current || !dl.d ? "" : b.stage === 4 ? ` · due ${fmtDate(dl.d)}` : dl.g === "soon" && b.stage < 3 ? ` · ${dl.d === sessionEnd().date ? "session ends" : "meets"} ${fmtDate(dl.d)}` : "";
     return `<article class="wcard${open ? " open" : ""}" data-idx="${b.idx}">
       <div class="whead" data-wtoggle="${b.idx}" role="button" tabindex="0" aria-expanded="${open}">
         <div class="wtop"><div class="nums">${!SHARED && list.length > 1 ? `<button class="whandle" type="button" data-whandle aria-label="Move ${esc(b.nums[0])} up or down" title="Drag to change the order (or use the arrow keys)">⠿</button>` : ""}<span class="chev" aria-hidden="true"></span>${esc(b.nums.join(" / "))}${SHARED
@@ -3661,10 +3716,14 @@ function renderWatchView() {
   $("wlList").innerHTML = !list.length ? "" : `
     ${list.length > 1 ? `<p class="wfold">${SHARED ? "" : `<span class="muted">Drag ⠿ to put your bills in priority order.</span>`}<span><button type="button" class="linkish" data-wfold="open">Open all</button> · <button type="button" class="linkish" data-wfold="close">Close all</button></span></p>` : ""}
     ${active.length ? `<section class="wsec needs"><h2>Needs action <span class="n">${num(active.length)}</span></h2>
-      <p class="wsub">Something you can do now on each of these.</p><div class="wcards needs">${active.map(cardFor).join("")}</div></section>` : ""}
+      <p class="wsub">Something you can do now on each of these, soonest deadline first.</p>
+      ${groups.map(([g, xs], i) => `<details class="wgroup" data-wgroup="${g}"${W_GROUP_OPEN.get(g) ?? i === 0 ? " open" : ""}>
+        <summary><span class="wgtitle">${W_GROUPS[g][0]} <span class="n">${num(xs.length)}</span></span><span class="wgsub">${esc(W_GROUPS[g][1]())}</span></summary>
+        ${multiFor(g, xs)}<div class="wcards needs">${xs.map(cardFor).join("")}</div></details>`).join("")}</section>` : ""}
     ${idle.length ? `<section class="wsec idle"><h2>Can't move right now <span class="n">${num(idle.length)}</span></h2>
       <p class="wsub">Nothing to ask for until they move again. They'll be marked “New” when something changes.</p><div class="wcards idle">${idle.map(cardFor).join("")}</div></section>` : ""}
     ${SHARED ? "" : actionRecord(list)}`;
+  $("wlList")._multi = multiAll;
 }
 
 // Every action logged on the watched bills, newest first.
@@ -3980,9 +4039,9 @@ function wire() {
     addLog(BILLS[+f.dataset.logform], { d: data.get("d") || isoToday(), who: data.get("who"), how: data.get("how"), note: (data.get("note") || "").trim() });
     renderWatchView();
   });
-  $("wlActions").addEventListener("click", (e) => {
+  $("wlList").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-multi]"); if (!btn) return;
-    const xs = $("wlActions")._multi[btn.dataset.multi];
+    const xs = $("wlList")._multi[btn.dataset.multi];
     countUse("email-copied-several"); step("contacted");
     copyText(btn, draftFor(xs[0].key, xs.map((x) => ({ b: x.b, ask: x.key.ask }))));
   });
@@ -4029,6 +4088,7 @@ function wire() {
   $("wlList").addEventListener("click", (e) => {
     const fold = e.target.closest("[data-wfold]");
     if (fold) {
+      for (const g of $("wlList").querySelectorAll(".wgroup")) { g.open = fold.dataset.wfold === "open"; W_GROUP_OPEN.set(g.dataset.wgroup, g.open); }
       for (const head of $("wlList").querySelectorAll("[data-wtoggle]")) {
         if (head.closest(".wcard").classList.contains("open") !== (fold.dataset.wfold === "open")) toggleCard(head);
       }
@@ -4085,6 +4145,7 @@ function wire() {
     if ($("pubMsg")) $("pubMsg").textContent = "Not published yet. Click Update.";
   });
   for (const id of ["list", "openNow", "wlList"]) $(id).addEventListener("toggle", (e) => { if (e.target.open && e.target.matches(".bill")) fillDetail(e.target); }, true);
+  $("wlList").addEventListener("toggle", (e) => { if (e.target.matches(".wgroup")) W_GROUP_OPEN.set(e.target.dataset.wgroup, e.target.open); }, true);
   $("openNow").addEventListener("click", (e) => {
     if (e.target.closest("[data-showagenda]")) { Object.assign(state, blank()); setAgenda(true); showView("bills"); return; }
     const btn = e.target.closest("[data-more]"); if (!btn) return;

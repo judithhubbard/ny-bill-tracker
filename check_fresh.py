@@ -35,6 +35,10 @@ fetched = datetime.strptime(bills["fetched"][:10], "%Y-%m-%d").date()
 if (now.date() - fetched).days >= 2:
     problems.append(f"Bill data was last downloaded {fetched}.")
 
+# The session's scheduled end (for the watchlist's "Before the session ends"), entered each January.
+if 2 <= now.month <= 6 and str(now.year) not in json.load(open(data("session_calendar.json")))["end"]:
+    problems.append(f"No scheduled end date for the {now.year} session in data/session_calendar.json (from the Legislature's session calendar).")
+
 # Assembly floor votes: every bill that passed the Assembly should have its vote collected.
 votes = json.load(open(data(f"assembly_votes_{SESSION}.json"))) if os.path.exists(data(f"assembly_votes_{SESSION}.json")) else {}
 missing = []
