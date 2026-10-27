@@ -582,9 +582,10 @@ table.st col.c-m { width: 80px; }
 .wsec h2 { margin: 0; display: flex; align-items: center; gap: 8px; }
 .wsec h2 .n { font: 700 13px var(--body); border-radius: 999px; padding: 2px 9px; }
 .wsec .wsub { margin: 2px 0 12px; font-size: 13.5px; color: var(--ink-2); }
-.wsec.needs { background: color-mix(in srgb, var(--gold-soft) 60%, var(--paper)); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
+.wsec.needs { background: var(--paper); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
 .wsec.needs h2 .n { background: var(--gold); color: var(--sheet); }
-.wsec.needs .wtop { background: color-mix(in srgb, var(--gold-soft) 45%, var(--sheet)); }
+.wsec.needs .wtop { background: var(--sheet); }
+.wsec.needs .wcard { border-color: color-mix(in srgb, var(--ink-2) 25%, transparent); border-left-color: var(--gold); box-shadow: 0 2px 10px rgba(20, 33, 61, .10); }
 .wsec.idle { background: none; border: 1px dashed var(--rule); }
 .wsec.idle h2 { color: var(--ink-2); font-size: 18px; }
 .wsec.idle h2 .n { background: var(--pip-off); color: var(--ink-2); }
