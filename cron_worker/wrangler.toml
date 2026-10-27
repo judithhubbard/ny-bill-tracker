@@ -1,0 +1,10 @@
+name = "albany-cron"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = false
+
+# Fires hourly; src/index.js decides (in New York time) whether an update is due.
+[triggers]
+crons = ["5 * * * *"]
+
+# GITHUB_TOKEN is a secret (wrangler secret put GITHUB_TOKEN); it is never stored here.

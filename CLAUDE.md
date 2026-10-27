@@ -29,6 +29,12 @@ Read README.md for what each script downloads. This file covers how to change th
   "upcoming": its page is `<year>.html`, its data has `current` and `upcoming` true, its stages
   read "Prefiled" (`STAGE_TEXT.prefiled`), and it has no Weigh in or Statistics tab. Statistics and
   outcomes leave it out. Stars made there carry into January, since watchlists are keyed by session.
+- **cron_worker/** is a Cloudflare Worker that starts the update workflow on time (GitHub's own
+  schedule often runs late or skips runs; it stays in update.yml as a backup). It fires hourly and
+  checks New York time against the same schedule, then calls workflow_dispatch with `timed=true`, which
+  publishes only on change, like a scheduled run. Its secret `GITHUB_TOKEN` is a fine-grained token
+  (this repo, Actions read/write) kept in `~/.albany_cron_token`; it expires, so renew it yearly.
+  Deploy with `cd cron_worker && npx -y wrangler@4.152.0 deploy`.
 - **lists_worker/** is the Cloudflare Worker for published watchlists (KV namespace LISTS):
   - It serves `GET /lists/:slug` publicly and counts views in `views:<slug>`, except views by the
     list's editors.

@@ -11,7 +11,14 @@ on:
     # July-December, every two hours on weekdays, so bills the governor requests, signs or vetoes
     # show up the same day.
     - cron: "17 13-23/2 * 7-12 1-5"
-  workflow_dispatch:        # "Run workflow" button on the Actions tab
+  # GitHub often starts scheduled runs late or skips them, so a Cloudflare timer (cron_worker/) also
+  # starts this workflow at the same times, with timed=true. The schedule above is the backup.
+  workflow_dispatch:        # also the "Run workflow" button on the Actions tab
+    inputs:
+      timed:
+        description: "Started by the timer (publish only if something changed)"
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -126,13 +133,15 @@ jobs:
         run: python3 build_data.py --github _site
 
       # Publish only when something changed, apart from the "updated" time. Each publish makes returning
-      # visitors download the bill data again. Pushes (code changes) always publish.
+      # visitors download the bill data again. Pushes (code changes) and the Run workflow button always publish.
       - name: Compare with the live site
         id: compare
+        env:
+          TIMED: ${{ github.event_name == 'schedule' || inputs.timed }}
         run: |
           python3 fingerprint.py _site > _site/fingerprint.txt
           LIVE=$(curl -fsS --max-time 30 https://albanybilltracker.org/fingerprint.txt || true)
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$LIVE" = "$(cat _site/fingerprint.txt)" ]; then
+          if [ "$TIMED" = "true" ] && [ "$LIVE" = "$(cat _site/fingerprint.txt)" ]; then
             echo "Nothing changed since the last publish; not publishing."
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
