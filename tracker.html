@@ -199,6 +199,8 @@ table.oc th { vertical-align: bottom; }
 
 /* Bill history across sessions */
 .tag.hist { background: var(--gold-soft); color: var(--ink); }
+.tag[data-lineage] { cursor: pointer; }
+.tag[data-lineage]:hover { text-decoration: underline; }
 .tag.agenda { background: var(--navy); color: var(--sheet); }
 .srow.sub { padding-left: 22px; font-size: 13px; }
 .meets { display: grid; gap: 6px; margin-bottom: 18px; }
@@ -1666,7 +1668,7 @@ document.addEventListener("click", (e) => {
   t.classList.toggle("open");
   t.classList.contains("open") ? showTip(t) : hideTip();
 }, true);
-document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("span.tip")) { e.preventDefault(); e.stopPropagation(); e.target.click(); } }, true);
+document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("span.tip, [data-lineage]")) { e.preventDefault(); e.stopPropagation(); e.target.click(); } }, true);
 document.addEventListener("mouseover", (e) => { const t = e.target.closest?.(".tip"); if (t) showTip(t); });
 document.addEventListener("mouseout", (e) => { const t = e.target.closest?.(".tip"); if (t && !t.classList.contains("open")) hideTip(); });
 document.addEventListener("focusin", (e) => { if (e.target.matches?.(".tip")) showTip(e.target); });
@@ -3050,17 +3052,19 @@ function keyDates(b) {
 }
 
 const earlierSessions = (b) => new Set(b.earlier.map((e) => e[0])).size;
+// Each tag opens the bill and shows "This bill in other sessions". Inside a summary, so a focusable span.
+const LINEAGE = `role="button" tabindex="0" data-lineage title="See this bill in other sessions"`;
 function historyTags(b) {
   const tags = [];
   // A session can hold more than one version of a bill (a new number the second year).
   const n = earlierSessions(b);
-  if (n) tags.push(`<span class="tag hist">${n} earlier session${n === 1 ? "" : "s"}</span>`);
+  if (n) tags.push(`<span class="tag hist" ${LINEAGE}>${n} earlier session${n === 1 ? "" : "s"}</span>`);
   const vetoes = new Map();
   for (const e of b.earlier) if (e[2] === 6) vetoes.set(e[0], (vetoes.get(e[0]) || 0) + 1);
-  if (vetoes.size) tags.push(`<span class="tag veto">Vetoed in ${[...vetoes].sort((x, y) => x[0] - y[0]).map(([s, c]) => span(s) + (c > 1 ? ` (${c === 2 ? "twice" : `${c} times`})` : "")).join(", ")}</span>`);
+  if (vetoes.size) tags.push(`<span class="tag veto" ${LINEAGE}>Vetoed in ${[...vetoes].sort((x, y) => x[0] - y[0]).map(([s, c]) => span(s) + (c > 1 ? ` (${c === 2 ? "twice" : `${c} times`})` : "")).join(", ")}</span>`);
   const law = b.later.find((e) => e[2] === 5);
-  if (law) tags.push(`<span class="tag law">Became law in ${span(law[0])}</span>`);
-  else if (b.later.length) tags.push(`<span class="tag hist">Reintroduced ${b.later.map((e) => span(e[0])).join(", ")}</span>`);
+  if (law) tags.push(`<span class="tag law" ${LINEAGE}>Became law in ${span(law[0])}</span>`);
+  else if (b.later.length) tags.push(`<span class="tag hist" ${LINEAGE}>Reintroduced ${b.later.map((e) => span(e[0])).join(", ")}</span>`);
   return tags.join("");
 }
 
@@ -3925,6 +3929,15 @@ function wire() {
     if (out) countUse(`read/${out.dataset.out}`);
     if (e.target.closest("[data-mycounty]")) { const c = LINK_COUNTY.mine; LINK_COUNTY = null; setCounty(c); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
+    const lin = e.target.closest("[data-lineage]");
+    if (lin) {
+      e.preventDefault();
+      const row = lin.closest("details");
+      if (!row) return;
+      row.open = true; fillDetail(row);
+      row.querySelector(".lineage")?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
     const a = e.target.closest("[data-bill]"); if (!a) return;
     e.preventDefault();
     if (!openNum(a.dataset.bill)) return;
