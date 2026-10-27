@@ -58,7 +58,8 @@ Read README.md for what each script downloads. This file covers how to change th
 - **Bills list:** `matches()` (filters), `sortBills()`, `renderPipeline()` ("Where it is now"),
   `renderList()`, `billRow()`, `statusText()`, `track()` (the progress bar in each row),
   `fillDetail()` (the panel that opens under a bill) and `nextSteps()` / `planFor()` /
-  `contactBook()` (who to contact and what to ask).
+  `contactBook()` (who to contact and what to ask; `draftBtn()` adds "Copy email" / "Copy message",
+  which uses `draftFor()`).
 - **Your legislators:** `HOME` (county), `setCounty()`, `myReps()`, `votePeople()` and
   `lookUpReps()`. Legislator pages: `PRESET`, `PAST_WHO`, `renderPerson()` and `renderPersonStats()`.
 - **Statistics:** `renderStats()`, which builds every stats section, plus `sankey()` (odds),

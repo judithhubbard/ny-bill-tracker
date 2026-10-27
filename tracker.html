@@ -1696,7 +1696,9 @@ const PAST_STAGE_TIPS = [
 ];
 const OUT_OF_TIME = "Floor votes for this session are over. A bill that hasn't passed both houses can move only if lawmakers return for a special session; otherwise it dies December 31 and has to be reintroduced.";
 const DECIDES = `<span class="decides">Decides</span>${TIP('The person whose decision moves the bill to its next step.')}`;
-const govItem = (ask) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach">${GOV_REACH}</span></li>`;
+// A button that copies a short email asking this person (house "G" is the governor) to do something about bill b.
+const draftBtn = (b, house, name, ask) => `<button class="act-btn small" type="button" data-draft="${b.idx}" data-house="${house}" data-name="${esc(name)}" data-ask="${esc(ask)}">${house === "G" ? "Copy message" : "Copy email"}</button>`;
+const govItem = (ask, b) => `<li class="key"><span class="contact">Governor's office ${DECIDES}</span><span class="ask">Ask: ${esc(ask)}</span><span class="reach">${draftBtn(b, "G", "", ask)} ${GOV_REACH}</span></li>`;
 const commKey = (n) => (n || "").toLowerCase().split("and").join("").replace(/[^a-z]/g, "");
 const HOUSE = { S: "Senate", A: "Assembly" };
 
@@ -1864,9 +1866,10 @@ function contactBook(b, canMove = true, oppose = false) {
         const name = info.url ? `<a href="${esc(info.url)}" target="_blank" rel="noopener">${title} ${esc(p.name)}</a>` : `${title} ${esc(p.name)}`;
         const kind = roleKind(p.roles);
         const reach = [emailHtml(info.email, kind), phonesHtml(info, kind)].filter(Boolean).join(" · ");
+        const draft = p.asks.length && info.email ? draftBtn(b, p.house, p.name, p.asks.join("; ")) + " " : "";
         const roles = p.roles.join("; ");
         const ask = p.asks.length ? `<span class="ask">Ask: ${esc(p.asks.join("; "))}</span>` : "";
-        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` ${DECIDES}` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${reach}</span>` : ""}</li>` };
+        return { star: p.star, html: `<li class="${p.star ? "key" : ""}"><span class="contact">${name}${status}${p.star ? ` ${DECIDES}` : ""}</span><span class="role">${esc(roles.charAt(0).toUpperCase() + roles.slice(1))}</span>${ask}${reach ? `<span class="reach">${draft}${reach}</span>` : ""}</li>` };
       });
       items.sort((x, y) => y.star - x.star);
       return (gov ? gov : "") + items.map((x) => x.html).join("");
@@ -1966,7 +1969,7 @@ function nextSteps(b) {
   }
   if (plan.actionable && oddsLine(b)) what += `<p class="odds">${oddsLine(b)}</p>`;
   if (!plan.actionable) what += reintroAsk(b, panelStance(b));
-  const who = plan.book.html(plan.gov ? govItem(plan.gov) : "");
+  const who = plan.book.html(plan.gov ? govItem(plan.gov, b) : "");
   if (plan.actionable && who) what += `<p class="hint">Asks if you <span class="seg">${["support", "oppose"].map((s) => `<button type="button" data-panelstance="${s}" data-idx="${b.idx}" aria-pressed="${(plan.opp ? "oppose" : "support") === s}">${s}</button>`).join("")}</span> this bill</p>`;
   // The person who decides the next step comes first, set apart; everyone else folds away.
   const box = document.createElement("ul");
@@ -3929,6 +3932,13 @@ function wire() {
     if (out) countUse(`read/${out.dataset.out}`);
     if (e.target.closest("[data-mycounty]")) { const c = LINK_COUNTY.mine; LINK_COUNTY = null; setCounty(c); return; }
     if (e.target.closest("[data-goreps]")) { showView("act"); $("myReps").scrollIntoView({ block: "start" }); return; }
+    const dr = e.target.closest("[data-draft]");
+    if (dr) {
+      const b = BILLS[+dr.dataset.draft], h = dr.dataset.house;
+      countUse(`email-copied/${baseNum(b.nums[0])}`); step("contacted");
+      copyText(dr, draftFor(h === "G" ? { gov: true } : { house: h, name: dr.dataset.name }, [{ b, ask: dr.dataset.ask }]));
+      return;
+    }
     const lin = e.target.closest("[data-lineage]");
     if (lin) {
       e.preventDefault();
