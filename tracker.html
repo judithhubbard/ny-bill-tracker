@@ -1655,7 +1655,8 @@ function statusText(b) {
     small = fmtDate(b.passedIn === "Senate" ? D.passS : D.passA);
   } else if (b.stage === 3) {
     t = "Passed both houses";
-    small = `${live ? "Not yet requested" : "Never requested"} by the governor · passed ${fmtDate([D.passS, D.passA].sort().pop())}`;
+    small = `${isAmendment(b) ? (secondPassage(b) ? "Second passage: went to the voters" : "First passage: must pass again in the next Legislature")
+      : `${live ? "Not yet requested" : "Never requested"} by the governor`} · passed ${fmtDate([D.passS, D.passA].sort().pop())}`;
   } else if (b.stage === 4) {
     t = live ? "On the governor's desk" : "Sent to the governor";
     small = live && b.due ? `Sent ${fmtDate(D.deliv)} · decision due ${fmtDate(b.due)} (est.)` : `Sent ${fmtDate(D.deliv)}`;
@@ -1904,6 +1905,16 @@ function contactBook(b, canMove = true, oppose = false) {
 
 // What happens next for a bill, who decides it, and what to ask each person. Asks follow
 // the reader's side: supporters by default, opponents for bills marked Oppose on the watchlist.
+// A constitutional amendment doesn't go to the governor: it passes two separately elected Legislatures, then the voters.
+const isAmendment = (b) => b.topics.includes("const");
+// Its second passage: the version in the session two years earlier (the Legislature before this one) passed both houses.
+const secondPassage = (b) => b.earlier.some((e) => e[0] === DATA.session - 2 && e[2] >= 3);
+// After its second passage it goes on the ballot in November: that year's if it passed by July (it has to be at least
+// three months before the election), else the next year's.
+function ballotLine(b) {
+  const d = [b.dates.passS, b.dates.passA].sort().pop() || "", y = +d.slice(0, 4) + (d.slice(5, 7) > "07" ? 1 : 0);
+  return isoToday() > `${y}-11-10` ? `It went to the voters in November ${y}; the records here don't show the result.` : `Next: the voters, in November ${y}.`;
+}
 function planFor(b, stance = "support") {
   if (!DATA.current || !DATA.contacts) return null;
   const opp = stance === "oppose";
@@ -1939,6 +1950,11 @@ function planFor(b, stance = "support") {
     else book.leader(other, L(A("bring it to a floor vote", "keep it from coming to a floor vote")), live);
     book.reps([other], L(A("vote yes", "vote no")));
     if (!live) b.vers.forEach((v) => book.sponsor(v, A("reintroduce it next session", "")));
+  } else if (b.stage === 3 && isAmendment(b)) {
+    what = secondPassage(b)
+      ? `<p class="when">Second passage. ${ballotLine(b)}</p>`
+      : `<p class="when">Next: the Legislature elected in November ${DATA.session + 1} has to pass it again; then it goes to the voters.</p>`;
+    if (!secondPassage(b)) book.reps(["S", "A"], A("pass it again in the next Legislature", "vote against it when it comes back"));
   } else if (b.stage === 3) {
     what = `<p class="when">Next: the governor's office requests it (any day through December), then she has 10 days to act.</p>`;
     gov = A("request the bill and sign it", "veto it");
@@ -2020,7 +2036,7 @@ function renderOpenNow() {
   // Their own bills first, then ones they co-sponsor.
   const own = (b) => (L && sponsoredBy(b, L, false) ? 0 : 1);
   const desk = BILLS.filter((b) => b.stage === 4 && mine(b)).sort((a, b) => own(a) - own(b) || (a.due || "").localeCompare(b.due || "") || a.sortKey - b.sortKey);
-  const waiting = BILLS.filter((b) => b.stage === 3 && mine(b)).sort((a, b) => own(a) - own(b) || (b.last || "").localeCompare(a.last || ""));
+  const waiting = BILLS.filter((b) => b.stage === 3 && !isAmendment(b) && mine(b)).sort((a, b) => own(a) - own(b) || (b.last || "").localeCompare(a.last || ""));
   const all = [...desk, ...waiting], nOwn = all.filter((b) => !own(b)).length;
   const more = waiting.length - openShown;
   $("openNow").innerHTML = `<h2>${L ? `${esc(L.label)}'s bills open for comment` : "Open for comment"}</h2>
@@ -3377,6 +3393,7 @@ function deadlineOf(b) {
   if (b.stage === 4 && b.due) return { g: "soon", d: b.due };
   const meet = nextMeeting(b);
   if (meet && soon(meet.when)) return { g: "soon", d: meet.when.slice(0, 10) };
+  if (b.stage === 3 && isAmendment(b)) return { g: "later" };
   if (b.stage === 3) {
     // Bills passed in the first year can still be sent to the governor the next year.
     const end = `${DATA.session + 1}-12-31`;
@@ -4492,7 +4509,7 @@ function sessionNotice(raw) {
   const today = isoToday(), y1 = raw.session, y2 = raw.session + 1;
   const lv = raw.lastVote || "";
   const quiet = lv ? (new Date(today) - new Date(lv)) / 864e5 > 21 : false;
-  const waiting = BILLS.filter((b) => b.stage === 3).length, desk = BILLS.filter((b) => b.stage === 4).length;
+  const waiting = BILLS.filter((b) => b.stage === 3 && !isAmendment(b)).length, desk = BILLS.filter((b) => b.stage === 4).length;
   const governor = waiting + desk
     ? `The governor has ${num(waiting + desk)} bill${waiting + desk === 1 ? "" : "s"} left: ${num(desk)} on her desk, ${num(waiting)} not yet requested.`
     : "The governor has acted on every bill that passed both houses.";
