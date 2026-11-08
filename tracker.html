@@ -4688,7 +4688,13 @@ function hydrate(raw) {
     for (const sec of document.querySelectorAll("#view-act > .act-sec")) if (sec.id !== "openNow") sec.hidden = true;
   }
   // Phones start with the filter panel folded up; wider screens show it as a sidebar.
-  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) $("side").open = false;
+  // Folded on a narrow screen; opened again when the window widens, since a wide layout has no "Filters" toggle (a
+  // page opened in a narrow window and then widened showed an empty column).
+  if (window.matchMedia) {
+    const narrow = window.matchMedia("(max-width: 900px)");
+    if (narrow.matches) $("side").open = false;
+    narrow.addEventListener?.("change", (e) => { if (!e.matches) $("side").open = true; });
+  }
   // The address says which tab to open; a plain link opens Bills.
   let view = "bills";
   if (PRESET?.watch || SHARED) view = "watch";
