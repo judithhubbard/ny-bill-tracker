@@ -178,7 +178,6 @@
     "Marcela Mitaynes",
     "Michael J. Fitzpatrick",
     "Monique Chandler-Waterman",
-    "Nader J. Sayegh",
     "Patrick Burke",
     "Patrick J. Chludzinski",
     "Paul A. Bologna",
@@ -461,7 +460,6 @@
     "Marianne Buttenschon",
     "Michael Benedetto",
     "Michael Reilly",
-    "Nader J. Sayegh",
     "Phil Ramos",
     "Rodneyse Bichotte Hermelyn",
     "Ron Kim",
@@ -743,7 +741,6 @@
     "Karines Reyes",
     "Linda B. Rosenthal",
     "Matt Slater",
-    "Nader J. Sayegh",
     "Nikki Lucas",
     "Patrick J. Chludzinski",
     "Phara Souffrant Forrest",
@@ -774,7 +771,6 @@
     "Michael J. Fitzpatrick",
     "Michael Reilly",
     "Monique Chandler-Waterman",
-    "Nader J. Sayegh",
     "Phara Souffrant Forrest",
     "Rebecca A. Seawright",
     "Robert Smullen",
@@ -908,7 +904,6 @@
     "Mary Beth Walsh",
     "MaryJane Shimsky",
     "Michael Tannousis",
-    "Nader J. Sayegh",
     "Patrick J. Carroll",
     "Phil Steck",
     "Rebecca A. Seawright",
@@ -1185,7 +1180,6 @@
     "MaryJane Shimsky",
     "Michael Benedetto",
     "Michaelle C. Solages",
-    "Nader J. Sayegh",
     "Nikki Lucas",
     "Nily Rozic",
     "Phil Ramos",
@@ -1216,7 +1210,6 @@
     "Keith Powers",
     "Michael Durso",
     "Michaelle C. Solages",
-    "Nader J. Sayegh",
     "Paula Elaine Kay",
     "Scott Bendett"
    ],
@@ -1421,9 +1414,8 @@
    "url": "https://nyassembly.gov/comm/?id=54"
   },
   "studentswithspecialneeds": {
-   "chair": "Nader J. Sayegh",
+   "chair": null,
    "members": [
-    "Nader J. Sayegh",
     "Phil Ramos"
    ],
    "name": "Students with Special Needs",
@@ -2193,11 +2185,6 @@
    "email": "chandlerwatermanm@nyassembly.gov",
    "url": "https://nyassembly.gov/mem/Monique-Chandler-Waterman"
   },
-  "nader sayegh": {
-   "district": 90,
-   "email": "sayeghn@nyassembly.gov",
-   "url": "https://nyassembly.gov/mem/Nader-J-Sayegh"
-  },
   "nikki lucas": {
    "district": 60,
    "email": "lucasn@nyassembly.gov",
@@ -2399,7 +2386,7 @@
    "url": "https://nyassembly.gov/mem/Yudelka-Tapia"
   }
  },
- "fetched": "2026-11-18",
+ "fetched": "2026-11-19",
  "kept": {},
  "people": {
   "A:1": {
@@ -6516,6 +6503,7 @@
   "S:1": 2021,
   "S:10": 2013,
   "S:11": 2009,
+  "S:12": 2025,
   "S:13": 2019,
   "S:14": 2015,
   "S:15": 2009,
