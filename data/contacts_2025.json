@@ -1895,6 +1895,11 @@
    "email": "DilanE@nyassembly.gov",
    "url": "https://nyassembly.gov/mem/Erik-M-Dilan"
   },
+  "frank jereis": {
+   "district": 90,
+   "email": "jereisf@nyassembly.gov",
+   "url": "https://nyassembly.gov/mem/Frank-Jereis"
+  },
   "gabriella romero": {
    "district": 109,
    "email": "romerog@nyassembly.gov",
@@ -2386,7 +2391,7 @@
    "url": "https://nyassembly.gov/mem/Yudelka-Tapia"
   }
  },
- "fetched": "2026-11-19",
+ "fetched": "2026-11-20",
  "kept": {},
  "people": {
   "A:1": {
@@ -6490,7 +6495,6 @@
   "A:88": 2009,
   "A:89": 2009,
   "A:9": 2021,
-  "A:90": 2019,
   "A:91": 2013,
   "A:92": 2023,
   "A:93": 2021,
